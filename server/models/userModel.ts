@@ -18,11 +18,11 @@ interface userSchemaProps {
 const userSchema = new mongoose.Schema<userSchemaProps>({
   name: {
     type: String,
-    required: false,
+    required: true,
   },
   email: {
     type: String,
-    required: false,
+    required: true,
     unique: true,
   },
   emailVerified: {
@@ -77,7 +77,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
   }
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password as string, 10);
 });
 
 userSchema.methods.getJWTTokens = function () {
@@ -86,7 +86,7 @@ userSchema.methods.getJWTTokens = function () {
   });
 };
 
-userSchema.methods.comparePassword = async function (enteredPassword) {
+userSchema.methods.comparePassword = async function (enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
