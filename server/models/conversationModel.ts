@@ -1,12 +1,20 @@
-const mongoose = require("mongoose");
-const conversationSchema = new mongoose.Schema({
+import mongoose from "mongoose";
+interface conversationSchemaProps {
+  createdAt: String;
+  lastMessageAt: String;
+  name: String;
+  isGroup: Boolean;
+  messages: mongoose.Schema.Types.ObjectId;
+  users: mongoose.Schema.Types.ObjectId;
+}
+const conversationSchema = new mongoose.Schema<conversationSchemaProps>({
   createdAt: {
-    type: Date,
+    type: String,
     default: new Date().toISOString(),
     required: true,
   },
   lastMessageAt: {
-    type: Date,
+    type: String,
     default: new Date().toISOString(),
     required: true,
   },

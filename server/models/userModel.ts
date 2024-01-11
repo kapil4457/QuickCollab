@@ -1,8 +1,21 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-const userSchema = new mongoose.Schema({
+interface userSchemaProps {
+  name: String;
+  email: String;
+  emailVerified: Date;
+  profileImage: String;
+  password: String;
+  createdAt: String;
+  updatedAt: String;
+  conversations: Array<mongoose.Schema.Types.ObjectId>;
+  seenMessageIds: Array<mongoose.Schema.Types.ObjectId>;
+  accounts: Array<mongoose.Schema.Types.ObjectId>;
+  messages: Array<mongoose.Schema.Types.ObjectId>;
+}
+const userSchema = new mongoose.Schema<userSchemaProps>({
   name: {
     type: String,
     required: false,
@@ -25,12 +38,12 @@ const userSchema = new mongoose.Schema({
     required: false,
   },
   createdAt: {
-    type: Date,
+    type: String,
     required: true,
     default: new Date().toISOString(),
   },
   updatedAt: {
-    type: Date,
+    type: String,
     required: true,
     default: new Date().toISOString(),
   },
