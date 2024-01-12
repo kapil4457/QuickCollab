@@ -1,17 +1,19 @@
 "use client";
 import Button from "@/components/Button";
 import Input from "@/components/Inputs/Input";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import AuthSocialButton from "./AuthSocialButton";
-import { BsFacebook, BsGoogle } from "react-icons/bs";
+import { BsGoogle } from "react-icons/bs";
 import Image from "next/image";
-
+import { signIn, useSession } from "next-auth/react";
+import axios from "../../api";
 type Variant = "LOGIN" | "REGISTER";
 
 const AuthForm = () => {
   const [variant, setVariant] = useState<Variant>("LOGIN");
   const [isLoading, setIsLoading] = useState(false);
+  const { status, data: session } = useSession();
   const toggleVariant = useCallback(() => {
     if (variant === "LOGIN") {
       setVariant("REGISTER");
@@ -44,16 +46,25 @@ const AuthForm = () => {
     }
   };
 
-  const socialAction = (action: string) => {
-    setIsLoading(true);
-    // NextAuth Social Sign-in
+  const signInOrSignHelper = async () => {
+    console.log("session", session);
+    if (variant === "LOGIN")
+      await axios.post(`/api/v1/sign-in-google`, session);
+    else await axios.post(`/api/v1/sign-up-google`, session);
   };
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      signInOrSignHelper();
+    }
+  }, [status]);
   return (
     <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Image
           alt="logo"
           src="/images/logo.png"
+          // src={session?.user?.image as string}
           height="48"
           width="48"
           className="mx-auto w-auto"
@@ -113,12 +124,7 @@ const AuthForm = () => {
             <div className="mt-6 flex gap-2">
               <AuthSocialButton
                 icon={BsGoogle}
-                onClick={() => socialAction("google")}
-                isLoading={isLoading}
-              />
-              <AuthSocialButton
-                icon={BsFacebook}
-                onClick={() => socialAction("facebook")}
+                onClick={() => signIn("google")}
                 isLoading={isLoading}
               />
             </div>
