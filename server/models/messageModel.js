@@ -1,14 +1,6 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-interface messageSchemaProps {
-  body: String;
-  image: String;
-  createdAt: String;
-  seen: Array<mongoose.Schema.Types.ObjectId>;
-  conversationId: mongoose.Schema.Types.ObjectId;
-  senderId: mongoose.Schema.Types.ObjectId;
-}
-const messageSchema = new mongoose.Schema<messageSchemaProps>({
+const messageSchema = new mongoose.Schema({
   body: {
     type: String,
     required: true,

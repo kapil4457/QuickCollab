@@ -1,6 +1,5 @@
-import express from "express";
-import dotenv from "dotenv";
-
+const express = require("express");
+const dotenv = require("dotenv");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -21,7 +20,13 @@ app.use(cors());
 app.use(cookieParser());
 
 // Router
+const user = require("./routes/userRoutes");
+// const conversation = require("./routes/conversationRoutes");
+// const message = require("./routes/messageRoutes");
 
+app.use("/api/v1/", user);
+// app.use("/api/v1/", conversation);
+// app.use("/api/v1/", message);
 //Exception Handeling
 process.on("uncaughtException", (err) => {
   console.log(err.message);
@@ -35,7 +40,7 @@ app.listen(process.env.PORT, () => {
 });
 
 //Unhandled Promise Rejection
-process.on("unhandledRejection", (err: Error) => {
+process.on("unhandledRejection", (err) => {
   console.log(`Error  :${err.message}`);
   console.log("Shutting down due to unhandled Promise Rejection ");
 });

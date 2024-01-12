@@ -1,19 +1,6 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-interface accountSchemaProps {
-  userId: String;
-  type: String;
-  provider: String;
-  providerAccountId: String;
-  refresh_token: String;
-  access_token: String;
-  expires_at: Number;
-  token_type: String;
-  scope: String;
-  id_token: String;
-  session_state: String;
-}
-const accountSchema = new mongoose.Schema<accountSchemaProps>({
+const accountSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true,

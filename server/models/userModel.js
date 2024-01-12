@@ -1,21 +1,8 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-interface userSchemaProps {
-  name: String;
-  email: String;
-  emailVerified: Date;
-  profileImage: String;
-  password: String;
-  createdAt: String;
-  updatedAt: String;
-  conversations: Array<mongoose.Schema.Types.ObjectId>;
-  seenMessageIds: Array<mongoose.Schema.Types.ObjectId>;
-  accounts: Array<mongoose.Schema.Types.ObjectId>;
-  messages: Array<mongoose.Schema.Types.ObjectId>;
-}
-const userSchema = new mongoose.Schema<userSchemaProps>({
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -59,12 +46,12 @@ const userSchema = new mongoose.Schema<userSchemaProps>({
       ref: "Message",
     },
   ],
-  accounts: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Account",
-    },
-  ],
+  // accounts: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Account",
+  //   },
+  // ],
   messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -77,7 +64,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
   }
-  this.password = await bcrypt.hash(this.password as string, 10);
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
 userSchema.methods.getJWTTokens = function () {
@@ -86,7 +73,7 @@ userSchema.methods.getJWTTokens = function () {
   });
 };
 
-userSchema.methods.comparePassword = async function (enteredPassword: string) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
