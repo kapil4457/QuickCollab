@@ -180,6 +180,12 @@ exports.updateProfile = async (req, res) => {
       name: name,
       avatar: avatar,
     };
+    if (name == "") {
+      return await res.status(400).send({
+        success: false,
+        message: "Please enter a valid name.",
+      });
+    }
     const user = await User.findByIdAndUpdate(req.user.id, newDetails, {
       new: true,
       runValidators: true,
@@ -187,6 +193,34 @@ exports.updateProfile = async (req, res) => {
     return await res.status(201).send({
       success: true,
       message: "User details updated successfully!!",
+      user,
+    });
+  } catch (err) {
+    return await res.send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.updateAvailabilityStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user.role !== "service-provider") {
+      return await res.status(400).send({
+        success: false,
+        message: "Your role does not have this functionality.",
+      });
+    }
+    if (user.available === false) {
+      user.available = true;
+    } else {
+      user.available = false;
+    }
+    await user.save();
+    return await res.status(201).send({
+      success: true,
+      message: "Updated the availability status",
       user,
     });
   } catch (err) {

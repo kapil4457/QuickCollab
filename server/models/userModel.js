@@ -32,6 +32,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  available: {
+    type: Boolean,
+    default: true,
+  },
+  rating: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: String,
     required: false,
