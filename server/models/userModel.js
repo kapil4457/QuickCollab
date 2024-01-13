@@ -16,22 +16,30 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
-  profileImage: {
+  isGoogleLogin: {
+    type: Boolean,
+    default: false,
+  },
+  avatar: {
     type: String,
-    required: false,
+    required: true,
   },
   password: {
     type: String,
     required: false,
   },
-  createdAt: {
+  role: {
     type: String,
     required: true,
+  },
+  createdAt: {
+    type: String,
+    required: false,
     default: new Date().toISOString(),
   },
   updatedAt: {
     type: String,
-    required: true,
+    required: false,
     default: new Date().toISOString(),
   },
   conversations: [
