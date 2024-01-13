@@ -34,6 +34,19 @@ exports.registerUser = async (req, res, next) => {
       });
     }
 
+    if (role !== "content-creator" && role !== "service-provider") {
+      return await res.status(500).send({
+        success: false,
+        message: "Internal Server Erroe",
+      });
+    }
+    const tempUser = await User.findOne({ email: email });
+    if (tempUser) {
+      return await res.status(400).send({
+        success: false,
+        message: "An account already exists with this email id",
+      });
+    }
     const user = await User.create({
       name,
       email,
@@ -45,7 +58,7 @@ exports.registerUser = async (req, res, next) => {
 
     sendToken(user, 201, res, "Registration successfully");
   } catch (err) {
-    await res.send({ success: false, message: err.stack });
+    await res.send({ success: false, message: err.message });
   }
 };
 
@@ -53,11 +66,17 @@ exports.googleRegisterUser = async (req, res) => {
   try {
     const { email, avatar, name, role } = req.body;
 
-    const user = await User.find({
+    const user = await User.findOne({
       email: email,
     });
     if (user) {
       sendToken(user, 200, res, "Logged in Successfully");
+    }
+    if (role !== "content-creator" && role !== "service-provider") {
+      return await res.status(500).send({
+        success: false,
+        message: "Internal Server Error",
+      });
     }
 
     const newUser = await User.create({
@@ -68,7 +87,64 @@ exports.googleRegisterUser = async (req, res) => {
       isGoogleLogin: true,
     });
 
-    sendToken(newUser, 201, res, "Registeration Successfully !!");
+    sendToken(newUser, 201, res, "Registration Successfully !!");
+  } catch (err) {
+    await res.send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return await res
+        .status(400)
+        .send({ success: false, message: "Please fill in all the details !!" });
+    }
+    if (!validator.isEmail(email)) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please enter a valid email address !!",
+      });
+    }
+
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return await res.status(400).send({
+        success: false,
+        message: "Email or password is wrong!!",
+      });
+    }
+
+    if (!user.comparePassword(password)) {
+      return await res.status(400).send({
+        success: false,
+        message: "Email or password is wrong!!",
+      });
+    }
+
+    sendToken(user, 200, res, "Logged in successfully!!");
+  } catch (err) {
+    await res.send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    await res.cookie("token", null, {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    });
+
+    await res
+      .status(200)
+      .json({ success: true, message: "logged out successfully" });
   } catch (err) {
     await res.send({
       success: false,
