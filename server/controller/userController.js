@@ -152,3 +152,47 @@ exports.logout = async (req, res) => {
     });
   }
 };
+
+exports.getUserDetails = async (req, res) => {
+  try {
+    const cookie = req.headers.cookie;
+    if (!cookie) {
+      return await res.status(404).send({
+        success: false,
+        message: "Please login to access this.",
+      });
+    }
+    const user = await User.findById(req.user.id);
+
+    return await res.status(200).send({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    await res.status(400).send({ success: false, message: err.message });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, avatar } = req.body;
+    const newDetails = {
+      name: name,
+      avatar: avatar,
+    };
+    const user = await User.findByIdAndUpdate(req.user.id, newDetails, {
+      new: true,
+      runValidators: true,
+    });
+    return await res.status(201).send({
+      success: true,
+      message: "User details updated successfully!!",
+      user,
+    });
+  } catch (err) {
+    return await res.send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
