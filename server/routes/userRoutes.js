@@ -7,6 +7,7 @@ const {
   getUserDetails,
   updateProfile,
   updateAvailabilityStatus,
+  updatePassword,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
@@ -26,7 +27,7 @@ router
   .route("/me/update/availability")
   .put(isAuthenticatedUser, updateAvailabilityStatus);
 
-// router.route("/me/updatePassword").put(isAuthenticatedUser, updatePassword);
+router.route("/me/updatePassword").put(isAuthenticatedUser, updatePassword);
 
 // router
 //   .route("/admin/users")

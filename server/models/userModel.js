@@ -40,6 +40,11 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  previousPasswords: [
+    {
+      type: String,
+    },
+  ],
   createdAt: {
     type: String,
     required: false,
@@ -91,6 +96,14 @@ userSchema.methods.getJWTTokens = function () {
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.methods.previousPasswordCheck = async function (updatedPassword) {
+  for (pre of this.previousPasswords) {
+    const temp = await bcrypt.compare(updatedPassword, pre);
+    if (temp == true) return true;
+  }
+  return false;
 };
 
 module.exports = mongoose.model("User", userSchema);

@@ -1,7 +1,8 @@
 const User = require("../models/userModel");
 const sendToken = require("../utils/jwtToken");
-// const cloudinary = require("cloudinary");
+const bcrypt = require("bcryptjs");
 var validator = require("validator");
+// const cloudinary = require("cloudinary");
 
 //Register a User
 
@@ -225,6 +226,69 @@ exports.updateAvailabilityStatus = async (req, res) => {
     });
   } catch (err) {
     return await res.send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { previousPassword, updatedPassword, confirmUpdatedPassword } =
+      req.body;
+
+    if (previousPassword == updatedPassword) {
+      return await res.status(400).send({
+        success: false,
+        message: "New password can not be same as old password",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if ((await user.comparePassword(previousPassword)) === false) {
+      return await res.status(400).send({
+        success: false,
+        message: "Incorrect password entered.",
+      });
+    }
+
+    if (updatedPassword !== confirmUpdatedPassword) {
+      return await res.status(400).send({
+        success: false,
+        message: "Updated Password does not match the confirm password!!",
+      });
+    }
+
+    if (
+      !validator.isLength(updatedPassword, {
+        min: 8,
+        max: undefined,
+      })
+    ) {
+      return await res.status(400).send({
+        success: false,
+        message: "Updated Password must be atleast 8 characters long.",
+      });
+    }
+
+    if ((await user.previousPasswordCheck(updatedPassword)) == true) {
+      return await res.status(400).send({
+        success: false,
+        message:
+          "You have already used this password before.Please enter a new password.",
+      });
+    }
+    user.previousPasswords.push(user.password);
+    user.password = updatedPassword;
+    await user.save();
+
+    return await res.status(200).send({
+      succes: true,
+      message: "Password Updated successfully.",
+    });
+  } catch (err) {
+    await res.status(400).send({
       success: false,
       message: err.message,
     });
