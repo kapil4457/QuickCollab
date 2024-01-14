@@ -1,7 +1,10 @@
 const User = require("../models/userModel");
+const ResetPassword = require("../models/resetPasswordModel");
 const sendToken = require("../utils/jwtToken");
 const bcrypt = require("bcryptjs");
 var validator = require("validator");
+const { v4: uuidv4 } = require("uuid");
+const sendMail = require("../utils/sendMail");
 // const cloudinary = require("cloudinary");
 
 //Register a User
@@ -289,6 +292,42 @@ exports.updatePassword = async (req, res) => {
     });
   } catch (err) {
     await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !validator.isEmail(email)) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please enter a valid email address",
+      });
+    }
+
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return await res.status(400).send({
+        success: false,
+        message: "You have not registered yet.",
+      });
+    }
+
+    const id = uuidv4();
+    const resetPasswordObject = await ResetPassword.create({
+      uuid: id,
+      userId: user._id,
+    });
+    sendMail(email, "Password Reset", id, user);
+
+    return await res.status(200).send({
+      success: true,
+      message: "Reset password link has been sent to your email address.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
       success: false,
       message: err.message,
     });
