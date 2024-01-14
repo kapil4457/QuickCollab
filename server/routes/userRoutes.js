@@ -9,6 +9,7 @@ const {
   updateAvailabilityStatus,
   updatePassword,
   resetPassword,
+  resetPasswordLinkGenerator,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
@@ -29,7 +30,10 @@ router
   .put(isAuthenticatedUser, updateAvailabilityStatus);
 
 router.route("/me/updatePassword").put(isAuthenticatedUser, updatePassword);
-router.route("/me/resetPassword").post(resetPassword);
+router
+  .route("/me/resetPassword")
+  .post(resetPasswordLinkGenerator)
+  .put(resetPassword);
 
 // router
 //   .route("/admin/users")

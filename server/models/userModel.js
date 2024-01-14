@@ -16,9 +16,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
-  isGoogleLogin: {
-    type: Boolean,
-    default: false,
+  modeOfLogin: {
+    type: Number,
+    required: true,
   },
   avatar: {
     type: String,

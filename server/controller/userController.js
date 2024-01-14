@@ -7,6 +7,10 @@ const { v4: uuidv4 } = require("uuid");
 const sendMail = require("../utils/sendMail");
 // const cloudinary = require("cloudinary");
 
+// 1 ==> email
+// 2 ==> google
+// 3 ==> email and google
+
 //Register a User
 
 exports.registerUser = async (req, res, next) => {
@@ -58,6 +62,7 @@ exports.registerUser = async (req, res, next) => {
       role,
       avatar,
       role,
+      modeOfLogin: 1,
     });
 
     sendToken(user, 201, res, "Registration successfully");
@@ -88,7 +93,7 @@ exports.googleRegisterUser = async (req, res) => {
       email,
       avatar,
       role,
-      isGoogleLogin: true,
+      modeOfLogin: 2,
     });
 
     sendToken(newUser, 201, res, "Registration Successfully !!");
@@ -116,6 +121,13 @@ exports.loginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne({ email: email });
+
+    if (user.modeOfLogin === 2) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please set a password using 'Reset password' to continue.",
+      });
+    }
     if (!user) {
       return await res.status(400).send({
         success: false,
@@ -297,7 +309,7 @@ exports.updatePassword = async (req, res) => {
     });
   }
 };
-exports.resetPassword = async (req, res) => {
+exports.resetPasswordLinkGenerator = async (req, res) => {
   try {
     const { email } = req.body;
     if (!email || !validator.isEmail(email)) {
@@ -328,6 +340,76 @@ exports.resetPassword = async (req, res) => {
     });
   } catch (err) {
     return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword, confirmPassword } = req.body;
+    const token = await ResetPassword.findOne({ uuid: resetToken }).populate(
+      "userId"
+    );
+    if (!token) {
+      return await res.status(400).send({
+        success: false,
+        message: "Invalid reset token or has already been used.",
+      });
+    }
+
+    if (validator.isEmpty(newPassword) || validator.isEmpty(confirmPassword)) {
+      return await res.status(400).send({
+        success: false,
+        message: "Plese fill in all the details.",
+      });
+    }
+    if (
+      !validator.isLength(newPassword, {
+        min: 8,
+        max: undefined,
+      })
+    ) {
+      return await res.status(400).send({
+        success: false,
+        message: "Password must be atleast 8 characters long.",
+      });
+    }
+    if (newPassword !== confirmPassword) {
+      return await res.status(400).send({
+        success: false,
+        message: "New Password and Confirm Password are not same.",
+      });
+    }
+
+    const user = await token.userId;
+    const thisUser = await User.findById(user._id);
+    if (thisUser.modeOfLogin == 1 || thisUser.modeOfLogin == 3) {
+      if (
+        (await thisUser.comparePassword(newPassword)) === true ||
+        (await thisUser.previousPasswordCheck(newPassword)) == true
+      ) {
+        return await res.status(400).send({
+          success: false,
+          message:
+            "New password can not be same as a previously used password.",
+        });
+      }
+    }
+    thisUser.previousPasswords.push(thisUser.password);
+    thisUser.password = newPassword;
+    if (user.modeOfLogin == 2) {
+      thisUser.modeOfLogin = 3;
+    }
+    await thisUser.save();
+    await ResetPassword.findByIdAndDelete(token._id);
+    return await res.status(200).send({
+      success: true,
+      message: "Password reset successfull.",
+    });
+  } catch (err) {
+    await res.status(400).send({
       success: false,
       message: err.message,
     });

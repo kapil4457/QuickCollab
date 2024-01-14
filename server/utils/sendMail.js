@@ -11,9 +11,8 @@ const transporter = nodemailer.createTransport({
 });
 const sendMail = async (email, subject, id, user) => {
   try {
-    console.log(email);
     const info = await transporter.sendMail({
-      from: '"Content Management System" <demoweb3.0@example.com>', // sender address
+      from: '"Content Management System" <demoweb3.0@gmail.com>', // sender address
       to: `${email}`, // list of receivers
       subject: `${subject}`, // Subject line
       html: resetPasswordTemplate(email, user, id, subject), // html body
