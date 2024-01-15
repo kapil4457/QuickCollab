@@ -472,3 +472,136 @@ exports.getUserDetail = async (req, res) => {
     });
   }
 };
+exports.addPlatforms = async (req, res) => {
+  try {
+    const { title, link } = req.body;
+    const user = await User.findById(req.user.id);
+    let check = false;
+
+    user.creatorPlatform.map((ele) => {
+      if (ele.title.toLocaleLowerCase() === title.toLocaleLowerCase()) {
+        check = true;
+      }
+    });
+    if (check === true) {
+      return await res.status(400).send({
+        success: false,
+        message: "You already have this link added with this title",
+      });
+    }
+    if (!validator.isLength(title, { min: 5, max: 20 })) {
+      return await res.status(400).send({
+        success: false,
+        message: "Title length should be in the range of 5-20.",
+      });
+    }
+    user.creatorPlatform.push({
+      title,
+      link,
+    });
+    await user.save();
+
+    return await res.status(200).send({
+      success: true,
+      message: "Platform added successfully.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.updatePlatforms = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const { id, title, link } = req.body;
+    if (!id || !title || !link) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please fill in all the details",
+      });
+    }
+    if (!validator.isLength(title, { min: 5, max: 20 })) {
+      return await res.status(400).send({
+        success: false,
+        message: "Title length should be in the range of 5-20.",
+      });
+    }
+    let check = false;
+    for (ele of user.creatorPlatform) {
+      if (ele._id.toString() === id.toString()) {
+        check = true;
+        break;
+      }
+    }
+
+    if (check === false) {
+      return await res.status(400).send({
+        success: false,
+        message: "No platform with this id is connected to your account",
+      });
+    }
+
+    user.creatorPlatform.forEach((ele) => {
+      if (ele._id.toString() === id.toString()) {
+        ele.title = title;
+        ele.link = link;
+      }
+    });
+    await user.save();
+
+    return await res.status(200).send({
+      success: true,
+      message: "Project Updated successfully",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.deletePlatforms = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return await res.status(500).send({
+        succes: false,
+        message: "Internal server Error.",
+      });
+    }
+    const user = await User.findById(req.user.id);
+    let check = false;
+    for (ele of user.creatorPlatform) {
+      if (ele._id.toString() === id.toString()) {
+        check = true;
+        break;
+      }
+    }
+
+    if (check === false) {
+      return await res.status(400).send({
+        success: false,
+        message: "No platform with this id is connected to your account",
+      });
+    }
+    const newLinks = user.creatorPlatform.filter((ele) => {
+      if (ele._id.toString() !== id) return ele;
+    });
+
+    user.creatorPlatform = newLinks;
+    await user.save();
+    return await res.status(200).send({
+      success: true,
+      message: "Platform deleted successfully.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};

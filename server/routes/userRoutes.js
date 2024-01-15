@@ -11,6 +11,9 @@ const {
   resetPassword,
   resetPasswordLinkGenerator,
   getUserDetail,
+  addPlatforms,
+  updatePlatforms,
+  deletePlatforms,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
@@ -31,11 +34,29 @@ router
   .put(isAuthenticatedUser, updateAvailabilityStatus);
 
 router.route("/me/updatePassword").put(isAuthenticatedUser, updatePassword);
+
 router
   .route("/me/resetPassword")
   .post(resetPasswordLinkGenerator)
   .put(resetPassword);
+
 router.route("/user/details/:id").get(isAuthenticatedUser, getUserDetail);
+
+router
+  .route("/me/addplatforms")
+  .post(isAuthenticatedUser, authorizeRole("content-creator"), addPlatforms);
+
+router
+  .route("/me/updateplatforms")
+  .post(isAuthenticatedUser, authorizeRole("content-creator"), updatePlatforms);
+
+router
+  .route("/me/deleteplatforms/:id")
+  .delete(
+    isAuthenticatedUser,
+    authorizeRole("content-creator"),
+    deletePlatforms
+  );
 // router
 //   .route("/admin/users")
 //   .get(isAuthenticatedUser, authorizeRole("admin"), getAllUsers);
