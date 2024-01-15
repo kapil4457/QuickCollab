@@ -1,7 +1,6 @@
 const User = require("../models/userModel");
 const ResetPassword = require("../models/resetPasswordModel");
 const sendToken = require("../utils/jwtToken");
-const bcrypt = require("bcryptjs");
 var validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
 const sendMail = require("../utils/sendMail");

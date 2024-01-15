@@ -76,7 +76,7 @@ const userSchema = new mongoose.Schema({
   providerPreviousWork: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Projects",
+      ref: "Project",
     },
   ],
   creatorPlatform: [

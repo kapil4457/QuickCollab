@@ -21,10 +21,12 @@ app.use(cookieParser());
 
 // Router
 const user = require("./routes/userRoutes");
+const project = require("./routes/projectRoutes");
 // const conversation = require("./routes/conversationRoutes");
 // const message = require("./routes/messageRoutes");
 
 app.use("/api/v1/", user);
+app.use("/api/v1/", project);
 // app.use("/api/v1/", conversation);
 // app.use("/api/v1/", message);
 //Exception Handeling
