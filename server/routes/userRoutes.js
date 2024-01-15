@@ -10,6 +10,7 @@ const {
   updatePassword,
   resetPassword,
   resetPasswordLinkGenerator,
+  getUserDetail,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
@@ -34,7 +35,7 @@ router
   .route("/me/resetPassword")
   .post(resetPasswordLinkGenerator)
   .put(resetPassword);
-
+router.route("/user/details/:id").get(isAuthenticatedUser, getUserDetail);
 // router
 //   .route("/admin/users")
 //   .get(isAuthenticatedUser, authorizeRole("admin"), getAllUsers);

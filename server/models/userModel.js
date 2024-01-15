@@ -67,18 +67,34 @@ const userSchema = new mongoose.Schema({
       ref: "Message",
     },
   ],
-  // accounts: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "Account",
-  //   },
-  // ],
   messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
     },
   ],
+  providerPreviousWork: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Projects",
+    },
+  ],
+  creatorPlatform: [
+    {
+      title: {
+        type: String,
+        required: true,
+      },
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+  about: {
+    type: String,
+    required: false,
+  },
 });
 
 userSchema.pre("save", async function (next) {

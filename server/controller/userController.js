@@ -7,11 +7,14 @@ const { v4: uuidv4 } = require("uuid");
 const sendMail = require("../utils/sendMail");
 // const cloudinary = require("cloudinary");
 
+/* Code Mapping */
 // 1 ==> email
 // 2 ==> google
 // 3 ==> email and google
 
-//Register a User
+/* Roles */
+// content-creator
+// service-provider
 
 exports.registerUser = async (req, res, next) => {
   try {
@@ -191,10 +194,12 @@ exports.getUserDetails = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, avatar, about } = req.body;
     const newDetails = {
       name: name,
       avatar: avatar,
+      updatedAt: new Date().toISOString(),
+      about: about,
     };
     if (name == "") {
       return await res.status(400).send({
@@ -233,6 +238,8 @@ exports.updateAvailabilityStatus = async (req, res) => {
     } else {
       user.available = false;
     }
+    user.updatedAt = new Date().toISOString();
+
     await user.save();
     return await res.status(201).send({
       success: true,
@@ -296,6 +303,8 @@ exports.updatePassword = async (req, res) => {
     }
     user.previousPasswords.push(user.password);
     user.password = updatedPassword;
+    user.updatedAt = new Date().toISOString();
+
     await user.save();
 
     return await res.status(200).send({
@@ -402,6 +411,8 @@ exports.resetPassword = async (req, res) => {
     if (user.modeOfLogin == 2) {
       thisUser.modeOfLogin = 3;
     }
+    thisUser.updatedAt = new Date().toISOString();
+
     await thisUser.save();
     await ResetPassword.findByIdAndDelete(token._id);
     return await res.status(200).send({
@@ -410,6 +421,53 @@ exports.resetPassword = async (req, res) => {
     });
   } catch (err) {
     await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.getUserDetail = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return await res.status(400).send({
+        success: false,
+        message: "User does not exists.",
+      });
+    }
+    let details;
+    if (user.role == "content-creator") {
+      // If the requested user is a content-creator
+      details = {
+        name: user.name,
+        avatar: user.avatar,
+        about: user.about,
+        creatorPlatforms: user.creatorPlatform,
+      };
+    } else if (user.role == "service-provider") {
+      // If the requested user is a service-provider
+      details = {
+        name: user.name,
+        avatar: user.avatar,
+        about: user.about,
+        providerPreviousWork: user.providerPreviousWork,
+      };
+    } else {
+      return await res.status(500).send({
+        success: false,
+        message: "Internal Server error",
+      });
+    }
+
+    return await res.status(200).send({
+      success: true,
+      details,
+    });
+  } catch (err) {
+    return await res.status(400).send({
       success: false,
       message: err.message,
     });
