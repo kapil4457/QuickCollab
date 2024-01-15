@@ -201,6 +201,117 @@ exports.updateGroup = async (req, res) => {
   }
 };
 
-exports.deleteGroup = async (req, res) => {};
+exports.deleteGroup = async (req, res) => {
+  try {
+    const conversationId = req.params.id;
+    const userId = req.user.id;
 
-exports.leaveGroup = async (req, res) => {};
+    const conversation = await Conversation.findById(conversationId);
+
+    if (!conversation) {
+      return await res.status(400).send({
+        success: false,
+        message: "This conversation does not exist.",
+      });
+    }
+
+    if (conversation.isGroup === false) {
+      return await res.status(400).send({
+        success: false,
+        message: "This conversation is not a group conversation.",
+      });
+    }
+    if (conversation.groupAdmin.toString() !== userId.toString()) {
+      return await res.status(400).send({
+        success: false,
+        message: "You are not allowed to perform this action",
+      });
+    }
+
+    // remove this conversation from the list of user participants
+
+    for (let ele of conversation.users) {
+      const tempUser = await User.findById(ele);
+      const newConversations = tempUser.conversations.filter(
+        (currentConversation) => {
+          if (currentConversation.toString() !== conversationId) {
+            return currentConversation;
+          }
+        }
+      );
+      tempUser.conversations = newConversations;
+      await tempUser.save();
+    }
+
+    await Conversation.findByIdAndDelete(conversationId);
+
+    return await res.status(200).send({
+      success: true,
+      message: "Group deleted Successfully",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.leaveGroup = async (req, res) => {
+  try {
+    const { conversationId } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    const conversation = await Conversation.findById(conversationId);
+
+    if (!conversation) {
+      return await res.status(400).send({
+        success: false,
+        message: "This conversation does not exist.",
+      });
+    }
+
+    if (conversation.isGroup === false) {
+      return await res.status(400).send({
+        success: false,
+        message: "This is not a group conversation.",
+      });
+    }
+    if (!conversation.users.includes(userId)) {
+      return await res.status(400).send({
+        success: false,
+        message: "You are not a part of this group",
+      });
+    }
+
+    const newUsers = conversation.users.filter((ele) => {
+      if (ele.toString() !== userId) {
+        return ele;
+      }
+    });
+
+    conversation.users = newUsers;
+    await conversation.save();
+
+    //   remove this conversation from the users list of conversation
+
+    const newConversations = user.conversations.filter((ele) => {
+      if (ele.toString() !== conversationId.toString()) {
+        return ele;
+      }
+    });
+
+    user.conversations = newConversations;
+    await user.save();
+
+    return await res.status(200).send({
+      success: true,
+      messge: "You successfully left the group.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};

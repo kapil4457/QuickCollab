@@ -5,6 +5,8 @@ const {
   addUsersToConversationGroup,
   removeUsersFromConversationGroup,
   updateGroup,
+  deleteGroup,
+  leaveGroup,
 } = require("../controller/conversationController");
 
 const router = express.Router();
@@ -34,5 +36,11 @@ router
 router
   .route("/user/updatein/conversation/")
   .put(isAuthenticatedUser, authorizeRole("content-creator"), updateGroup);
+
+router
+  .route("/user/delete/conversation/:id")
+  .delete(isAuthenticatedUser, authorizeRole("content-creator"), deleteGroup);
+
+router.route("/user/leave/conversation/").put(isAuthenticatedUser, leaveGroup);
 
 module.exports = router;
