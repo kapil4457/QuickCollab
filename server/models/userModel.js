@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema({
       ref: "Project",
     },
   ],
-  creatorPlatform: [
+  socialPlatform: [
     {
       title: {
         type: String,

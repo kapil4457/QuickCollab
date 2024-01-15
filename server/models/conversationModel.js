@@ -11,6 +11,10 @@ const conversationSchema = new mongoose.Schema({
     default: new Date().toISOString(),
     required: true,
   },
+  groudAdmin: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: false,
+  },
   name: {
     type: String,
     required: false,

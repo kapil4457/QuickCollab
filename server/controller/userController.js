@@ -444,7 +444,6 @@ exports.getUserDetail = async (req, res) => {
         name: user.name,
         avatar: user.avatar,
         about: user.about,
-        creatorPlatforms: user.creatorPlatform,
       };
     } else if (user.role == "service-provider") {
       // If the requested user is a service-provider
@@ -460,7 +459,7 @@ exports.getUserDetail = async (req, res) => {
         message: "Internal Server error",
       });
     }
-
+    details.socialPlatforms = user.socialPlatform;
     return await res.status(200).send({
       success: true,
       details,
@@ -478,7 +477,7 @@ exports.addPlatforms = async (req, res) => {
     const user = await User.findById(req.user.id);
     let check = false;
 
-    user.creatorPlatform.map((ele) => {
+    user.socialPlatform.map((ele) => {
       if (ele.title.toLocaleLowerCase() === title.toLocaleLowerCase()) {
         check = true;
       }
@@ -495,7 +494,7 @@ exports.addPlatforms = async (req, res) => {
         message: "Title length should be in the range of 5-20.",
       });
     }
-    user.creatorPlatform.push({
+    user.socialPlatform.push({
       title,
       link,
     });
@@ -530,7 +529,7 @@ exports.updatePlatforms = async (req, res) => {
       });
     }
     let check = false;
-    for (ele of user.creatorPlatform) {
+    for (ele of user.socialPlatform) {
       if (ele._id.toString() === id.toString()) {
         check = true;
         break;
@@ -544,7 +543,7 @@ exports.updatePlatforms = async (req, res) => {
       });
     }
 
-    user.creatorPlatform.forEach((ele) => {
+    user.socialPlatform.forEach((ele) => {
       if (ele._id.toString() === id.toString()) {
         ele.title = title;
         ele.link = link;
@@ -575,7 +574,7 @@ exports.deletePlatforms = async (req, res) => {
     }
     const user = await User.findById(req.user.id);
     let check = false;
-    for (ele of user.creatorPlatform) {
+    for (ele of user.socialPlatform) {
       if (ele._id.toString() === id.toString()) {
         check = true;
         break;
@@ -588,11 +587,11 @@ exports.deletePlatforms = async (req, res) => {
         message: "No platform with this id is connected to your account",
       });
     }
-    const newLinks = user.creatorPlatform.filter((ele) => {
+    const newLinks = user.socialPlatform.filter((ele) => {
       if (ele._id.toString() !== id) return ele;
     });
 
-    user.creatorPlatform = newLinks;
+    user.socialPlatform = newLinks;
     await user.save();
     return await res.status(200).send({
       success: true,

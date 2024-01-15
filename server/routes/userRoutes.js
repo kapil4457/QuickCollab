@@ -46,26 +46,10 @@ router
   .route("/me/addplatforms")
   .post(isAuthenticatedUser, authorizeRole("content-creator"), addPlatforms);
 
-router
-  .route("/me/updateplatforms")
-  .post(isAuthenticatedUser, authorizeRole("content-creator"), updatePlatforms);
+router.route("/me/updateplatforms").post(isAuthenticatedUser, updatePlatforms);
 
 router
   .route("/me/deleteplatforms/:id")
-  .delete(
-    isAuthenticatedUser,
-    authorizeRole("content-creator"),
-    deletePlatforms
-  );
-// router
-//   .route("/admin/users")
-//   .get(isAuthenticatedUser, authorizeRole("admin"), getAllUsers);
+  .delete(isAuthenticatedUser, deletePlatforms);
 
-// router
-//   .route("/admin/delete/user/:id")
-//   .delete(isAuthenticatedUser, authorizeRole("admin"), deleteUser);
-
-// router
-//   .route("/admin/update/role")
-//   .put(isAuthenticatedUser, authorizeRole("admin"), changeUserRole);
 module.exports = router;
