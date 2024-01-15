@@ -23,14 +23,14 @@ app.use(cookieParser());
 const user = require("./routes/userRoutes");
 const project = require("./routes/projectRoutes");
 const converastion = require("./routes/conversationRoutes");
+const message = require("./routes/messageRoutes");
 // const conversation = require("./routes/conversationRoutes");
 // const message = require("./routes/messageRoutes");
 
 app.use("/api/v1/", user);
 app.use("/api/v1/", project);
 app.use("/api/v1/", converastion);
-// app.use("/api/v1/", conversation);
-// app.use("/api/v1/", message);
+app.use("/api/v1/", message);
 //Exception Handeling
 process.on("uncaughtException", (err) => {
   console.log(err.message);
