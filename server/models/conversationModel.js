@@ -11,7 +11,7 @@ const conversationSchema = new mongoose.Schema({
     default: new Date().toISOString(),
     required: true,
   },
-  groudAdmin: {
+  groupAdmin: {
     type: mongoose.Schema.Types.ObjectId,
     required: false,
   },
