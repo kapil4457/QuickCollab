@@ -1,11 +1,11 @@
 const User = require("../models/userModel");
+const Cloudinary = require("../models/cloudinaryModel");
 const ResetPassword = require("../models/resetPasswordModel");
 const sendToken = require("../utils/jwtToken");
 var validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
 const sendMail = require("../utils/sendMail");
-// const cloudinary = require("cloudinary");
-
+// import { v2 as cloudinary } from "cloudinary";
 /* Code Mapping */
 // 1 ==> email
 // 2 ==> google
@@ -17,9 +17,14 @@ const sendMail = require("../utils/sendMail");
 
 exports.registerUser = async (req, res, next) => {
   try {
-    const { name, email, password, avatar, role } = req.body;
-
-    if (name === "" || email === "" || password === "" || role === "") {
+    let { name, email, password, avatar, role } = req.body;
+    if (
+      name === "" ||
+      email === "" ||
+      password === "" ||
+      role === "" ||
+      !avatar
+    ) {
       return await res
         .status(401)
         .send({ success: false, message: "Please fill in all the details !!" });
@@ -57,16 +62,18 @@ exports.registerUser = async (req, res, next) => {
         message: "An account already exists with this email id",
       });
     }
+
+    const Image = await Cloudinary.create(avatar);
     const user = await User.create({
       name,
       email,
       password,
       role,
-      avatar,
+      avatar: Image._id,
       role,
       modeOfLogin: 1,
     });
-
+    await user.populate("avatar");
     sendToken(user, 201, res, "Registration successfully");
   } catch (err) {
     await res.send({ success: false, message: err.message });
