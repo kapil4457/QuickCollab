@@ -29,7 +29,6 @@ const SignUpPage = () => {
       "GET",
       "/api/v1/get-signature?folder=profile_pics"
     );
-    // console.log("hello : ", signatureRequest);
     formData2.append("signature", signatureRequest.data.signature);
     formData2.append("timestamp", signatureRequest.data.timestamp);
     formData2.append("api_key", api_key as string);
@@ -67,8 +66,13 @@ const SignUpPage = () => {
     };
 
     const res = await requestHandler(info, "POST", "/api/v1/sign-up");
-    console.log(res);
+    if (res.success === true) {
+      toast.success(res.message);
+    } else {
+      toast.error(res.message);
+    }
   }
+
   return (
     <div className="h-[100%] w-full flex justify-center items-center">
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 lg:px-8">
