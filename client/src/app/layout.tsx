@@ -5,6 +5,7 @@ import NavBar from "@/components/NavBar/NavBar";
 // import { Toaster } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import AuthProvider from "./(main)/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,9 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <NavBar />
-        {children}
-        <ToastContainer position="bottom-right" />
+        <AuthProvider>
+          <NavBar />
+          {children}
+          <ToastContainer position="bottom-right" />
+        </AuthProvider>
       </body>
     </html>
   );

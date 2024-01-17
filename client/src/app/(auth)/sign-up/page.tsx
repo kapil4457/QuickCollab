@@ -13,7 +13,7 @@ import {
 import requestHandler from "@/utils/requestHelper";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+import { signIn } from "next-auth/react";
 const SignUpPage = () => {
   async function submitHandler(formData: FormData) {
     // Uplading the image
@@ -55,6 +55,7 @@ const SignUpPage = () => {
       url: data.url,
       folder: data.folder,
       original_filename: data.original_filename,
+      isGoogleAuthImage: false,
     };
     console.log(data);
     const info = {
@@ -73,15 +74,21 @@ const SignUpPage = () => {
     }
   }
 
+  const googleHandler = async (e) => {
+    e.preventDefault();
+    // const role = document.getElementsByName("role")[0]?.value;
+    // if (!role) {
+    //   toast.error("Please select a role.");
+    //   return;
+    // }
+
+    await signIn("google");
+  };
+
   return (
     <div className="h-[100%] w-full flex justify-center items-center">
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          {/* <img
-            className="mx-auto h-10 w-auto"
-            src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-            alt="Your Company"
-          /> */}
           <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
             Create an account
           </h2>
@@ -212,6 +219,7 @@ const SignUpPage = () => {
           <Button
             variant={"default"}
             className="w-full flex justify-center items-center gap-2"
+            onClick={googleHandler}
           >
             <GoogleIcon />
             <span>Sign-Up with Google</span>

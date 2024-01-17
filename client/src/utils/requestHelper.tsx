@@ -3,7 +3,10 @@ import axios from "axios";
 
 const getHandler = async (url: string) => {
   try {
-    const { data } = await axios.get(`http://localhost:8000${url}`);
+    const config = {
+      withCredentials: true,
+    };
+    const { data } = await axios.get(`http://localhost:8000${url}`, config);
     return {
       success: true,
       data,
@@ -17,6 +20,8 @@ const postHandler = async (url: string, info: any) => {
   try {
     console.log("info", info);
     const config = {
+      // credentials: "include",
+      withCredentials: true,
       headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
