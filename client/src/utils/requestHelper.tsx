@@ -3,25 +3,24 @@ import axios from "axios";
 
 const getHandler = async (url: string) => {
   try {
-    const config = {
-      withCredentials: true,
-    };
-    const { data } = await axios.get(`http://localhost:8000${url}`, config);
+    // const config = {
+    //   withCredentials: true,
+    // };
+    const { data } = await axios.get(`http://localhost:8000${url}`);
     return {
       success: true,
       data,
     };
   } catch (err) {
-    const { success, message } = err.response;
+    const { success, message } = err.response.data;
     return { success: success, message: message };
   }
 };
 const postHandler = async (url: string, info: any) => {
   try {
-    console.log("info", info);
     const config = {
       // credentials: "include",
-      withCredentials: true,
+      // withCredentials: true,
       headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
@@ -31,7 +30,6 @@ const postHandler = async (url: string, info: any) => {
     );
     return data;
   } catch (err) {
-    console.log(err);
     const { data } = err.response;
     return { success: data.success, message: data.message };
   }
@@ -41,7 +39,6 @@ const requestHandler = async (
   requestType: "POST" | "GET",
   url: string
 ) => {
-  console.log("Inside the request handler...");
   if (requestType === "POST") {
     const res = await postHandler(url, data);
     if (res.success === true) {

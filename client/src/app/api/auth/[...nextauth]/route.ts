@@ -1,8 +1,9 @@
 import axios from "axios";
-import NextAuth, { Account, AuthOptions, Profile, User } from "next-auth";
+import NextAuth, { AuthOptions, Profile, User } from "next-auth";
 import { AdapterUser } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
-
+import { cookies } from "next/headers";
+import CredentialsProvider from "next-auth/providers/credentials";
 export const authOptions: AuthOptions = {
   session: {
     strategy: "jwt",
@@ -12,6 +13,33 @@ export const authOptions: AuthOptions = {
       clientId: process.env.NEXT_AUTH_GOOGLE_CLIENT as string,
       clientSecret: process.env.NEXT_AUTH_GOOGLE_SECRET as string,
     }),
+    // CredentialsProvider({
+    //   name: "credentials",
+    //   credentials: {
+    //     email: {
+    //       label: "email",
+    //       type: "text",
+    //     },
+    //     password: {
+    //       label: "password",
+    //       type: "password",
+    //     },
+    //   },
+    //   async authorize(credentials) {
+    //     const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/sign-up-google`;
+    //     const info = {
+    //       email: credentials?.email,
+    //       password: credentials?.password,
+    //     };
+    //     const { data } = await axios.post(url, info, {
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //     });
+    //     console.log(data);
+    //     return data;
+    //   },
+    // }),
   ],
   callbacks: {
     async signIn({
@@ -52,14 +80,16 @@ export const authOptions: AuthOptions = {
       //   return data.json();
       // });
 
-      const res2 = await axios.post(url, info, {
-        withCredentials: true,
+      const { data } = await axios.post(url, info, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-      // console.log(res2.headers["set-cookie"]);
-      return res2;
+      cookies().set("token", data.token, {
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      });
+
+      return data;
     },
   },
 };

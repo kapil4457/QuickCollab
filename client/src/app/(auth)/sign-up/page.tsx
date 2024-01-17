@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/select";
 import requestHandler from "@/utils/requestHelper";
 import axios from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+
 import { signIn } from "next-auth/react";
+import toast from "react-hot-toast";
 const SignUpPage = () => {
   async function submitHandler(formData: FormData) {
     // Uplading the image
@@ -33,7 +35,20 @@ const SignUpPage = () => {
     formData2.append("timestamp", signatureRequest.data.timestamp);
     formData2.append("api_key", api_key as string);
 
-    toast.success("Uploading the Picture");
+    // Check if the user already exists
+
+    const checkEmail = formData.get("email");
+    const checkUrl = `/api/v1/check/user?email=${checkEmail}`;
+
+    const check = await requestHandler({}, "GET", checkUrl);
+    console.log("check : ", check);
+    if (check.success == false) {
+      console.log(check);
+      toast.error(check.message);
+      return;
+    }
+
+    // toast.success("Uploading the Picture");
     const { data } = await axios.post(
       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData2
@@ -57,7 +72,6 @@ const SignUpPage = () => {
       original_filename: data.original_filename,
       isGoogleAuthImage: false,
     };
-    console.log(data);
     const info = {
       name: formData.get("name"),
       email: formData.get("email"),
@@ -66,11 +80,11 @@ const SignUpPage = () => {
       avatar: image,
     };
 
-    const res = await requestHandler(info, "POST", "/api/v1/sign-up");
-    if (res.success === true) {
-      toast.success(res.message);
+    const res = await axios.post("/api/register", info);
+    if (res.data.success === true) {
+      toast.success(res.data.message);
     } else {
-      toast.error(res.message);
+      toast.error(res.data.message);
     }
   }
 

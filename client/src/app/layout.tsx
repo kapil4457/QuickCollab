@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/NavBar/NavBar";
-// import { Toaster } from "react-hot-toast";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
 import AuthProvider from "./(main)/AuthProvider";
-
+import { Toaster } from "react-hot-toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -25,7 +22,7 @@ export default function RootLayout({
         <AuthProvider>
           <NavBar />
           {children}
-          <ToastContainer position="bottom-right" />
+          <Toaster reverseOrder={false} position="top-center" />
         </AuthProvider>
       </body>
     </html>
