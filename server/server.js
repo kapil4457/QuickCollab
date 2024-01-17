@@ -9,19 +9,19 @@ const cookieParser = require("cookie-parser");
 dotenv.config({
   path: __dirname + "/.env",
 });
+// app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
+app.use(cookieParser());
 // Connect to the database
 const connectDb = require("./database");
 connectDb();
 
 // middlewares
+// app.use(cors({ origin: process.env.FRONT_END_URL, credentials: true }));
+app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json({ limit: "50mb" }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
-app.use(cors());
-app.use(cookieParser());
-// app.use(express.json({ limit: "5mb", extended: true }));
-// app.use(express.urlencoded({ limit: "5mb", extended: true }));
 
 // Router
 const user = require("./routes/userRoutes");
@@ -29,8 +29,6 @@ const project = require("./routes/projectRoutes");
 const converastion = require("./routes/conversationRoutes");
 const message = require("./routes/messageRoutes");
 const cloudinary = require("./routes/cloudinaryRoutes");
-// const conversation = require("./routes/conversationRoutes");
-// const message = require("./routes/messageRoutes");
 
 app.use("/api/v1/", user);
 app.use("/api/v1/", project);

@@ -82,25 +82,37 @@ exports.registerUser = async (req, res, next) => {
 
 exports.googleRegisterUser = async (req, res) => {
   try {
-    const { email, avatar, name, role } = req.body;
-
+    const info = req.body;
+    const { email, avatar, name, role } = info;
     const user = await User.findOne({
       email: email,
     });
     if (user) {
-      sendToken(user, 200, res, "Logged in Successfully");
+      if (user.modeOfLogin === 1) {
+        user.modeOfLogin = 3;
+        await user.save();
+      }
+      return sendToken(user, 200, res, "Logged in Successfully");
     }
-    if (role !== "content-creator" && role !== "service-provider") {
+    if (
+      role !== "content-creator" &&
+      role !== "service-provider" &&
+      role !== "not-decided"
+    ) {
       return await res.status(500).send({
         success: false,
         message: "Internal Server Error",
       });
     }
 
+    const Image = await Cloudinary.create({
+      url: avatar.url,
+      isGoogleAuthImage: avatar.isGoogleAuthImage,
+    });
     const newUser = await User.create({
       name,
       email,
-      avatar,
+      avatar: Image._id,
       role,
       modeOfLogin: 2,
     });
