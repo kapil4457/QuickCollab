@@ -3,7 +3,6 @@ import NextAuth, { AuthOptions, Profile, User } from "next-auth";
 import { AdapterUser } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import { cookies } from "next/headers";
-import CredentialsProvider from "next-auth/providers/credentials";
 export const authOptions: AuthOptions = {
   session: {
     strategy: "jwt",
@@ -88,7 +87,6 @@ export const authOptions: AuthOptions = {
       cookies().set("token", data.token, {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
-
       return data;
     },
   },

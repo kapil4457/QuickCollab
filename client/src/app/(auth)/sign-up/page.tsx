@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import GoogleIcon from "@mui/icons-material/Google";
 import {
   Select,
@@ -12,12 +12,22 @@ import {
 } from "@/components/ui/select";
 import requestHandler from "@/utils/requestHelper";
 import axios from "axios";
-// import { toast } from "react-toastify";
-
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
+import Loader from "@/components/Loader/Loader";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { setUserData } from "@/redux/slices/userSlice";
 const SignUpPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { data, status } = useSession();
+  const { isAuthenticated } = useAppSelector((state) => state.userSlice.value);
+  const dispatch = useDispatch();
+
   async function submitHandler(formData: FormData) {
+    setIsLoading(true);
     // Uplading the image
     const file = formData.get("avatar") as File;
     //api.cloudinary.com/v1_1/:cloud_name/image/upload
@@ -43,7 +53,7 @@ const SignUpPage = () => {
     const check = await requestHandler({}, "GET", checkUrl);
     console.log("check : ", check);
     if (check.success == false) {
-      console.log(check);
+      setIsLoading(false);
       toast.error(check.message);
       return;
     }
@@ -80,10 +90,30 @@ const SignUpPage = () => {
       avatar: image,
     };
 
-    const res = await axios.post("/api/register", info);
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register`,
+      info,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     if (res.data.success === true) {
+      setIsLoading(false);
       toast.success(res.data.message);
+      dispatch(
+        setUserData({
+          user: res?.data?.user,
+          success: res?.data?.success,
+          message: res?.data?.message,
+          isGoogleLogin: false,
+          loading: false,
+        })
+      );
     } else {
+      setIsLoading(false);
       toast.error(res.data.message);
     }
   }
@@ -99,8 +129,26 @@ const SignUpPage = () => {
     await signIn("google");
   };
 
+  useEffect(() => {
+    if (isAuthenticated === true) {
+      router.push("/");
+    }
+    if (status === "authenticated") {
+      dispatch(
+        setUserData({
+          user: data?.user,
+          success: true,
+          message: "Logged in successfully !!",
+          isGoogleLogin: true,
+          loading: false,
+        })
+      );
+      router.push("/");
+    }
+  }, [status, isAuthenticated]);
   return (
     <div className="h-[100%] w-full flex justify-center items-center">
+      {isLoading === true ? <Loader /> : ""}
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">

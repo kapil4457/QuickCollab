@@ -1,14 +1,25 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import GoogleIcon from "@mui/icons-material/Google";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import Loader from "@/components/Loader/Loader";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setUserData } from "@/redux/slices/userSlice";
+import { useAppSelector } from "@/redux/store";
 
 const SignInPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { data, status } = useSession();
+  const { isAuthenticated } = useAppSelector((state) => state.userSlice.value);
+  const dispatch = useDispatch();
   const submitHandler = async (formData: FormData) => {
+    setIsLoading(true);
     const email = formData.get("email");
     const password = formData.get("password");
     const info = {
@@ -16,16 +27,55 @@ const SignInPage = () => {
       password,
     };
 
-    const res = await axios.post("/api/login", info);
-
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/sign-in`,
+      info,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     if (res?.data?.success === true) {
+      setIsLoading(false);
+      dispatch(
+        setUserData({
+          user: res?.data?.user,
+          success: res?.data?.success,
+          message: res?.data?.message,
+          isGoogleLogin: false,
+          loading: false,
+        })
+      );
       toast.success(res?.data?.message);
     } else {
+      setIsLoading(false);
       toast.error(res?.data?.message);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/");
+    }
+    if (status === "authenticated") {
+      dispatch(
+        setUserData({
+          user: data?.user,
+          success: true,
+          message: "Logged in successfully !!",
+          isGoogleLogin: true,
+          loading: false,
+        })
+      );
+      router.push("/");
+    }
+  }, [status, isAuthenticated]);
   return (
     <div className="h-[90vh] w-full flex justify-center items-center">
+      {isLoading === true ? <Loader /> : ""}
+
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
