@@ -25,7 +25,7 @@ export const userSlice = createSlice({
   reducers: {
     setUserData: (state, action) => {
       const { user, success, message, loading } = action.payload;
-      console.log("I am in");
+      // console.log("I am in");
       state.value.loading = loading;
       state.value.message = message;
       state.value.user = user;

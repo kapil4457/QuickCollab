@@ -129,7 +129,7 @@ const SignUpPage = () => {
     }
   }, [isAuthenticated]);
   return (
-    <div className="h-[100%] w-full flex justify-center items-center">
+    <div className="h-[100%] w-full flex justify-center items-center lg:mt-32 md:mt-24 mt-10 mb-10">
       {isLoading === true ? <Loader /> : ""}
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">

@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { ReduxProvider } from "@/redux/provider";
 import NavBar from "@/components/NavBar/NavBar";
+import { ThemeProvider } from "@/components/theme-provider";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,11 +21,18 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ReduxProvider>
-          <NavBar />
-          {children}
-          <Toaster reverseOrder={false} position="top-center" />
-        </ReduxProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReduxProvider>
+            <NavBar />
+            {children}
+            <Toaster reverseOrder={false} position="top-center" />
+          </ReduxProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
