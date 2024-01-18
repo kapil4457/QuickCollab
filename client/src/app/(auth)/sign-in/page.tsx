@@ -1,9 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import GoogleIcon from "@mui/icons-material/Google";
-import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import Loader from "@/components/Loader/Loader";
@@ -11,47 +8,43 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/redux/slices/userSlice";
 import { useAppSelector } from "@/redux/store";
+import requestHandler from "@/utils/requestHelper";
 
 const SignInPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { data, status } = useSession();
   const { isAuthenticated } = useAppSelector((state) => state.userSlice.value);
   const dispatch = useDispatch();
   const submitHandler = async (formData: FormData) => {
-    setIsLoading(true);
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const info = {
-      email,
-      password,
-    };
+    try {
+      setIsLoading(true);
+      const email = formData.get("email");
+      const password = formData.get("password");
+      const info = {
+        email,
+        password,
+      };
 
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/sign-in`,
-      info,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const url = `/api/v1/sign-in`;
+      const data = await requestHandler(info, "POST", url);
+      if (data?.success === true) {
+        setIsLoading(false);
+        dispatch(
+          setUserData({
+            user: data?.user,
+            success: data?.success,
+            message: data?.message,
+            loading: false,
+            isAuthenticated: true,
+          })
+        );
+        toast.success(data?.message);
+      } else {
+        setIsLoading(false);
+        toast.error(data?.message);
       }
-    );
-    if (res?.data?.success === true) {
-      setIsLoading(false);
-      dispatch(
-        setUserData({
-          user: res?.data?.user,
-          success: res?.data?.success,
-          message: res?.data?.message,
-          isGoogleLogin: false,
-          loading: false,
-        })
-      );
-      toast.success(res?.data?.message);
-    } else {
-      setIsLoading(false);
-      toast.error(res?.data?.message);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -59,19 +52,7 @@ const SignInPage = () => {
     if (isAuthenticated) {
       router.push("/");
     }
-    if (status === "authenticated") {
-      dispatch(
-        setUserData({
-          user: data?.user,
-          success: true,
-          message: "Logged in successfully !!",
-          isGoogleLogin: true,
-          loading: false,
-        })
-      );
-      router.push("/");
-    }
-  }, [status, isAuthenticated]);
+  }, [isAuthenticated]);
   return (
     <div className="h-[90vh] w-full flex justify-center items-center">
       {isLoading === true ? <Loader /> : ""}
@@ -142,15 +123,7 @@ const SignInPage = () => {
               </button>
             </div>
           </form>
-          <div className="w-full border border-solid border-gray/10 mt-5 mb-5 relative" />
-          <Button
-            variant={"default"}
-            className="w-full flex justify-center items-center gap-2"
-            onClick={() => signIn("google")}
-          >
-            <GoogleIcon />
-            <span>Sign-in with Google</span>
-          </Button>
+
           <p className="mt-10 text-center text-sm text-gray-500">
             Not a member?{" "}
             <Link

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "./(main)/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ReduxProvider } from "@/redux/provider";
+import NavBar from "@/components/NavBar/NavBar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -20,10 +20,9 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ReduxProvider>
-          <AuthProvider>
-            {children}
-            <Toaster reverseOrder={false} position="top-center" />
-          </AuthProvider>
+          <NavBar />
+          {children}
+          <Toaster reverseOrder={false} position="top-center" />
         </ReduxProvider>
       </body>
     </html>

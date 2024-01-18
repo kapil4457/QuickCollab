@@ -1,18 +1,16 @@
 "use client";
 import axios from "axios";
+import { ErrorProps } from "next/error";
 
 const getHandler = async (url: string) => {
   try {
-    // const config = {
-    //   withCredentials: true,
-    // };
-    const { data } = await axios.get(`http://localhost:8000${url}`);
-    return {
-      success: true,
-      data,
+    const config = {
+      withCredentials: true,
     };
+    const { data } = await axios.get(`http://localhost:8000${url}`, config);
+    return data;
   } catch (err) {
-    const { success, message } = err.response.data;
+    const { message, success } = err.response.data;
     return { success: success, message: message };
   }
 };
@@ -20,18 +18,18 @@ const postHandler = async (url: string, info: any) => {
   try {
     const config = {
       // credentials: "include",
-      // withCredentials: true,
+      withCredentials: true,
       headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      `http://localhost:8000${url}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`,
       info,
       config
     );
     return data;
   } catch (err) {
-    const { data } = err.response;
-    return { success: data.success, message: data.message };
+    const { message, success } = err.response.data;
+    return { success: success, message: message };
   }
 };
 const requestHandler = async (

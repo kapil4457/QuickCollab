@@ -7,66 +7,59 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import requestHandler from "@/utils/requestHelper";
 import { setUserData } from "@/redux/slices/userSlice";
-import { signOut, useSession } from "next-auth/react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CONTENT_CREATOR, SERVICE_PROVIDER } from "@/utils/roles";
 
 const NavBar = () => {
   const dispatch = useDispatch();
-  const { data: Data, status } = useSession();
-  let isLoggedIn = false;
-  let userType = "content-creator";
   const router = useRouter();
-  const { isAuthenticated } = useAppSelector((state) => state.userSlice.value);
+  const { isAuthenticated, user } = useAppSelector(
+    (state) => state.userSlice.value
+  );
 
   const dataFetch = async () => {
-    console.log("status  : ", status);
-    dispatch(
-      setUserData({
-        user: null,
-        success: false,
-        message: "",
-        loading: true,
-      })
-    );
-    if (status === "authenticated") {
+    try {
       dispatch(
         setUserData({
-          user: Data.user,
-          success: true,
+          user: null,
+          success: false,
           message: "",
-          loading: false,
+          loading: true,
         })
       );
-    }
 
-    var { data } = await requestHandler({}, "GET", "/api/v1/me");
-    if (data?.success) {
-      dispatch(
-        setUserData({
-          user: data?.user,
-          success: data?.success,
-          message: data?.message,
-          loading: false,
-        })
-      );
-    }
+      var data = await requestHandler({}, "GET", "/api/v1/me");
+      // console.clear();
+      if (data?.success) {
+        dispatch(
+          setUserData({
+            user: data?.user,
+            success: data?.success,
+            message: data?.message,
+            isAuthenticated: true,
+            loading: false,
+          })
+        );
+      }
+    } catch (err) {}
   };
 
   const logoutHandler = async () => {
-    if (status === "authenticated") {
-      signOut();
-      toast.success("Logged out successfully.");
-      return;
-    }
     if (isAuthenticated) {
       const { data } = await axios.post("/api/logout");
       toast.success(data.message);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     }
   };
   useEffect(() => {
-    dataFetch();
-  }, [status]);
+    if (!isAuthenticated) {
+      dataFetch();
+    }
+  }, [isAuthenticated]);
   return (
     <div className="h-[10vh] w-full  top-0 flex justify-center">
       <div className="w-[95%] h-full flex justify-between  items-center p-2">
@@ -82,27 +75,27 @@ const NavBar = () => {
           <Link href="/">
             <Button variant={"outline"}>Home</Button>
           </Link>
-          {isLoggedIn ? (
-            <>
-              {userType == "content-creator" ? (
-                <Link href="/projects">
-                  <Button variant={"outline"}>Explore Projects</Button>
-                </Link>
-              ) : (
-                <Link href="/hire">
-                  <Button variant={"outline"}>Hire</Button>
-                </Link>
-              )}
-            </>
+          {isAuthenticated && user && user.role === SERVICE_PROVIDER ? (
+            <Link href="/projects">
+              <Button variant={"outline"}>Explore Projects</Button>
+            </Link>
+          ) : (
+            <></>
+          )}
+          {isAuthenticated && user && user.role === CONTENT_CREATOR ? (
+            <Link href="/hire">
+              <Button variant={"outline"}>Hire</Button>
+            </Link>
           ) : (
             <></>
           )}
 
           {isAuthenticated ? (
             <>
-              <Link href="/account">
-                <Button variant={"outline"}>Account</Button>
-              </Link>
+              <Avatar>
+                <AvatarImage src={user?.avatar?.url} />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
               <Button variant={"destructive"} onClick={logoutHandler}>
                 Logout
               </Button>

@@ -1,8 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import GoogleIcon from "@mui/icons-material/Google";
 import {
   Select,
   SelectContent,
@@ -12,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import requestHandler from "@/utils/requestHelper";
 import axios from "axios";
-import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import Loader from "@/components/Loader/Loader";
 import { useRouter } from "next/navigation";
@@ -22,7 +19,6 @@ import { setUserData } from "@/redux/slices/userSlice";
 const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { data, status } = useSession();
   const { isAuthenticated } = useAppSelector((state) => state.userSlice.value);
   const dispatch = useDispatch();
 
@@ -41,8 +37,8 @@ const SignUpPage = () => {
       "GET",
       "/api/v1/get-signature?folder=profile_pics"
     );
-    formData2.append("signature", signatureRequest.data.signature);
-    formData2.append("timestamp", signatureRequest.data.timestamp);
+    formData2.append("signature", signatureRequest.signature);
+    formData2.append("timestamp", signatureRequest.timestamp);
     formData2.append("api_key", api_key as string);
 
     // Check if the user already exists
@@ -51,13 +47,19 @@ const SignUpPage = () => {
     const checkUrl = `/api/v1/check/user?email=${checkEmail}`;
 
     const check = await requestHandler({}, "GET", checkUrl);
-    console.log("check : ", check);
     if (check.success == false) {
       setIsLoading(false);
       toast.error(check.message);
       return;
     }
 
+    toast.loading("Registration initialized...", {
+      duration: 2000,
+      style: {
+        backgroundColor: "orange",
+        color: "white",
+      },
+    });
     // toast.success("Uploading the Picture");
     const { data } = await axios.post(
       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -80,7 +82,6 @@ const SignUpPage = () => {
       url: data.url,
       folder: data.folder,
       original_filename: data.original_filename,
-      isGoogleAuthImage: false,
     };
     const info = {
       name: formData.get("name"),
@@ -90,62 +91,43 @@ const SignUpPage = () => {
       avatar: image,
     };
 
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register`,
-      info,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (res.data.success === true) {
+    // const res = await axios.post(
+    //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/sign-up`,
+    //   info,
+
+    //   {
+    //     withCredentials: true,
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }
+
+    //   // "POST",
+    // );
+    const res = await requestHandler(info, "POST", "/api/v1/sign-up");
+
+    if (res.success === true) {
       setIsLoading(false);
-      toast.success(res.data.message);
+      toast.success(res.message);
       dispatch(
         setUserData({
-          user: res?.data?.user,
-          success: res?.data?.success,
-          message: res?.data?.message,
-          isGoogleLogin: false,
+          user: res?.user,
+          success: res?.success,
+          message: res?.message,
           loading: false,
         })
       );
     } else {
       setIsLoading(false);
-      toast.error(res.data.message);
+      toast.error(res.message);
     }
   }
-
-  const googleHandler = async (e) => {
-    e.preventDefault();
-    // const role = document.getElementsByName("role")[0]?.value;
-    // if (!role) {
-    //   toast.error("Please select a role.");
-    //   return;
-    // }
-
-    await signIn("google");
-  };
 
   useEffect(() => {
     if (isAuthenticated === true) {
       router.push("/");
     }
-    if (status === "authenticated") {
-      dispatch(
-        setUserData({
-          user: data?.user,
-          success: true,
-          message: "Logged in successfully !!",
-          isGoogleLogin: true,
-          loading: false,
-        })
-      );
-      router.push("/");
-    }
-  }, [status, isAuthenticated]);
+  }, [isAuthenticated]);
   return (
     <div className="h-[100%] w-full flex justify-center items-center">
       {isLoading === true ? <Loader /> : ""}
@@ -223,6 +205,27 @@ const SignUpPage = () => {
                 />
               </div>
             </div>
+
+            <div>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="avatar"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Profile Image
+                </label>
+              </div>
+              <div className="mt-2">
+                <input
+                  id="avatar"
+                  name="avatar"
+                  type="file"
+                  autoComplete="current-avatar"
+                  required
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                />
+              </div>
+            </div>
             <div>
               <div className="flex items-center justify-between">
                 <label
@@ -248,27 +251,6 @@ const SignUpPage = () => {
             </div>
 
             <div>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="avatar"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Profile Image
-                </label>
-              </div>
-              <div className="mt-2">
-                <input
-                  id="avatar"
-                  name="avatar"
-                  type="file"
-                  autoComplete="current-avatar"
-                  required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
-                />
-              </div>
-            </div>
-
-            <div>
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -277,15 +259,6 @@ const SignUpPage = () => {
               </button>
             </div>
           </form>
-          <div className="w-full border border-solid border-gray/10 mt-5 mb-5 relative" />
-          <Button
-            variant={"default"}
-            className="w-full flex justify-center items-center gap-2"
-            onClick={googleHandler}
-          >
-            <GoogleIcon />
-            <span>Sign-Up with Google</span>
-          </Button>
           <p className="mt-10 text-center text-sm text-gray-500">
             Already have an account?{" "}
             <Link
