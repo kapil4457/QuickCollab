@@ -5,11 +5,6 @@ const sendToken = require("../utils/jwtToken");
 var validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
 const sendMail = require("../utils/sendMail");
-// import { v2 as cloudinary } from "cloudinary";
-/* Code Mapping */
-// 1 ==> email
-// 2 ==> google
-// 3 ==> email and google
 
 /* Roles */
 // content-creator
@@ -71,8 +66,8 @@ exports.registerUser = async (req, res, next) => {
       role,
       avatar: Image._id,
       role,
-      modeOfLogin: 1,
     });
+
     await user.populate("avatar");
     sendToken(user, 201, res, "Registration successfully");
   } catch (err) {
@@ -103,53 +98,6 @@ exports.checkUser = async (req, res, next) => {
   }
 };
 
-exports.googleRegisterUser = async (req, res) => {
-  try {
-    const info = req.body;
-    const { email, avatar, name, role } = info;
-    const user = await User.findOne({
-      email: email,
-    });
-    if (user) {
-      if (user.modeOfLogin === 1) {
-        user.modeOfLogin = 3;
-        await user.save();
-      }
-      sendToken(user, 200, res, "Logged in Successfully");
-      return;
-    }
-    if (
-      role !== "content-creator" &&
-      role !== "service-provider" &&
-      role !== "not-decided"
-    ) {
-      return await res.status(500).send({
-        success: false,
-        message: "Internal Server Error",
-      });
-    }
-
-    const Image = await Cloudinary.create({
-      url: avatar.url,
-      isGoogleAuthImage: avatar.isGoogleAuthImage,
-    });
-    const newUser = await User.create({
-      name,
-      email,
-      avatar: Image._id,
-      role,
-      modeOfLogin: 2,
-    });
-
-    sendToken(newUser, 201, res, "Registration Successfully !!");
-  } catch (err) {
-    await res.send({
-      success: false,
-      message: err.message,
-    });
-  }
-};
-
 exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -170,12 +118,6 @@ exports.loginUser = async (req, res, next) => {
       return await res.status(400).send({
         success: false,
         message: "Email or password is wrong!!",
-      });
-    }
-    if (user.modeOfLogin === 2) {
-      return await res.status(400).send({
-        success: false,
-        message: "Please set a password using 'Reset password' to continue.",
       });
     }
 
@@ -222,7 +164,7 @@ exports.getUserDetails = async (req, res) => {
         message: "Please login to access this.",
       });
     }
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).populate("avatar");
 
     return await res.status(200).send({
       success: true,
@@ -435,23 +377,19 @@ exports.resetPassword = async (req, res) => {
 
     const user = await token.userId;
     const thisUser = await User.findById(user._id);
-    if (thisUser.modeOfLogin == 1 || thisUser.modeOfLogin == 3) {
-      if (
-        (await thisUser.comparePassword(newPassword)) === true ||
-        (await thisUser.previousPasswordCheck(newPassword)) == true
-      ) {
-        return await res.status(400).send({
-          success: false,
-          message:
-            "New password can not be same as a previously used password.",
-        });
-      }
+
+    if (
+      (await thisUser.comparePassword(newPassword)) === true ||
+      (await thisUser.previousPasswordCheck(newPassword)) == true
+    ) {
+      return await res.status(400).send({
+        success: false,
+        message: "New password can not be same as a previously used password.",
+      });
     }
+
     thisUser.previousPasswords.push(thisUser.password);
     thisUser.password = newPassword;
-    if (user.modeOfLogin == 2) {
-      thisUser.modeOfLogin = 3;
-    }
     thisUser.updatedAt = new Date().toISOString();
 
     await thisUser.save();
@@ -472,7 +410,7 @@ exports.getUserDetail = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("avatar");
     if (!user) {
       return await res.status(400).send({
         success: false,

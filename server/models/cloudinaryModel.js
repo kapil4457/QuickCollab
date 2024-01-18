@@ -3,52 +3,52 @@ const mongoose = require("mongoose");
 const cloudinarySchema = new mongoose.Schema({
   asset_id: {
     type: String,
-    required: false,
+    required: true,
   },
   public_id: {
     type: String,
-    required: false,
+    required: true,
   },
   version: {
     type: String,
-    required: false,
+    required: true,
   },
   version_id: {
     type: String,
-    required: false,
+    required: true,
   },
   signature: {
     type: String,
-    required: false,
+    required: true,
   },
 
   width: {
     type: Number,
-    required: false,
+    required: true,
   },
   height: {
     type: Number,
-    required: false,
+    required: true,
   },
   format: {
     type: String,
-    required: false,
+    required: true,
   },
   resource_type: {
     type: String,
-    required: false,
+    required: true,
   },
   created_at: {
     type: String,
-    required: false,
+    required: true,
   },
   type: {
     type: String,
-    required: false,
+    required: true,
   },
   etag: {
     type: String,
-    required: false,
+    required: true,
   },
   url: {
     type: String,
@@ -56,14 +56,10 @@ const cloudinarySchema = new mongoose.Schema({
   },
   folder: {
     type: String,
-    required: false,
+    required: true,
   },
   original_filename: {
     type: String,
-    required: false,
-  },
-  isGoogleAuthImage: {
-    type: Boolean,
     required: true,
   },
 });

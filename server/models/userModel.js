@@ -16,10 +16,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
-  modeOfLogin: {
-    type: Number,
-    required: true,
-  },
+
   avatar: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Cloudinary",

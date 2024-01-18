@@ -21,7 +21,7 @@ const router = express.Router();
 
 router.route("/sign-up").post(registerUser);
 router.route("/check/user").get(checkUser);
-router.route("/sign-up-google").post(googleRegisterUser);
+// router.route("/sign-up-google").post(googleRegisterUser);
 
 router.route("/sign-in").post(loginUser);
 
