@@ -1,17 +1,20 @@
 //Token creaton and saving in cookies
 
 const sendToken = async (user, statusCode, res, message) => {
-  const token = user.getJWTTokens();
+  const token = await user.getJWTTokens();
 
   //options for cookie
 
   const option = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    // signed true,
+    // secure: true,
+    // signed: true,
+    sameSite: "lax",
   };
-
-  await res.status(statusCode).cookie("token", token, option).json({
+  res.cookie("token", token, option);
+  // console.log(res);
+  await res.status(statusCode).cookie("token", token, option).send({
     success: true,
     user,
     token,

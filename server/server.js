@@ -2,26 +2,40 @@ const express = require("express");
 const dotenv = require("dotenv");
 const app = express();
 const bodyParser = require("body-parser");
-const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 // Config File connected
 dotenv.config({
   path: __dirname + "/.env",
 });
-// app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
-app.use(cookieParser());
+app.use(
+  cors({
+    // allowedHeaders: ["Content-Type", "Authorization"],
+    origin: [
+      "http://127.0.0.1:3000",
+      process.env.FRONT_END_URL,
+      "http://localhost:3000",
+    ],
+    credentials: true,
+    // methods: ["GET", "POST", "PUT", "DELETE"],
+    // maxAge: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  })
+);
+
+app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
 // Connect to the database
 const connectDb = require("./database");
 connectDb();
 
 // middlewares
-// app.use(cors({ origin: process.env.FRONT_END_URL, credentials: true }));
-app.use(cors());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json({ limit: "50mb" }));
+// app.use(cors());
+// app.use(express.urlencoded({ extended: false }));
+// app.use(express.json({ limit: "50mb" }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Router
 const user = require("./routes/userRoutes");

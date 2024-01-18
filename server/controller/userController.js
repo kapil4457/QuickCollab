@@ -80,6 +80,29 @@ exports.registerUser = async (req, res, next) => {
   }
 };
 
+exports.checkUser = async (req, res, next) => {
+  try {
+    const email = req.query.email;
+    const user = await User.findOne({ email: email });
+    if (user) {
+      return await res.status(400).send({
+        sucess: false,
+        message: "User already exists with this email id.",
+      });
+    } else {
+      return await res.status(200).send({
+        success: true,
+        message: "No user exists",
+      });
+    }
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 exports.googleRegisterUser = async (req, res) => {
   try {
     const info = req.body;
@@ -92,7 +115,8 @@ exports.googleRegisterUser = async (req, res) => {
         user.modeOfLogin = 3;
         await user.save();
       }
-      return sendToken(user, 200, res, "Logged in Successfully");
+      sendToken(user, 200, res, "Logged in Successfully");
+      return;
     }
     if (
       role !== "content-creator" &&
@@ -142,21 +166,20 @@ exports.loginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne({ email: email });
-
-    if (user.modeOfLogin === 2) {
-      return await res.status(400).send({
-        success: false,
-        message: "Please set a password using 'Reset password' to continue.",
-      });
-    }
     if (!user) {
       return await res.status(400).send({
         success: false,
         message: "Email or password is wrong!!",
       });
     }
+    if (user.modeOfLogin === 2) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please set a password using 'Reset password' to continue.",
+      });
+    }
 
-    if (!user.comparePassword(password)) {
+    if ((await user.comparePassword(password)) === false) {
       return await res.status(400).send({
         success: false,
         message: "Email or password is wrong!!",

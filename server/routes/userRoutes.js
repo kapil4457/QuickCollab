@@ -14,16 +14,18 @@ const {
   addPlatforms,
   updatePlatforms,
   deletePlatforms,
+  checkUser,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
 
 router.route("/sign-up").post(registerUser);
+router.route("/check/user").get(checkUser);
 router.route("/sign-up-google").post(googleRegisterUser);
 
-router.route("/login").post(loginUser);
+router.route("/sign-in").post(loginUser);
 
-router.route("/logout").post(logout);
+router.route("/sign-out").post(logout);
 
 router.route("/me").get(isAuthenticatedUser, getUserDetails);
 
