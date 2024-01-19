@@ -4,6 +4,7 @@
 // import Typewriter from "typewriter-effect";
 
 import ReactRotatingText from "react-rotating-text";
+import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 export default function Home() {
   // const items = [
   //   { id: 0, content: "FIND JOBS" },
@@ -15,7 +16,7 @@ export default function Home() {
     <>
       <div
         id="first-section"
-        className="flex h-[100vh] flex-col justify-center items-center text-5xl lg:gap-3"
+        className="flex h-[100vh] flex-col justify-center items-center text-5xl lg:gap-3 relative"
       >
         <div
           style={{ fontWeight: 500, textAlign: "center" }}
@@ -48,8 +49,37 @@ export default function Home() {
         >
           <ReactRotatingText items={["FIND JOBS", "HIRE TALENT", "LEVEL UP"]} />
         </span>
+        {/* <KeyboardDoubleArrowDownIcon
+          className="absolute bottom-[1rem]"
+          style={{ width: "2rem", height: "2rem" }}
+        /> */}
+        <div className="absolute bottom-[4rem] translate-x-[-50%] translate-y-[-50%] box">
+          <span
+            className="block w-[17px] h-[17px]  rotate-[45deg] m-[-10px] border-b-[2px] border-r-[2px] border-black dark:border-white"
+            style={{
+              animation: "animate 2s infinite",
+            }}
+          ></span>
+          <span
+            className="block w-[17px] h-[17px] rotate-[45deg] m-[-10px] border-b-[2px] border-r-[2px]  border-black dark:border-white "
+            style={{
+              animation: "animate 2s infinite",
+              animationDelay: "-0.2s",
+            }}
+          ></span>
+          <span
+            className="block w-[17px] h-[17px] rotate-[45deg] m-[-10px] border-b-[2px] border-r-[2px]  border-black dark:border-white"
+            style={{
+              animation: "animate 2s infinite",
+              animationDelay: "-0.4s",
+            }}
+          ></span>
+        </div>
       </div>
-      <div id="section-section" className=""></div>
+      <div
+        id="section-section"
+        className="flex h-[100vh] flex-col justify-center items-center text-5xl lg:gap-3 relative"
+      ></div>
       <div id="third-section" className=""></div>
     </>
   );

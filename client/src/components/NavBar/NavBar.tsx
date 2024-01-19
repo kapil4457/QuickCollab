@@ -79,7 +79,7 @@ const NavBar = () => {
     }
   }, [isAuthenticated]);
   return (
-    <div className="h-[6rem] w-full fixed  top-0 flex justify-center ">
+    <div className="h-[6rem] w-full fixed  top-0 flex justify-center z-10 ">
       <div className="w-[95%] h-full flex justify-between  items-center p-2">
         <div className="flex flex-col justify-center items-center ">
           <img
