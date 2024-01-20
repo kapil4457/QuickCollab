@@ -18,9 +18,13 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
+  const router = useRouter();
   const [display, setDisplay] = useState("block");
   useEffect(() => {
     window.addEventListener("scroll", () => {
@@ -279,12 +283,17 @@ export default function Home() {
           <h1 className=" font-extrabold text-white font-serif dark:text-slate-700  text-3xl  lg:text-6xl">
             Got any Questions ?
           </h1>
-          <Button
-            variant={"contact_us"}
-            className="w-[10rem] h-[3rem] text-gray-50 text-xl"
+          <Link
+            href="/contact"
+            className={cn(
+              "w-[10rem] h-[3rem] text-gray-50 text-xl",
+              buttonVariants({
+                variant: "contact_us",
+              })
+            )}
           >
             Contact Us
-          </Button>
+          </Link>
         </div>
       </div>
     </>

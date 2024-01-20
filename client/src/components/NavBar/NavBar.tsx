@@ -107,7 +107,9 @@ const NavBar = () => {
           ) : (
             <></>
           )}
-          <Button variant={"outline"}>Contact</Button>
+          <Link href="/contact">
+            <Button variant={"outline"}>Contact</Button>
+          </Link>
 
           {isAuthenticated ? (
             <>
