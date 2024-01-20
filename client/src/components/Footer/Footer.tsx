@@ -1,40 +1,43 @@
 import React from "react";
-import {
-  Footer,
-  FooterBrand,
-  FooterCopyright,
-  FooterDivider,
-  FooterLink,
-  FooterLinkGroup,
-} from "flowbite-react";
-
-const FooterComp = () => {
+import { Instagram, Twitter, Mail, LinkedIn } from "@mui/icons-material";
+const Footer = () => {
   return (
-    <Footer
-      container
-      className="mt-20 "
-      style={{ borderTop: "2px solid rgba(0,0,0,0.2)" }}
-    >
-      <div className="w-full text-center">
-        <div className="w-full justify-between sm:flex sm:items-center sm:justify-between">
-          <FooterBrand
-            href="/"
-            src="/logo3.png"
-            alt="CMS Logo"
-            name="Content Management System"
-          />
-          <FooterLinkGroup>
-            <FooterLink href="/about">About</FooterLink>
-            <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
-            <FooterLink href="/licensing">Licensing</FooterLink>
-            <FooterLink href="/contact">Contact</FooterLink>
-          </FooterLinkGroup>
+    <footer className="mt-12 flex flex-col bg-[#1f2937] dark:bg-slate-700 p-10 gap-5">
+      <div className="flex justify-between items-center">
+        <div className="logo flex  justify-center items-center gap-2">
+          <img src="/logo3.png" alt="CMS" className="h-20 w-20" />
+          <span
+            className="text-white text-2xl mt-10 "
+            style={{ fontWeight: "700" }}
+          >
+            {" "}
+            CMS
+          </span>
         </div>
-        <FooterDivider />
-        <FooterCopyright href="#" by="Content Management System" year={2024} />
+        <div className="socials text-white flex gap-3 justify-center items-center">
+          <a href="https://www.instagram.com/kapilsoni4457/">
+            <Instagram className="h-7 w-7 cursor-pointer hover:text-orange-300" />
+          </a>
+          <a href="https://twitter.com/kapil54768161">
+            <Twitter className="h-7 w-7 cursor-pointer hover:text-orange-300" />
+          </a>
+          <a href="https://www.linkedin.com/in/kapil-soni-2b25981ab/">
+            <LinkedIn className="h-7 w-7 cursor-pointer hover:text-orange-300" />
+          </a>
+          <a href="mailto:kapilsoni54768161@gmail.com">
+            <Mail className="h-7 w-7 cursor-pointer hover:text-orange-300" />
+          </a>
+        </div>
       </div>
-    </Footer>
+      <div
+        className="w-[90%] h-2 self-center"
+        style={{ borderBottom: "1px solid white" }}
+      />
+      <p className="w-full justify-center items-center text-center text-white font-bold">
+        © 2023 <a href="/">CMS </a> All rights Reserved
+      </p>
+    </footer>
   );
 };
 
-export default FooterComp;
+export default Footer;
