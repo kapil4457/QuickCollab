@@ -226,10 +226,10 @@ export default function Home() {
               {customerReviews.map((ele, index) => (
                 <CarouselItem
                   key={index}
-                  className="pl-1 basis-1/1 md:basis-1/3 lg:basis-1/4"
+                  className="pl-1 basis-1/1 md:basis-1/2 lg:basis-1/3"
                 >
                   <div className="p-1">
-                    <Card className=" w-[90vw] h-52 lg:w-[345px] p-4 gap-2">
+                    <Card className=" w-[90vw] h-52 md:w-[40vw] lg:w-[28vw] p-4 gap-2">
                       <div className="flex gap-5">
                         <CardMedia
                           component="img"
@@ -273,10 +273,10 @@ export default function Home() {
         className="w-full mt-24 flex items-center justify-center"
       >
         <div
-          className="bg-slate-700  w-[60%] flex justify-center items-center flex-col h-52 gap-9 dark:bg-slate-100"
+          className="bg-slate-700   flex justify-center items-center flex-col  dark:bg-slate-100  w-[95%] h-40 gap-5  lg:w-[65%] lg:h-52 lg:gap-9 "
           style={{ borderRadius: "15px" }}
         >
-          <h1 className="text-6xl font-extrabold text-white font-serif dark:text-slate-700">
+          <h1 className=" font-extrabold text-white font-serif dark:text-slate-700  text-3xl  lg:text-6xl">
             Got any Questions ?
           </h1>
           <Button
