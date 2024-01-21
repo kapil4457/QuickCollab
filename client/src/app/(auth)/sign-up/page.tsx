@@ -119,6 +119,14 @@ const SignUpPage = () => {
       );
     } else {
       setIsLoading(false);
+      dispatch(
+        setUserData({
+          user: null,
+          success: res?.success,
+          message: res?.message,
+          loading: false,
+        })
+      );
       toast.error(res.message);
     }
   }

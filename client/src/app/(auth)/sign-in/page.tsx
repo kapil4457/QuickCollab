@@ -41,6 +41,15 @@ const SignInPage = () => {
         toast.success(data?.message);
       } else {
         setIsLoading(false);
+        dispatch(
+          setUserData({
+            user: null,
+            success: false,
+            message: data?.message,
+            loading: false,
+            isAuthenticated: false,
+          })
+        );
         toast.error(data?.message);
       }
     } catch (err) {

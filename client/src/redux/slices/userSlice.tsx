@@ -14,7 +14,7 @@ const initialState = {
   value: {
     isAuthenticated: false,
     user: null,
-    loading: false,
+    loading: true,
     message: "",
   } as useValueProps,
 } as initialStateProps;
