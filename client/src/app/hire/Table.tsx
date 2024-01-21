@@ -7,6 +7,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Link from "next/link";
+import Rating from "@mui/material/Rating";
 
 export default function BasicTable({ users }) {
   return (
@@ -51,7 +52,7 @@ export default function BasicTable({ users }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {users?.map((user, key) => (
+          {users?.map((user, key: number) => (
             <TableRow
               key={user?.name}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -73,10 +74,17 @@ export default function BasicTable({ users }) {
                 {user?.name}
               </TableCell>
               <TableCell
-                className="text-white text-lg  font-bold dark:text-zinc-700"
+                className=" text-white text-lg  font-bold flex justify-center items-center gap-2  dark:text-zinc-700"
                 align="center"
               >
-                {user?.rating}
+                <Rating
+                  name="simple-controlled"
+                  value={user?.rating}
+                  readOnly
+                  precision={0.1}
+                />
+                &nbsp;(
+                {user?.providerPreviousWork.length})
               </TableCell>
               <TableCell
                 className="text-white text-lg  font-bold dark:text-zinc-700"
