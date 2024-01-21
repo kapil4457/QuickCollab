@@ -16,7 +16,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
-
+  experience: {
+    type: Number,
+    deafault: 0,
+  },
   avatar: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Cloudinary",
@@ -29,6 +32,15 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     required: true,
+  },
+  servicesOffered: [
+    {
+      type: String,
+    },
+  ],
+  rating: {
+    type: mongoose.Schema.Types.Decimal128,
+    default: 0,
   },
   available: {
     type: Boolean,

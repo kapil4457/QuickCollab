@@ -15,6 +15,9 @@ const {
   updatePlatforms,
   deletePlatforms,
   checkUser,
+  addServices,
+  removeServices,
+  getContentCreator,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
@@ -54,4 +57,20 @@ router
   .route("/me/deleteplatforms/:id")
   .delete(isAuthenticatedUser, deletePlatforms);
 
+// services route
+router
+  .route("/user/add/services")
+  .post(isAuthenticatedUser, authorizeRole("service-provider"), addServices);
+
+router
+  .route("/user/remove/services")
+  .post(isAuthenticatedUser, authorizeRole("service-provider"), removeServices);
+
+router
+  .route("/fetch/service-providers")
+  .post(
+    isAuthenticatedUser,
+    authorizeRole("content-creator"),
+    getContentCreator
+  );
 module.exports = router;

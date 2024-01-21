@@ -431,6 +431,8 @@ exports.getUserDetail = async (req, res) => {
         name: user.name,
         avatar: user.avatar,
         about: user.about,
+        services: user.servicesOffered,
+        rating: user.rating,
         providerPreviousWork: user.providerPreviousWork,
       };
     } else {
@@ -576,6 +578,97 @@ exports.deletePlatforms = async (req, res) => {
     return await res.status(200).send({
       success: true,
       message: "Platform deleted successfully.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.addServices = async (req, res) => {
+  try {
+    const { services } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    for (let ele of services) {
+      user.servicesOffered.push(ele);
+    }
+    await user.save();
+    return await res.status(200).send({
+      success: true,
+      message: "Service added successfully.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.removeServices = async (req, res) => {
+  try {
+    const { service } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    const newServices = await user.servicesOffered.map((ele) => {
+      if (ele != service) {
+        return ele;
+      }
+    });
+    user.servicesOffered = newServices;
+    await user.save();
+    return await res.status(200).send({
+      success: true,
+      message: "Service removed successfully.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.getContentCreator = async (req, res) => {
+  try {
+    const { services } = req.body;
+    if (services.length === 0) {
+      const users = await User.find({
+        role: "service-provider",
+      })
+        .populate("avatar")
+        .select(["name", "rating", "providerPreviousWork", "experience"]);
+      return await res.status(200).send({
+        success: true,
+        message: "Fetched all users successfully.",
+        users,
+      });
+    }
+    const users = await User.find();
+    const ans = [];
+    for (let service of services) {
+      for (let user of users) {
+        for (let ele of user.servicesOffered) {
+          if (
+            (await ele.toLowerCase()) === service.toLowerCase() ||
+            (await ele.toLowerCase().includes(service.toLowerCase())) ||
+            (await service.toLowerCase().includes(ele.toLowerCase()))
+          ) {
+            await user.populate("avatar");
+            ans.push(user);
+          }
+        }
+      }
+    }
+    return await res.status(200).send({
+      success: true,
+      message: "Fetched all users",
+      users: ans,
     });
   } catch (err) {
     return await res.status(400).send({
