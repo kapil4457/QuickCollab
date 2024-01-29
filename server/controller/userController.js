@@ -164,7 +164,25 @@ exports.getUserDetails = async (req, res) => {
         message: "Please login to access this.",
       });
     }
-    const user = await User.findById(req.user.id).populate("avatar");
+    const user = await User.findById(req.user.id)
+      .populate("avatar")
+      .populate({
+        path: "providerPreviousWork",
+        populate: {
+          path: "projectImages",
+          model: "Cloudinary",
+        },
+      })
+      .populate({
+        path: "providerPreviousWork",
+        populate: {
+          path: "projectVideos",
+          model: "Cloudinary",
+        },
+      })
+
+      // .populate("providerPreviousWork", "projectVideos")
+      .populate("conversations");
 
     return await res.status(200).send({
       success: true,
@@ -209,6 +227,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.updateAvailabilityStatus = async (req, res) => {
   try {
+    const { status } = req.body;
     const user = await User.findById(req.user.id);
     if (user.role !== "service-provider") {
       return await res.status(400).send({
@@ -216,11 +235,12 @@ exports.updateAvailabilityStatus = async (req, res) => {
         message: "Your role does not have this functionality.",
       });
     }
-    if (user.available === false) {
-      user.available = true;
-    } else {
-      user.available = false;
-    }
+    user.available = status;
+    // if (user.available === false) {
+    //   user.available = true;
+    // } else {
+    //   user.available = false;
+    // }
     user.updatedAt = new Date().toISOString();
 
     await user.save();
@@ -410,7 +430,22 @@ exports.getUserDetail = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const user = await User.findById(id).populate("avatar");
+    const user = await User.findById(id)
+      .populate("avatar")
+      .populate({
+        path: "providerPreviousWork",
+        populate: {
+          path: "projectImages",
+          model: "Cloudinary",
+        },
+      })
+      .populate({
+        path: "providerPreviousWork",
+        populate: {
+          path: "projectVideos",
+          model: "Cloudinary",
+        },
+      });
     if (!user) {
       return await res.status(400).send({
         success: false,
@@ -424,16 +459,20 @@ exports.getUserDetail = async (req, res) => {
         name: user.name,
         avatar: user.avatar,
         about: user.about,
+        _id: user._id,
+        role: user.role,
       };
     } else if (user.role == "service-provider") {
       // If the requested user is a service-provider
       details = {
+        _id: user._id,
         name: user.name,
         avatar: user.avatar,
         about: user.about,
         services: user.servicesOffered,
         rating: user.rating,
         providerPreviousWork: user.providerPreviousWork,
+        role: user.role,
       };
     } else {
       return await res.status(500).send({
@@ -444,7 +483,7 @@ exports.getUserDetail = async (req, res) => {
     details.socialPlatforms = user.socialPlatform;
     return await res.status(200).send({
       success: true,
-      details,
+      user: details,
     });
   } catch (err) {
     return await res.status(400).send({
@@ -640,6 +679,7 @@ exports.getContentCreator = async (req, res) => {
     if (services.length === 0) {
       const users = await User.find({
         role: "service-provider",
+        available: true,
       })
         .populate("avatar")
         .select(["name", "rating", "providerPreviousWork", "experience"]);
@@ -649,7 +689,7 @@ exports.getContentCreator = async (req, res) => {
         users,
       });
     }
-    const users = await User.find();
+    const users = await User.find({ available: true });
     const ans = [];
     for (let service of services) {
       for (let user of users) {

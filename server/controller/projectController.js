@@ -1,20 +1,27 @@
 const User = require("../models/userModel");
+const Cloudinary = require("../models/cloudinaryModel");
 const Project = require("../models/projectModel");
 var validator = require("validator");
 
 exports.addprojects = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) {
+      await res.status(400).send({
+        success: false,
+        message: "Please login to access this service.",
+      });
+    }
 
-    const { projectTitle, projectDescription, projectImages, projectVideos } =
-      req.body;
+    const {
+      projectTitle,
+      projectDescription,
+      projectImages,
+      projectVideos,
+      projectLink,
+    } = req.body;
 
-    if (
-      !projectTitle ||
-      !projectDescription ||
-      !projectImages ||
-      !projectVideos
-    ) {
+    if (!projectTitle || !projectDescription || !projectImages) {
       return await res.status(400).send({
         success: false,
         message: "Please fill in all the details.",
@@ -48,14 +55,75 @@ exports.addprojects = async (req, res) => {
         message: "Please provide images related to the peoject.",
       });
     }
-    const project = await Project.create({
-      projectTitle,
-      projectDescription,
-      projectImages,
-      user: req.user.id,
-      projectVideos,
-      userId: req.user.id,
-    });
+    let images = [];
+    for (let img of projectImages) {
+      const tempImg = await Cloudinary.create(img);
+      await images.push(tempImg._id);
+    }
+
+    let videos = [];
+    if (projectVideos) {
+      for (let video of projectVideos) {
+        const tempVid = await Cloudinary.create(video);
+        await videos.push(tempVid._id);
+      }
+    }
+
+    var data = {
+      projectTitle: projectTitle,
+      projectDescription: projectDescription,
+      projectImages: images,
+      userId: user._id,
+    };
+
+    if (videos.length !== 0) {
+      data.projectVideos = videos;
+    }
+    if (projectLink) {
+      data.projectLink = projectLink;
+    }
+    const project = await Project.create(data);
+    // if (projectVideos) {
+    //   if (projectLink) {
+    //     project = await Project.create({
+    //       projectTitle,
+    //       projectDescription,
+    //       projectImages: images,
+    //       user: req.user.id,
+    //       userId: req.user.id,
+    //       projectLink,
+    //     });
+    //   } else {
+    //     project = await Project.create({
+    //       projectTitle,
+    //       projectDescription,
+    //       projectImages: images,
+    //       user: req.user.id,
+    //       userId: req.user.id,
+    //     });
+    //   }
+    // } else {
+    //   if (projectLink) {
+    //     project = await Project.create({
+    //       projectTitle,
+    //       projectDescription,
+    //       projectImages: images,
+    //       user: req.user.id,
+    //       projectVideos: videos,
+    //       userId: req.user.id,
+    //       projectLink,
+    //     });
+    //   } else {
+    //     project = await Project.create({
+    //       projectTitle,
+    //       projectDescription,
+    //       projectImages: images,
+    //       user: req.user.id,
+    //       projectVideos: videos,
+    //       userId: req.user.id,
+    //     });
+    //   }
+    // }
     user.providerPreviousWork.push(project._id);
     await user.save();
 

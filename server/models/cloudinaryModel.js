@@ -9,14 +9,14 @@ const cloudinarySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  version: {
-    type: String,
-    required: true,
-  },
-  version_id: {
-    type: String,
-    required: true,
-  },
+  // version: {
+  //   type: String,
+  //   required: true,
+  // },
+  // version_id: {
+  //   type: String,
+  //   required: true,
+  // },
   signature: {
     type: String,
     required: true,
@@ -46,10 +46,10 @@ const cloudinarySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  etag: {
-    type: String,
-    required: true,
-  },
+  // etag: {
+  //   type: String,
+  //   required: true,
+  // },
   url: {
     type: String,
     required: true,
@@ -58,10 +58,10 @@ const cloudinarySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  original_filename: {
-    type: String,
-    required: true,
-  },
+  // original_filename: {
+  //   type: String,
+  //   required: true,
+  // },
 });
 
 module.exports = mongoose.model("Cloudinary", cloudinarySchema);

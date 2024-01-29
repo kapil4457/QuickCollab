@@ -5,20 +5,25 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  projectLink: {
+    type: String,
+    required: false,
+  },
+
   projectDescription: {
     type: String,
     required: true,
   },
   projectImages: [
     {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
   ],
   projectVideos: [
     {
-      type: String,
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      required: false,
     },
   ],
   userId: {
