@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/redux/store";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/redux/slices/userSlice";
+import cloudinaryUploader from "@/utils/cloudinary";
 const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -24,25 +25,6 @@ const SignUpPage = () => {
 
   async function submitHandler(formData: FormData) {
     setIsLoading(true);
-    // Uplading the image
-    const file = formData.get("avatar") as File;
-    //api.cloudinary.com/v1_1/:cloud_name/image/upload
-    const formData2 = new FormData();
-    const api_key = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string;
-    formData2.append("file", file);
-    formData2.append("upload_preset", "content_management_system");
-    formData2.append("folder", "profile_pics");
-    const signatureRequest = await requestHandler(
-      "",
-      "GET",
-      "/api/v1/get-signature?folder=profile_pics"
-    );
-    formData2.append("signature", signatureRequest.signature);
-    formData2.append("timestamp", signatureRequest.timestamp);
-    formData2.append("api_key", api_key as string);
-
-    // Check if the user already exists
-
     const checkEmail = formData.get("email");
     const checkUrl = `/api/v1/check/user?email=${checkEmail}`;
 
@@ -52,6 +34,24 @@ const SignUpPage = () => {
       toast.error(check.message);
       return;
     }
+    const file = formData.get("avatar") as File;
+    // Uplading the image
+    // //api.cloudinary.com/v1_1/:cloud_name/image/upload
+    // const formData2 = new FormData();
+    // const api_key = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string;
+    // formData2.append("file", file);
+    // formData2.append("upload_preset", "content_management_system");
+    // formData2.append("folder", "profile_pics");
+    // const signatureRequest = await requestHandler(
+    //   "",
+    //   "GET",
+    //   "/api/v1/get-signature?folder=profile_pics"
+    // );
+    // formData2.append("signature", signatureRequest.signature);
+    // formData2.append("timestamp", signatureRequest.timestamp);
+    // formData2.append("api_key", api_key as string);
+
+    // Check if the user already exists
 
     toast.loading("Registration initialized...", {
       duration: 2000,
@@ -60,28 +60,28 @@ const SignUpPage = () => {
         color: "white",
       },
     });
-    // toast.success("Uploading the Picture");
-    const { data } = await axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      formData2
-    );
+
+    const data = await cloudinaryUploader({
+      ele: file,
+      location: "profile_pics",
+    });
 
     let image = {
       asset_id: data.asset_id,
       public_id: data.public_id,
-      version: data.version,
-      version_id: data.version_id,
+      // version: data.version,
+      // version_id: data.version_id,
       signature: data.signature,
       width: data.width,
       height: data.height,
       format: data.format,
-      resource_type: data.resource_type,
+      // resource_type: data.resource_type,
       created_at: data.created_at,
       type: data.type,
-      etag: data.etag,
+      // etag: data.etag,
       url: data.url,
       folder: data.folder,
-      original_filename: data.original_filename,
+      // original_filename: data.original_filename,
     };
     const info = {
       name: formData.get("name"),

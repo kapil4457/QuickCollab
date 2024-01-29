@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 // import Table from "./Table";
 import Link from "next/link";
 import Rating from "@mui/material/Rating";
+import CancelIcon from "@mui/icons-material/Cancel";
 import {
   Table,
   TableBody,
@@ -82,8 +83,6 @@ const page = () => {
     }
   };
   useEffect(() => {
-    // dispatch(fetchServiceProviders());
-
     dispatch(fetchServiceProviders(filterTags));
   }, []);
   return (
@@ -138,7 +137,21 @@ const page = () => {
         </div>
         <div className="filter-tags flex gap-2 w-full">
           {filterTags?.map((tag, key) => (
-            <Badge key={key}>{tag}</Badge>
+            <Badge key={key} className="flex gap-2">
+              {tag}
+              <CancelIcon
+                className="w-5 h-5 cursor-pointer"
+                onClick={() => {
+                  let newFilters = filterTags.filter((ele) => {
+                    if (ele !== tag) {
+                      return ele;
+                    }
+                  });
+
+                  setFilterTags(newFilters);
+                }}
+              />
+            </Badge>
           ))}
         </div>
         <Table>

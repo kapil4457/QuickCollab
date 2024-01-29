@@ -83,7 +83,7 @@ const NavBar = () => {
       <div className="w-[95%] h-full flex justify-between  items-center p-2">
         <div className="flex flex-col justify-center items-center ">
           <img
-            src="logo3.png"
+            src="/logo3.png"
             alt=""
             className="h-20 w-20 cursor-pointer"
             onClick={() => router.push("/")}
@@ -125,7 +125,10 @@ const NavBar = () => {
                   </p>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuLabel className="flex gap-5 justify-between items-center">
+                  <DropdownMenuLabel
+                    className="flex gap-5 justify-between items-center cursor-pointer"
+                    onClick={() => router.push(`/user/${user?._id}`)}
+                  >
                     <Avatar style={{ borderRadius: "10px" }}>
                       <AvatarImage
                         alt="Profile Picture"

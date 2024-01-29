@@ -2,7 +2,7 @@ import React from "react";
 import { Instagram, Twitter, Mail, LinkedIn } from "@mui/icons-material";
 const Footer = () => {
   return (
-    <footer className="mt-24 flex flex-col bg-[#1f2937] dark:bg-slate-700 p-10 gap-5">
+    <footer className="flex flex-col bg-[#1f2937] dark:bg-slate-700 p-10 gap-5">
       <div className="flex justify-between items-center">
         <div className="logo flex  justify-center items-center gap-2">
           <img src="/logo3.png" alt="CMS" className="h-20 w-20" />

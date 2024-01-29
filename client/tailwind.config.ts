@@ -16,6 +16,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("flowbite/plugin")],
+  plugins: [
+    require("flowbite/plugin"),
+    require("@material-tailwind/react/utils/withMT"),
+  ],
 };
 export default config;
