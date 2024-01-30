@@ -58,7 +58,7 @@ import {
 import { SERVICE_PROVIDER } from "@/utils/roles";
 import { PageProps } from "../../../.next/types/app/layout";
 import { Switch } from "@/components/ui/switch";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Launch, Link } from "@mui/icons-material";
 
 type FormDataProps = {
   title: string;
@@ -92,6 +92,7 @@ const page: FC<PageProps> = ({ params }) => {
   const [updatedProjectData, setUpdatedProjectData] = useState({
     title: "",
     description: "",
+    link: "",
     images: [],
     videos: [],
   });
@@ -653,8 +654,16 @@ const page: FC<PageProps> = ({ params }) => {
                                     </DialogTrigger>
                                     <DialogContent>
                                       <DialogHeader>
-                                        <DialogTitle>
+                                        <DialogTitle className="flex gap-3">
                                           {ele?.projectTitle}
+                                          {ele?.projectLink && (
+                                            <a
+                                              href={ele?.projectLink}
+                                              target="_blank"
+                                            >
+                                              <Launch className="h-4 w-4 text-blue-600" />
+                                            </a>
+                                          )}
                                         </DialogTitle>
                                         <DialogDescription>
                                           {ele?.projectDescription}
@@ -715,6 +724,7 @@ const page: FC<PageProps> = ({ params }) => {
                                         onClick={() => {
                                           setUpdatedProjectData({
                                             ...updatedProjectData,
+                                            link: ele?.projectLink,
                                             title: ele?.projectTitle,
                                             description:
                                               ele?.projectDescription,
@@ -771,12 +781,33 @@ const page: FC<PageProps> = ({ params }) => {
                                             className="col-span-3"
                                           />
                                         </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                          <Label
+                                            htmlFor="link"
+                                            className="text-right"
+                                          >
+                                            Link
+                                          </Label>
+                                          <Input
+                                            id="link"
+                                            value={updatedProjectData?.link}
+                                            className="col-span-3"
+                                            onChange={(e) => {
+                                              setUpdatedProjectData({
+                                                ...updatedProjectData,
+                                                link: e.target.value,
+                                              });
+                                            }}
+                                          />
+                                        </div>
                                       </div>
                                       <DialogFooter>
                                         <Button
                                           onClick={() =>
                                             dispatch(
                                               updateProject({
+                                                projectLink:
+                                                  updatedProjectData.link,
                                                 projectTitle:
                                                   updatedProjectData.title,
                                                 projectDescription:
