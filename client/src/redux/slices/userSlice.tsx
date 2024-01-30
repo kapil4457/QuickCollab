@@ -2,7 +2,7 @@ import requestHandler from "@/utils/requestHelper";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 type useValueProps = {
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
   user: any;
   loading: boolean;
   message: string;
@@ -21,7 +21,7 @@ type initialStateProps = {
 
 const initialState = {
   value: {
-    isAuthenticated: false,
+    isAuthenticated: null,
     user: null,
     loading: true,
     message: "",

@@ -60,6 +60,13 @@ const page: FC<PageProps> = ({ params }) => {
     }
   }, [self, user]);
 
+  useEffect(() => {
+    if (isAuthenticated === false) {
+      toast.success("Please log-in to access this page.");
+      router.push("/");
+    }
+  }, [isAuthenticated]);
+
   return (
     <>
       <div

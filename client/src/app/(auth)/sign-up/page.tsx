@@ -117,6 +117,7 @@ const SignUpPage = () => {
 
   useEffect(() => {
     if (isAuthenticated === true) {
+      toast.success("You are logged in already.");
       router.push("/");
     }
   }, [isAuthenticated]);

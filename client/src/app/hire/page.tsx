@@ -85,6 +85,13 @@ const page = () => {
   useEffect(() => {
     dispatch(fetchServiceProviders(filterTags));
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated === false) {
+      toast.success("Please log-in to access this page.");
+      router.push("/");
+    }
+  }, [isAuthenticated]);
   return (
     <div className="h-[100vh] w-full mt-[15rem] flex justify-center">
       <div className="w-full flex flex-col gap-10 items-center pl-[5vw] pr-[5vw]">

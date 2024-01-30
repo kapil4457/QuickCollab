@@ -259,6 +259,13 @@ const page: FC<PageProps> = ({ params }) => {
       toast.error(updateUserDetailsMessage);
     }
   }, [updateUserDetailsSuccess]);
+
+  useEffect(() => {
+    if (isAuthenticated === false) {
+      toast.success("Please log-in to access this page.");
+      router.push("/");
+    }
+  }, [isAuthenticated]);
   return (
     <>
       <div
