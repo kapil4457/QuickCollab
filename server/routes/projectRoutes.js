@@ -13,7 +13,7 @@ router
   .post(isAuthenticatedUser, authorizeRole("service-provider"), addprojects);
 router
   .route("/me/update/project")
-  .post(isAuthenticatedUser, authorizeRole("service-provider"), updateProjects);
+  .put(isAuthenticatedUser, authorizeRole("service-provider"), updateProjects);
 router
   .route("/me/delete/project/:id")
   .delete(

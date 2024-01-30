@@ -195,18 +195,25 @@ exports.getUserDetails = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, avatar, about } = req.body;
-    const newDetails = {
-      name: name,
-      avatar: avatar,
-      updatedAt: new Date().toISOString(),
-      about: about,
-    };
+    const { name, avatar, about, servicesOffered } = req.body;
+
     if (name == "") {
       return await res.status(400).send({
         success: false,
         message: "Please enter a valid name.",
       });
+    }
+    const newDetails = {
+      name: name,
+      // avatar: avatar,
+      updatedAt: new Date().toISOString(),
+      about: about,
+      servicesOffered: servicesOffered,
+    };
+    const check = await Cloudinary.findById(avatar._id);
+    if (check === null) {
+      const image = await Cloudinary.create(avatar);
+      newDetails.avatar = image._id;
     }
     const user = await User.findByIdAndUpdate(req.user.id, newDetails, {
       new: true,

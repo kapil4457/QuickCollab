@@ -144,15 +144,19 @@ exports.updateProjects = async (req, res) => {
     const {
       projectTitle,
       projectDescription,
-      projectImages,
-      projectVideos,
+      projectLink,
+      // projectImages,
+      // projectVideos,
       id,
     } = req.body;
+
     if (
       !projectTitle ||
       !projectDescription ||
-      !projectImages ||
-      !projectVideos
+      !projectLink ||
+      !id
+      // !projectImages ||
+      // !projectVideos
     ) {
       return await res.status(400).send({
         success: false,
@@ -198,17 +202,18 @@ exports.updateProjects = async (req, res) => {
         message: "Enter a valid Description.",
       });
     }
-    if (projectImages.length == 0) {
-      return res.status(400).send({
-        success: false,
-        message: "Please provide images related to the peoject.",
-      });
-    }
+    // if (projectImages.length == 0) {
+    //   return res.status(400).send({
+    //     success: false,
+    //     message: "Please provide images related to the peoject.",
+    //   });
+    // }
 
     project.projectTitle = projectTitle;
     project.projectDescription = projectDescription;
-    project.projectImages = projectImages;
-    project.projectVideos = projectVideos;
+    project.projectLink = projectLink;
+    // project.projectImages = projectImages;
+    // project.projectVideos = projectVideos;
 
     await project.save();
 
