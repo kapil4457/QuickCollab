@@ -39,6 +39,7 @@ const SignInPage = () => {
           })
         );
         toast.success(data?.message);
+        router.push("/");
       } else {
         setIsLoading(false);
         dispatch(

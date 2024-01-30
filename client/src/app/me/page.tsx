@@ -112,9 +112,11 @@ const page: FC<PageProps> = ({ params }) => {
   const { message: updateMessage, success: updateSuccess } = useAppSelector(
     (state) => state.projectSlice.updateValue
   );
-  const { user, isAuthenticated } = useAppSelector(
-    (state) => state.userSlice.value
-  );
+  const {
+    user,
+    isAuthenticated,
+    loading: userLoader,
+  } = useAppSelector((state) => state.userSlice.value);
   const {
     success: availabilityStatusSuccess,
     message: availabilityStatusMessage,
@@ -261,7 +263,7 @@ const page: FC<PageProps> = ({ params }) => {
   }, [updateUserDetailsSuccess]);
 
   useEffect(() => {
-    if (isAuthenticated === false) {
+    if (isAuthenticated === false && userLoader === false) {
       toast.success("Please log-in to access this page.");
       router.push("/");
     }

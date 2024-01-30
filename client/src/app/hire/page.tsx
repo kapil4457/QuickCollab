@@ -59,9 +59,11 @@ const page = () => {
   const [filterText, setFilterText] = useState("");
   const { users, loading }: { users: UserType[]; loading: boolean } =
     useAppSelector((state) => state.serviceSlice.value);
-  const { isAuthenticated, user } = useAppSelector(
-    (state) => state.userSlice.value
-  );
+  const {
+    isAuthenticated,
+    user,
+    loading: userLoader,
+  } = useAppSelector((state) => state.userSlice.value);
   const itemsPerPage = 10;
 
   const filterDropdownHelper = (e: string) => {
@@ -87,7 +89,7 @@ const page = () => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated === false) {
+    if (isAuthenticated === false && userLoader === false) {
       toast.success("Please log-in to access this page.");
       router.push("/");
     }

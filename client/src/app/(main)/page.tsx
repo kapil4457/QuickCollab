@@ -224,7 +224,7 @@ export default function Home() {
               align: "start",
               loop: true,
             }}
-            className="w-full max-w-[90vw]"
+            className="w-full max-w-[68vw] md:max-w-[90vw]"
           >
             <CarouselContent className="-ml-1">
               {customerReviews.map((ele, index) => (
@@ -233,7 +233,7 @@ export default function Home() {
                   className="pl-1 basis-1/1 md:basis-1/2 lg:basis-1/3"
                 >
                   <div className="p-1">
-                    <Card className=" w-[90vw] h-52 md:w-[40vw] lg:w-[28vw] p-4 gap-2">
+                    <Card className=" w-[100%] h-52 md:w-[40vw] lg:w-[28vw] p-4 gap-2">
                       <div className="flex gap-5">
                         <CardMedia
                           component="img"
@@ -258,7 +258,11 @@ export default function Home() {
                         </div>
                       </div>
                       <CardContent>
-                        <Typography variant="body1" color="text.secondary">
+                        <Typography
+                          variant="body1"
+                          color="text.secondary"
+                          className="w-full "
+                        >
                           {ele.description}
                         </Typography>
                       </CardContent>
@@ -274,7 +278,7 @@ export default function Home() {
       </div>
       <div
         id="third-section"
-        className="w-full mt-24 flex items-center justify-center"
+        className="w-full mb-10 mt-24 flex items-center justify-center"
       >
         <div
           className="bg-slate-700   flex justify-center items-center flex-col  dark:bg-slate-100  w-[95%] h-40 gap-5  lg:w-[65%] lg:h-52 lg:gap-9 "

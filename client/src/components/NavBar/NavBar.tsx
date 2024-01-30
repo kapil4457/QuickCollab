@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CONTENT_CREATOR, SERVICE_PROVIDER } from "@/utils/roles";
 import { Moon, Sun } from "lucide-react";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme } from "next-themes";
 import {
   Settings,
@@ -28,6 +29,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const NavBar = () => {
   const { setTheme } = useTheme();
@@ -89,7 +99,85 @@ const NavBar = () => {
             onClick={() => router.push("/")}
           />
         </div>
-        <div className="flex gap-3">
+        <div className="gap-3 flex sm:flex md:flex lg:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="default" size="icon">
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Sheet>
+            <SheetTrigger>
+              <MenuIcon
+                className={cn(
+                  buttonVariants({
+                    variant: "default",
+                  }),
+                  "w-10 p-2 h-10 border-2 border-slate-800 rounded-lg"
+                )}
+              />
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+                <SheetDescription className="flex flex-col ">
+                  <SheetClose
+                    className="flex items-center justify-center gap-3 h-16 border-b-2 text-[1rem]"
+                    onClick={() => {
+                      router.push("/me");
+                    }}
+                  >
+                    <Avatar style={{ borderRadius: "10px" }}>
+                      <AvatarImage
+                        alt="Profile Picture"
+                        src={user?.avatar?.url}
+                        style={{ borderRadius: 0 }}
+                      />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    {user?.name}
+                  </SheetClose>
+                  <SheetClose
+                    className="h-16 border-b-2 text-[1rem]"
+                    onClick={() => {
+                      router.push("/");
+                    }}
+                  >
+                    Home
+                  </SheetClose>
+                  <SheetClose
+                    className="h-16 border-b-2 text-[1rem]"
+                    onClick={() => {
+                      router.push("/hire");
+                    }}
+                  >
+                    Hire
+                  </SheetClose>
+                  <SheetClose
+                    className="h-16 border-b-2 text-[1rem]"
+                    onClick={() => {
+                      router.push("/contact");
+                    }}
+                  >
+                    Contact
+                  </SheetClose>
+                </SheetDescription>
+              </SheetHeader>
+            </SheetContent>
+          </Sheet>
+        </div>
+        <div className="gap-3 hidden sm:hidden md:hidden lg:flex ">
           <Link href="/">
             <Button variant={"outline"}>Home</Button>
           </Link>
@@ -127,7 +215,7 @@ const NavBar = () => {
                 <DropdownMenuContent>
                   <DropdownMenuLabel
                     className="flex gap-5 justify-between items-center cursor-pointer"
-                    onClick={() => router.push(`/user/${user?._id}`)}
+                    onClick={() => router.push(`/me`)}
                   >
                     <Avatar style={{ borderRadius: "10px" }}>
                       <AvatarImage
@@ -190,9 +278,6 @@ const NavBar = () => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("dark")}>
                 Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
-                System
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

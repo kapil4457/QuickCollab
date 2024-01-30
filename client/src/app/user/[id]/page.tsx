@@ -38,19 +38,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageProps } from "../../../../.next/types/app/layout";
-import { SERVICE_PROVIDER } from "@/utils/roles";
+import { CONTENT_CREATOR, SERVICE_PROVIDER } from "@/utils/roles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactPlayer from "react-player";
-import { Launch } from "@mui/icons-material";
+import { Chat, ChatBubble, Launch } from "@mui/icons-material";
+import toast from "react-hot-toast";
 
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { user, loading } = useAppSelector((state) => state.profileSlice.value);
-  const { user: self, isAuthenticated } = useAppSelector(
-    (state) => state.userSlice.value
-  );
+  const {
+    user: self,
+    isAuthenticated,
+    loading: userLoader,
+  } = useAppSelector((state) => state.userSlice.value);
   useEffect(() => {
     dispatch(fetchUserDetails(params.id));
   }, []);
@@ -61,11 +64,11 @@ const page: FC<PageProps> = ({ params }) => {
   }, [self, user]);
 
   useEffect(() => {
-    if (isAuthenticated === false) {
+    if (isAuthenticated === false && userLoader === false) {
       toast.success("Please log-in to access this page.");
       router.push("/");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, userLoader]);
 
   return (
     <>
@@ -116,7 +119,20 @@ const page: FC<PageProps> = ({ params }) => {
           <ScrollArea className="right max-h-[calc(100vh-6rem)]">
             <div className="flex flex-col gap-14">
               <div className="about flex flex-col gap-3">
-                <h2 className="text-3xl font-bold">About</h2>
+                <div className="flex justify-between">
+                  <h2 className="text-3xl font-bold">About</h2>
+                  {self?.role === CONTENT_CREATOR && (
+                    <Button
+                      variant={"secondary"}
+                      className="cursor-pointer flex justify-between gap-3"
+                      onClick={() => {
+                        router.push(`/chats/${params?.id}`);
+                      }}
+                    >
+                      Chat <Chat className="w-5 h-5" />
+                    </Button>
+                  )}
+                </div>
                 {user && user?.about && <p>{user?.about}</p>}
               </div>
               {user && user?.role === SERVICE_PROVIDER && (
@@ -151,12 +167,12 @@ const page: FC<PageProps> = ({ params }) => {
                                         <img
                                           alt="Project Picture"
                                           src={ele?.projectImages[0]?.url}
-                                          className="h-16 w-16"
+                                          className="h-14 w-24"
                                           // width={45}
                                           // height={45}
                                           style={{
                                             borderRadius: "10px",
-                                            objectFit: "contain",
+                                            objectFit: "cover",
                                           }}
                                         />
                                         {ele?.projectTitle}
