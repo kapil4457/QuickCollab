@@ -42,6 +42,7 @@ import { SERVICE_PROVIDER } from "@/utils/roles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReactPlayer from "react-player";
+import { Launch } from "@mui/icons-material";
 
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
@@ -140,11 +141,12 @@ const page: FC<PageProps> = ({ params }) => {
                                   <TableRow key={key} className="">
                                     <TableCell className="font-medium  ">
                                       <div className="flex items-center gap-5">
-                                        <Image
+                                        <img
                                           alt="Project Picture"
                                           src={ele?.projectImages[0]?.url}
-                                          width={45}
-                                          height={45}
+                                          className="h-16 w-16"
+                                          // width={45}
+                                          // height={45}
                                           style={{
                                             borderRadius: "10px",
                                             objectFit: "contain",
@@ -163,8 +165,16 @@ const page: FC<PageProps> = ({ params }) => {
                                         </DialogTrigger>
                                         <DialogContent>
                                           <DialogHeader>
-                                            <DialogTitle>
+                                            <DialogTitle className="flex gap-3">
                                               {ele?.projectTitle}
+                                              {ele?.projectLink && (
+                                                <a
+                                                  href={ele?.projectLink}
+                                                  target="_blank"
+                                                >
+                                                  <Launch className="h-4 w-4 text-blue-600" />
+                                                </a>
+                                              )}
                                             </DialogTitle>
                                             <DialogDescription>
                                               {ele?.projectDescription}
@@ -198,7 +208,9 @@ const page: FC<PageProps> = ({ params }) => {
                                                                   url={
                                                                     item?.url
                                                                   }
-                                                                  playing
+                                                                  playing={
+                                                                    false
+                                                                  }
                                                                   controls
                                                                   width={"100%"}
                                                                   height={

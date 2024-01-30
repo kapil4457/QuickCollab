@@ -609,7 +609,7 @@ const page: FC<PageProps> = ({ params }) => {
                 <div className="previousWork flex flex-col gap-4">
                   <h2 className="text-3xl font-bold">Work Samples</h2>
                   <div className="flex w-full justify-center items-center ">
-                    <Table className="w-full lg:w-[70%] ">
+                    <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Title</TableHead>
@@ -641,7 +641,12 @@ const page: FC<PageProps> = ({ params }) => {
                                         width: "5rem",
                                       }}
                                     />
-                                    {ele?.projectTitle}
+                                    <p
+                                      style={{ display: "none" }}
+                                      className="lg:!block"
+                                    >
+                                      {ele?.projectTitle}
+                                    </p>
                                   </div>
                                 </TableCell>
 
