@@ -12,6 +12,10 @@ type initialStateProps = {
     success: boolean | null;
     message: string;
   };
+  updateValue: {
+    success: boolean | null;
+    message: string;
+  };
 };
 
 const initialState = {
@@ -23,6 +27,10 @@ const initialState = {
   deleteValue: {
     success: null,
     message: "",
+  },
+  updateValue: {
+    message: "",
+    success: null,
   },
 } as initialStateProps;
 
@@ -53,6 +61,21 @@ export const deleteProject = createAsyncThunk(
       `/api/v1/me/delete/project/${id}`
     );
 
+    if (data.success) {
+      return data;
+    }
+    return {
+      success: data.success,
+      message: data.message,
+    };
+  }
+);
+
+export const updateProject = createAsyncThunk(
+  "project/updateProject",
+  async (info) => {
+    console.log("info : ", info);
+    const data = await requestHandler(info, "PUT", "/api/v1/me/update/project");
     if (data.success) {
       return data;
     }
@@ -95,6 +118,20 @@ export const projectSlice = createSlice({
     builder.addCase(deleteProject.pending, (state, action) => {
       state.deleteValue.success = null;
       state.deleteValue.message = "Deleting Project";
+    });
+
+    // Update Project
+    builder.addCase(updateProject.fulfilled, (state, action) => {
+      state.updateValue.message = action.payload.message;
+      state.updateValue.success = action.payload.success;
+    });
+    builder.addCase(updateProject.rejected, (state, action) => {
+      state.updateValue.message = action.error.message as string;
+      state.updateValue.success = false;
+    });
+    builder.addCase(updateProject.pending, (state, action) => {
+      state.updateValue.success = null;
+      state.updateValue.message = "Updating Project";
     });
   },
 });

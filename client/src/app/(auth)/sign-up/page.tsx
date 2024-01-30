@@ -64,31 +64,15 @@ const SignUpPage = () => {
     const data = await cloudinaryUploader({
       ele: file,
       location: "profile_pics",
+      type: "image",
     });
 
-    let image = {
-      asset_id: data.asset_id,
-      public_id: data.public_id,
-      // version: data.version,
-      // version_id: data.version_id,
-      signature: data.signature,
-      width: data.width,
-      height: data.height,
-      format: data.format,
-      // resource_type: data.resource_type,
-      created_at: data.created_at,
-      type: data.type,
-      // etag: data.etag,
-      url: data.url,
-      folder: data.folder,
-      // original_filename: data.original_filename,
-    };
     const info = {
       name: formData.get("name"),
       email: formData.get("email"),
       password: formData.get("password"),
       role: formData.get("role"),
-      avatar: image,
+      avatar: data,
     };
 
     // const res = await axios.post(

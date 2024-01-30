@@ -35,6 +35,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import CancelIcon from "@mui/icons-material/Cancel";
+
 import ReactPlayer from "react-player";
 
 import { Input } from "@/components/ui/input";
@@ -43,10 +45,15 @@ import toast from "react-hot-toast";
 import {
   addNewProjectReducer,
   deleteProject,
+  updateProject,
 } from "@/redux/slices/projectSlice";
 import cloudinaryUploader from "@/utils/cloudinary";
 import { useRouter } from "next/navigation";
-import { fetchMe, updateAvailability } from "@/redux/slices/userSlice";
+import {
+  fetchMe,
+  updateAvailability,
+  updateUserController,
+} from "@/redux/slices/userSlice";
 
 import { SERVICE_PROVIDER } from "@/utils/roles";
 import { PageProps } from "../../../.next/types/app/layout";
@@ -61,15 +68,16 @@ type FormDataProps = {
   link: string;
 };
 
+type updateUserProps = {
+  name: string;
+  avatar: any | null;
+  about: string;
+  servicesOffered: Array<string>;
+};
+
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
   const router = useRouter();
-
-  const {
-    success,
-    loading: projectLoader,
-    message,
-  } = useAppSelector((state) => state.projectSlice.value);
 
   const [isAvailable, setIsAvailable] = useState<boolean>();
   const [projectData, setProjectData] = useState<FormDataProps>({
@@ -79,6 +87,7 @@ const page: FC<PageProps> = ({ params }) => {
     videos: null,
     link: "",
   });
+  const [newTag, setNewTag] = useState("");
 
   const [updatedProjectData, setUpdatedProjectData] = useState({
     title: "",
@@ -87,12 +96,33 @@ const page: FC<PageProps> = ({ params }) => {
     videos: [],
   });
 
+  const [updateUser, setUpdatedUser] = useState<updateUserProps>({
+    name: "",
+    avatar: null,
+    about: "",
+    servicesOffered: [],
+  });
+
+  const {
+    success: updateUserDetailsSuccess,
+    message: updateUserDetailsMessage,
+  } = useAppSelector((state) => state.userSlice.updatedUser);
+
+  const { message: updateMessage, success: updateSuccess } = useAppSelector(
+    (state) => state.projectSlice.updateValue
+  );
   const { user, isAuthenticated } = useAppSelector(
     (state) => state.userSlice.value
   );
-  const { success: updateSuccess, message: updateMessage } = useAppSelector(
-    (state) => state.userSlice.availabilityStatus
-  );
+  const {
+    success: availabilityStatusSuccess,
+    message: availabilityStatusMessage,
+  } = useAppSelector((state) => state.userSlice.availabilityStatus);
+  const {
+    success,
+    loading: projectLoader,
+    message,
+  } = useAppSelector((state) => state.projectSlice.value);
 
   const { message: deleteMessage, success: deleteSuccess } = useAppSelector(
     (state) => state.projectSlice.deleteValue
@@ -206,12 +236,28 @@ const page: FC<PageProps> = ({ params }) => {
   }, [success]);
 
   useEffect(() => {
-    if (updateSuccess === true) {
+    if (availabilityStatusSuccess === true) {
       setIsAvailable(!isAvailable);
+      toast.success(availabilityStatusMessage);
+    }
+  }, [availabilityStatusSuccess]);
+  useEffect(() => {
+    if (updateSuccess === true) {
       toast.success(updateMessage);
+      dispatch(fetchMe());
+    } else if (updateSuccess === false) {
+      toast.error(updateMessage);
     }
   }, [updateSuccess]);
 
+  useEffect(() => {
+    if (updateUserDetailsSuccess === true) {
+      toast.success(updateUserDetailsMessage);
+      dispatch(fetchMe());
+    } else if (updateUserDetailsSuccess === false) {
+      toast.error(updateUserDetailsMessage);
+    }
+  }, [updateUserDetailsSuccess]);
   return (
     <>
       <div
@@ -272,7 +318,7 @@ const page: FC<PageProps> = ({ params }) => {
                   id="availability"
                   checked={isAvailable}
                   onCheckedChange={(val) => {
-                    dispatch(updateAvailability(val));
+                    dispatch(updateAvailability({ status: val }));
                   }}
                 />
                 <Label htmlFor="availability">Available</Label>
@@ -382,7 +428,180 @@ const page: FC<PageProps> = ({ params }) => {
           <ScrollArea className="right h-[100%] lg:max-h-[calc(100vh-6rem)] ">
             <div className="flex flex-col gap-14">
               <div className="about flex flex-col gap-5">
-                <h2 className="text-3xl font-bold">About</h2>
+                <div className="flex gap-5">
+                  <h2 className="text-3xl font-bold">About</h2>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        className="flex gap-3"
+                        onClick={() => {
+                          setUpdatedUser({
+                            about: user?.about,
+                            avatar: user?.avatar,
+                            name: user?.name,
+                            servicesOffered: user?.servicesOffered,
+                          });
+                        }}
+                      >
+                        Edit Profile
+                        <Edit className="w-5 h-5" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Edit profile</DialogTitle>
+                        <DialogDescription>
+                          Make changes to your profile here. Click save when
+                          you're done.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="w-full flex items-center justify-center ">
+                          <div
+                            className="relative"
+                            style={{ borderRadius: "100%" }}
+                          >
+                            <img
+                              src={
+                                updateUser?.avatar?.url ||
+                                "https://res.cloudinary.com/dpeldzvz6/image/upload/v1706350898/projectImages/l6tlo0eqdpxwchsqgc8r.jpg"
+                              }
+                              className="h-36 w-36 object-cover image "
+                              style={{ borderRadius: "100%" }}
+                            />
+                            <div className="absolute image-cover">
+                              <input
+                                type="file"
+                                accept=".jpg,.jpeg,.png"
+                                className="h-full w-full"
+                                onChange={async (e) => {
+                                  toast.loading(
+                                    "Uploading image.Please wait...",
+                                    {
+                                      duration: 3000,
+                                    }
+                                  );
+                                  const data = await cloudinaryUploader({
+                                    ele: e.target.files[0] as File,
+                                    location: "profile_pics",
+                                    type: "image",
+                                  });
+
+                                  setUpdatedUser({
+                                    ...updateUser,
+                                    avatar: data,
+                                  });
+                                }}
+                              />
+                              <Edit className="absolute h-11 w-11" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="name" className="text-right">
+                            Name
+                          </Label>
+                          <Input
+                            id="name"
+                            value={updateUser?.name}
+                            onChange={(e) => {
+                              setUpdatedUser({
+                                ...updateUser,
+                                name: e.target.value,
+                              });
+                            }}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="description" className="text-right">
+                            About
+                          </Label>
+                          <Textarea
+                            id="description"
+                            value={updateUser?.about}
+                            onChange={(e) => {
+                              setUpdatedUser({
+                                ...updateUser,
+                                about: e.target.value,
+                              });
+                            }}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid gap-4 justify-end grid-cols-4">
+                          <Label htmlFor="tags" className="text-right">
+                            Tags
+                          </Label>
+
+                          <div className="tags flex flex-col gap-3 col-span-3">
+                            <Input
+                              id="tags"
+                              value={newTag}
+                              onChange={(e) => {
+                                setNewTag(e.target.value);
+                              }}
+                              className="w-full"
+                              onKeyDownCapture={(e) => {
+                                if (e.key === "Enter") {
+                                  let newTags = [];
+                                  updateUser?.servicesOffered?.map((l) => {
+                                    newTags.push(l);
+                                  });
+                                  // let newTags =
+                                  //   updateUser.servicesOffered as Array<string>;
+
+                                  newTags.push(newTag);
+                                  setUpdatedUser({
+                                    ...updateUser,
+                                    servicesOffered: newTags,
+                                  });
+                                }
+                              }}
+                            />
+
+                            <div className="flex flex-wrap gap-2">
+                              {updateUser?.servicesOffered?.map((item, key) => (
+                                <Badge key={key}>
+                                  {item}
+                                  <CancelIcon
+                                    className="w-4 h-4 cursor-pointer"
+                                    onClick={() => {
+                                      let newTags =
+                                        updateUser?.servicesOffered.filter(
+                                          (ele) => {
+                                            if (ele !== item) {
+                                              return ele;
+                                            }
+                                          }
+                                        );
+
+                                      setUpdatedUser({
+                                        ...updateUser,
+                                        servicesOffered: newTags,
+                                      });
+                                    }}
+                                  />
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          onClick={() => {
+                            dispatch(updateUserController(updateUser));
+                          }}
+                        >
+                          Save changes
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 {user && user?.about && <p>{user?.about}</p>}
               </div>
               {user && user?.role === SERVICE_PROVIDER && (
@@ -491,7 +710,17 @@ const page: FC<PageProps> = ({ params }) => {
                                 <TableCell className="h-full font-medium flex gap-x-3">
                                   <Dialog>
                                     <DialogTrigger asChild>
-                                      <Button className="cursor-pointer">
+                                      <Button
+                                        className="cursor-pointer"
+                                        onClick={() => {
+                                          setUpdatedProjectData({
+                                            ...updatedProjectData,
+                                            title: ele?.projectTitle,
+                                            description:
+                                              ele?.projectDescription,
+                                          });
+                                        }}
+                                      >
                                         <Edit />
                                       </Button>
                                     </DialogTrigger>
@@ -511,7 +740,7 @@ const page: FC<PageProps> = ({ params }) => {
                                           </Label>
                                           <Input
                                             id="title"
-                                            value={ele?.projectTitle}
+                                            value={updatedProjectData?.title}
                                             className="col-span-3"
                                             onChange={(e) => {
                                               setUpdatedProjectData({
@@ -530,7 +759,9 @@ const page: FC<PageProps> = ({ params }) => {
                                           </Label>
                                           <Textarea
                                             id="description"
-                                            value={ele?.projectDescription}
+                                            value={
+                                              updatedProjectData?.description
+                                            }
                                             onChange={(e) => {
                                               setUpdatedProjectData({
                                                 ...updatedProjectData,
@@ -540,64 +771,21 @@ const page: FC<PageProps> = ({ params }) => {
                                             className="col-span-3"
                                           />
                                         </div>
-                                        <div className="flex flex-col gap-4">
-                                          <Label htmlFor="images">Images</Label>
-                                          <div
-                                            id="images"
-                                            className="w-full flex flex-col gap-3"
-                                          >
-                                            {ele?.projectImages?.map(
-                                              (e, key: number) => {
-                                                return (
-                                                  <div
-                                                    key={key}
-                                                    className="flex justify-between w-full"
-                                                  >
-                                                    <img
-                                                      src={e?.url}
-                                                      alt={e?.folder}
-                                                      className="w-[5rem]"
-                                                    />
-                                                    <Delete className="cursor-pointer" />
-                                                  </div>
-                                                );
-                                              }
-                                            )}
-                                          </div>
-
-                                          <input type="file" multiple />
-                                        </div>
-                                        <div className="flex flex-col gap-4">
-                                          <Label htmlFor="videos">Videos</Label>
-                                          <div
-                                            id="videos"
-                                            className="w-full flex flex-col gap-3"
-                                          >
-                                            {ele?.projectVideos?.map(
-                                              (e, key: number) => {
-                                                console.log("e : ", e);
-                                                return (
-                                                  <div
-                                                    key={key}
-                                                    className="flex justify-between w-full items-center"
-                                                  >
-                                                    <ReactPlayer
-                                                      url={e?.url}
-                                                      width={"3rem"}
-                                                      height={"3rem"}
-                                                    />
-                                                    <Delete className="cursor-pointer" />
-                                                  </div>
-                                                );
-                                              }
-                                            )}
-                                          </div>
-
-                                          <input type="file" multiple />
-                                        </div>
                                       </div>
                                       <DialogFooter>
-                                        <Button type="submit">
+                                        <Button
+                                          onClick={() =>
+                                            dispatch(
+                                              updateProject({
+                                                projectTitle:
+                                                  updatedProjectData.title,
+                                                projectDescription:
+                                                  updatedProjectData.description,
+                                                id: ele?._id,
+                                              })
+                                            )
+                                          }
+                                        >
                                           Save changes
                                         </Button>
                                       </DialogFooter>

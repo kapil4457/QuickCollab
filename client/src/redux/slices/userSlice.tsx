@@ -13,6 +13,10 @@ type initialStateProps = {
     success: boolean | null;
     message: string;
   };
+  updatedUser: {
+    success: boolean | null;
+    message: string;
+  };
 };
 
 const initialState = {
@@ -23,6 +27,10 @@ const initialState = {
     message: "",
   } as useValueProps,
   availabilityStatus: {
+    success: null,
+    message: "",
+  },
+  updatedUser: {
     success: null,
     message: "",
   },
@@ -57,6 +65,19 @@ export const fetchMe = createAsyncThunk("user/fetchMe", async () => {
     message: data.message,
   };
 });
+export const updateUserController = createAsyncThunk(
+  "user/updateUser",
+  async (info) => {
+    const data = await requestHandler(info, "PUT", `/api/v1/me/update`);
+    if (data.success) {
+      return data;
+    }
+    return {
+      success: data.success,
+      message: data.message,
+    };
+  }
+);
 export const userSlice = createSlice({
   name: "user",
   initialState,
@@ -89,6 +110,8 @@ export const userSlice = createSlice({
       state.value.message = "Fetching your details";
     });
 
+    // update Availability
+
     builder.addCase(updateAvailability.fulfilled, (state, action) => {
       state.availabilityStatus.success = action.payload.success;
       state.availabilityStatus.message = action.payload.message;
@@ -99,6 +122,19 @@ export const userSlice = createSlice({
     });
     builder.addCase(updateAvailability.pending, (state, action) => {
       state.availabilityStatus.success = null;
+    });
+
+    // Update user details
+    builder.addCase(updateUserController.fulfilled, (state, action) => {
+      state.updatedUser.success = action.payload.success;
+      state.updatedUser.message = action.payload.message;
+    });
+    builder.addCase(updateUserController.rejected, (state, action) => {
+      state.updatedUser.success = false;
+      state.updatedUser.message = action.error.message as string;
+    });
+    builder.addCase(updateUserController.pending, (state, action) => {
+      state.updatedUser.success = null;
     });
   },
 });

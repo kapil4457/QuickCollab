@@ -11,7 +11,7 @@ const putHandler = async (url: string, info: any) => {
 
     const { data } = await axios.put(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`,
-      { status: info },
+      info,
       config
     );
     return data;
