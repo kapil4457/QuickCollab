@@ -18,6 +18,7 @@ const {
   addServices,
   removeServices,
   getContentCreator,
+  sendQuery,
 } = require("../controller/userController");
 const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
@@ -73,4 +74,6 @@ router
     authorizeRole("content-creator"),
     getContentCreator
   );
+
+router.route("/send/query").post(isAuthenticatedUser, sendQuery);
 module.exports = router;

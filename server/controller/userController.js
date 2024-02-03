@@ -4,7 +4,7 @@ const ResetPassword = require("../models/resetPasswordModel");
 const sendToken = require("../utils/jwtToken");
 var validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
-const sendMail = require("../utils/sendMail");
+const { resetPasswordMail, contactEmail } = require("../utils/sendMail");
 
 /* Roles */
 // content-creator
@@ -164,6 +164,7 @@ exports.getUserDetails = async (req, res) => {
         message: "Please login to access this.",
       });
     }
+
     const user = await User.findById(req.user.id)
       .populate("avatar")
       .populate({
@@ -183,7 +184,6 @@ exports.getUserDetails = async (req, res) => {
 
       // .populate("providerPreviousWork", "projectVideos")
       .populate("conversations");
-
     return await res.status(200).send({
       success: true,
       user,
@@ -351,7 +351,7 @@ exports.resetPasswordLinkGenerator = async (req, res) => {
       uuid: id,
       userId: user._id,
     });
-    sendMail(email, "Password Reset", id, user);
+    resetPasswordMail(email, "Password Reset", id, user);
 
     return await res.status(200).send({
       success: true,
@@ -716,6 +716,29 @@ exports.getContentCreator = async (req, res) => {
       success: true,
       message: "Fetched all users",
       users: ans,
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.sendQuery = async (req, res) => {
+  try {
+    const { subject, body } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!subject || !body || subject === "" || body === "") {
+      return await res.status(400).send({
+        success: false,
+        message: "Please fill in all the details",
+      });
+    }
+    await contactEmail(user?.email, subject, user, body);
+    return await res.status(200).send({
+      success: true,
+      message: "Query submitted successfully.",
     });
   } catch (err) {
     return await res.status(400).send({
