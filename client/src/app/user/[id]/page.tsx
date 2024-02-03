@@ -4,14 +4,12 @@ import React, { FC, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "@/redux/store";
 import { fetchUserDetails } from "@/redux/slices/profileSlice";
-import Loader from "@/components/Loader/Loader";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Rating } from "@mui/material";
 import Tilt from "react-parallax-tilt";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +42,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import ReactPlayer from "react-player";
 import { Chat, ChatBubble, Launch } from "@mui/icons-material";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
@@ -110,6 +109,22 @@ const page: FC<PageProps> = ({ params }) => {
               <div className="flex flex-wrap gap-2">
                 {user?.services?.map((ele: string) => {
                   return <Badge>{ele}</Badge>;
+                })}
+              </div>
+            </div>
+          )}
+          {user && user?.socialPlatform && user?.role === CONTENT_CREATOR && (
+            <div className=" w-full flex flex-col p-5 gap-2 ">
+              <h3 className="w-full  text-2xl">Socials</h3>
+              <div className="w-full flex flex-wrap gap-2">
+                {user?.socialPlatform?.map((ele) => {
+                  return (
+                    <Link href={ele?.link} target="_blank">
+                      <Button variant={"link"} className="flex gap-1">
+                        {ele?.title} <Launch className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  );
                 })}
               </div>
             </div>
