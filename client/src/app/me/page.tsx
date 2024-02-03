@@ -16,6 +16,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   Table,
@@ -55,10 +61,11 @@ import {
   updateUserController,
 } from "@/redux/slices/userSlice";
 
-import { SERVICE_PROVIDER } from "@/utils/roles";
+import { CONTENT_CREATOR, SERVICE_PROVIDER } from "@/utils/roles";
 import { PageProps } from "../../../.next/types/app/layout";
 import { Switch } from "@/components/ui/switch";
-import { Delete, Edit, Launch, Link } from "@mui/icons-material";
+import { Delete, Edit, Launch } from "@mui/icons-material";
+import Link from "next/link";
 
 type FormDataProps = {
   title: string;
@@ -68,17 +75,27 @@ type FormDataProps = {
   link: string;
 };
 
+type socialType = {
+  title: string;
+  link: string;
+};
+
 type updateUserProps = {
   name: string;
   avatar: any | null;
   about: string;
   servicesOffered: Array<string>;
+  socials: Array<socialType>;
 };
 
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
   const router = useRouter();
 
+  const [tempSocials, setTempSocials] = useState({
+    title: "",
+    link: "",
+  });
   const [isAvailable, setIsAvailable] = useState<boolean>();
   const [projectData, setProjectData] = useState<FormDataProps>({
     title: "",
@@ -102,6 +119,7 @@ const page: FC<PageProps> = ({ params }) => {
     avatar: null,
     about: "",
     servicesOffered: [],
+    socials: [],
   });
 
   const {
@@ -296,7 +314,7 @@ const page: FC<PageProps> = ({ params }) => {
             <h3 className="w-full text-3xl self-center flex justify-center items-center font-bold">
               {user?.name}
             </h3>
-            {user && user?.rating && (
+            {user && user?.rating && user?.role === SERVICE_PROVIDER && (
               <Rating
                 value={user?.rating}
                 precision={0.1}
@@ -305,7 +323,7 @@ const page: FC<PageProps> = ({ params }) => {
               />
             )}
           </div>
-          {user && user?.servicesOffered && (
+          {user && user?.servicesOffered && user?.role === SERVICE_PROVIDER && (
             <div className="tags w-full flex flex-col p-5 gap-2 ">
               <h3 className="w-full  text-xl">Tags</h3>
               <div className="flex flex-wrap gap-2">
@@ -314,6 +332,22 @@ const page: FC<PageProps> = ({ params }) => {
                     <>
                       <Badge>{ele}</Badge>
                     </>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {user && user?.socialPlatform && user?.role === CONTENT_CREATOR && (
+            <div className=" w-full flex flex-col p-5 gap-2 ">
+              <h3 className="w-full  text-2xl">Socials</h3>
+              <div className="w-full flex flex-wrap gap-2">
+                {user?.socialPlatform?.map((ele) => {
+                  return (
+                    <Link href={ele?.link} target="_blank">
+                      <Button variant={"link"} className="flex gap-1">
+                        {ele?.title} <Launch className="w-4 h-4" />
+                      </Button>
+                    </Link>
                   );
                 })}
               </div>
@@ -452,6 +486,7 @@ const page: FC<PageProps> = ({ params }) => {
                             avatar: user?.avatar,
                             name: user?.name,
                             servicesOffered: user?.servicesOffered,
+                            socials: user?.socialPlatform,
                           });
                         }}
                       >
@@ -541,64 +576,160 @@ const page: FC<PageProps> = ({ params }) => {
                             className="col-span-3"
                           />
                         </div>
-                        <div className="grid gap-4 justify-end grid-cols-4">
-                          <Label htmlFor="tags" className="text-right">
-                            Tags
-                          </Label>
+                        {user && user?.role === SERVICE_PROVIDER && (
+                          <div className="grid gap-4 justify-end grid-cols-4">
+                            <Label htmlFor="tags" className="text-right">
+                              Tags
+                            </Label>
 
-                          <div className="tags flex flex-col gap-3 col-span-3">
-                            <Input
-                              id="tags"
-                              value={newTag}
-                              onChange={(e) => {
-                                setNewTag(e.target.value);
-                              }}
-                              className="w-full"
-                              onKeyDownCapture={(e) => {
-                                if (e.key === "Enter") {
-                                  let newTags = [];
-                                  updateUser?.servicesOffered?.map((l) => {
-                                    newTags.push(l);
-                                  });
-                                  // let newTags =
-                                  //   updateUser.servicesOffered as Array<string>;
+                            <div className="tags flex flex-col gap-3 col-span-3">
+                              <Input
+                                id="tags"
+                                value={newTag}
+                                onChange={(e) => {
+                                  setNewTag(e.target.value);
+                                }}
+                                className="w-full"
+                                onKeyDownCapture={(e) => {
+                                  if (e.key === "Enter") {
+                                    let newTags = [];
+                                    updateUser?.servicesOffered?.map((l) => {
+                                      newTags.push(l);
+                                    });
+                                    // let newTags =
+                                    //   updateUser.servicesOffered as Array<string>;
 
-                                  newTags.push(newTag);
-                                  setUpdatedUser({
-                                    ...updateUser,
-                                    servicesOffered: newTags,
-                                  });
-                                }
-                              }}
-                            />
+                                    newTags.push(newTag);
+                                    setUpdatedUser({
+                                      ...updateUser,
+                                      servicesOffered: newTags,
+                                    });
+                                  }
+                                }}
+                              />
 
+                              <div className="flex flex-wrap gap-2">
+                                {updateUser?.servicesOffered?.map(
+                                  (item, key) => (
+                                    <Badge key={key}>
+                                      {item}
+                                      <CancelIcon
+                                        className="w-4 h-4 cursor-pointer"
+                                        onClick={() => {
+                                          let newTags =
+                                            updateUser?.servicesOffered.filter(
+                                              (ele) => {
+                                                if (ele !== item) {
+                                                  return ele;
+                                                }
+                                              }
+                                            );
+
+                                          setUpdatedUser({
+                                            ...updateUser,
+                                            servicesOffered: newTags,
+                                          });
+                                        }}
+                                      />
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {user && user?.role === CONTENT_CREATOR && (
+                          <div className="flex flex-col gap-2">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label
+                                htmlFor="social-links"
+                                className="text-right"
+                              >
+                                Socials
+                              </Label>
+                              <div
+                                id="social-links"
+                                className=" flex w-full col-span-3 gap-2"
+                              >
+                                <Input
+                                  id="social-links-title"
+                                  placeholder="Title"
+                                  onChange={(e) => {
+                                    setTempSocials({
+                                      ...tempSocials,
+                                      title: e.target.value,
+                                    });
+                                  }}
+                                />
+                                <Input
+                                  placeholder="Link"
+                                  id="social-links-link"
+                                  onChange={(e) => {
+                                    setTempSocials({
+                                      ...tempSocials,
+                                      link: e.target.value,
+                                    });
+                                  }}
+                                />
+                                <Button
+                                  onClick={() => {
+                                    let newSocials = [];
+
+                                    for (let item of updateUser.socials) {
+                                      newSocials.push(item);
+                                    }
+                                    newSocials.push({
+                                      title: tempSocials.title,
+                                      link: tempSocials.link,
+                                    });
+
+                                    setUpdatedUser({
+                                      ...updateUser,
+                                      socials: newSocials,
+                                    });
+                                  }}
+                                >
+                                  Add
+                                </Button>
+                              </div>
+                            </div>
                             <div className="flex flex-wrap gap-2">
-                              {updateUser?.servicesOffered?.map((item, key) => (
-                                <Badge key={key}>
-                                  {item}
-                                  <CancelIcon
-                                    className="w-4 h-4 cursor-pointer"
-                                    onClick={() => {
-                                      let newTags =
-                                        updateUser?.servicesOffered.filter(
-                                          (ele) => {
-                                            if (ele !== item) {
-                                              return ele;
+                              {updateUser?.socials?.map((item, key) => (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Badge
+                                        className="flex gap-2"
+                                        onClick={() => {
+                                          let newSocials = [];
+                                          for (let ele of updateUser?.socials) {
+                                            if (
+                                              ele.link !== item.link ||
+                                              ele.title !== item.title
+                                            ) {
+                                              newSocials.push(ele);
                                             }
                                           }
-                                        );
 
-                                      setUpdatedUser({
-                                        ...updateUser,
-                                        servicesOffered: newTags,
-                                      });
-                                    }}
-                                  />
-                                </Badge>
+                                          setUpdatedUser({
+                                            ...updateUser,
+                                            socials: newSocials,
+                                          });
+                                        }}
+                                      >
+                                        {item?.title}
+                                        <CancelIcon className="w-5 h-5 cursor-pointer" />
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{item?.link}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               ))}
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                       <DialogFooter>
                         <Button
