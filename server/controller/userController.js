@@ -195,7 +195,7 @@ exports.getUserDetails = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, avatar, about, servicesOffered } = req.body;
+    const { name, avatar, about, servicesOffered, socials } = req.body;
 
     if (name == "") {
       return await res.status(400).send({
@@ -209,6 +209,7 @@ exports.updateProfile = async (req, res) => {
       updatedAt: new Date().toISOString(),
       about: about,
       servicesOffered: servicesOffered,
+      socialPlatform: socials,
     };
     const check = await Cloudinary.findById(avatar._id);
     if (check === null) {
