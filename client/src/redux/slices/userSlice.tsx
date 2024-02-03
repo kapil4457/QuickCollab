@@ -17,6 +17,10 @@ type initialStateProps = {
     success: boolean | null;
     message: string;
   };
+  sendQueryEmail: {
+    success: boolean | null;
+    message: string;
+  };
 };
 
 const initialState = {
@@ -34,6 +38,10 @@ const initialState = {
     success: null,
     message: "",
   },
+  sendQueryEmail: {
+    success: null,
+    message: "",
+  },
 } as initialStateProps;
 
 export const updateAvailability = createAsyncThunk(
@@ -43,6 +51,29 @@ export const updateAvailability = createAsyncThunk(
       status,
       "PUT",
       "/api/v1/me/update/availability"
+    );
+    if (data.success) {
+      return data;
+    }
+    return {
+      success: data.success,
+      message: data.message,
+    };
+  }
+);
+
+export const sendQueryEmail = createAsyncThunk(
+  "user/sendQueryEmail",
+  async ({ subject, body }: { subject: string; body: string }) => {
+    console.log("subject : ", subject);
+    console.log("body : ", body);
+    const data = await requestHandler(
+      {
+        subject,
+        body,
+      },
+      "POST",
+      "/api/v1/send/query"
     );
     if (data.success) {
       return data;
@@ -135,6 +166,18 @@ export const userSlice = createSlice({
     });
     builder.addCase(updateUserController.pending, (state, action) => {
       state.updatedUser.success = null;
+    });
+    // Send Email
+    builder.addCase(sendQueryEmail.fulfilled, (state, action) => {
+      state.sendQueryEmail.success = action.payload.success;
+      state.sendQueryEmail.message = action.payload.message;
+    });
+    builder.addCase(sendQueryEmail.rejected, (state, action) => {
+      state.sendQueryEmail.success = false;
+      state.sendQueryEmail.message = action.error.message as string;
+    });
+    builder.addCase(sendQueryEmail.pending, (state, action) => {
+      state.sendQueryEmail.success = null;
     });
   },
 });
