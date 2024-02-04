@@ -156,14 +156,26 @@ const NavBar = () => {
                   >
                     Home
                   </SheetClose>
-                  <SheetClose
-                    className="h-16 border-b-2 text-[1rem]"
-                    onClick={() => {
-                      router.push("/hire");
-                    }}
-                  >
-                    Hire
-                  </SheetClose>
+                  {user && user?.role === CONTENT_CREATOR && (
+                    <SheetClose
+                      className="h-16 border-b-2 text-[1rem]"
+                      onClick={() => {
+                        router.push("/hire");
+                      }}
+                    >
+                      Hire
+                    </SheetClose>
+                  )}
+                  {user && user?.role === SERVICE_PROVIDER && (
+                    <SheetClose
+                      className="h-16 border-b-2 text-[1rem]"
+                      onClick={() => {
+                        router.push("/jobs");
+                      }}
+                    >
+                      Explore Jobs
+                    </SheetClose>
+                  )}
                   <SheetClose
                     className="h-16 border-b-2 text-[1rem]"
                     onClick={() => {
@@ -182,8 +194,8 @@ const NavBar = () => {
             <Button variant={"outline"}>Home</Button>
           </Link>
           {isAuthenticated && user && user.role === SERVICE_PROVIDER ? (
-            <Link href="/projects">
-              <Button variant={"outline"}>Explore Projects</Button>
+            <Link href="/jobs">
+              <Button variant={"outline"}>Explore Jobs</Button>
             </Link>
           ) : (
             <></>

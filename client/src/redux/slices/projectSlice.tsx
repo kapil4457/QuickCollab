@@ -4,7 +4,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 type useValueProps = {
   loading: boolean;
   message: string;
-  success: boolean;
+  success: boolean | null;
 };
 type initialStateProps = {
   value: useValueProps;
@@ -22,7 +22,7 @@ const initialState = {
   value: {
     loading: true,
     message: "",
-    success: false,
+    success: null,
   } as useValueProps,
   deleteValue: {
     success: null,
@@ -89,7 +89,24 @@ export const updateProject = createAsyncThunk(
 export const projectSlice = createSlice({
   name: "services",
   initialState,
-  reducers: {},
+  reducers: {
+    addNewProjectReducerReset: (state, action) => {
+      // console.log("I am in");
+      state.value.success = null;
+      state.value.message = "";
+      state.value.loading = false;
+    },
+    deleteProjectReset: (state, action) => {
+      // console.log("I am in");
+      state.deleteValue.success = null;
+      state.deleteValue.message = "";
+    },
+    updateProjectReset: (state, action) => {
+      // console.log("I am in");
+      state.updateValue.success = null;
+      state.updateValue.message = "";
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(addNewProjectReducer.fulfilled, (state, action) => {
       state.value.message = action.payload.message;
@@ -137,3 +154,8 @@ export const projectSlice = createSlice({
 });
 
 export default projectSlice.reducer;
+export const {
+  addNewProjectReducerReset,
+  deleteProjectReset,
+  updateProjectReset,
+} = projectSlice.actions;

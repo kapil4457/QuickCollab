@@ -50,15 +50,20 @@ import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
 import {
   addNewProjectReducer,
+  addNewProjectReducerReset,
   deleteProject,
+  deleteProjectReset,
   updateProject,
+  updateProjectReset,
 } from "@/redux/slices/projectSlice";
 import cloudinaryUploader from "@/utils/cloudinary";
 import { useRouter } from "next/navigation";
 import {
   fetchMe,
   updateAvailability,
+  updateAvailabilityReset,
   updateUserController,
+  updateUserControllerReset,
 } from "@/redux/slices/userSlice";
 
 import { CONTENT_CREATOR, SERVICE_PROVIDER } from "@/utils/roles";
@@ -88,6 +93,15 @@ type updateUserProps = {
   socials: Array<socialType>;
 };
 
+type jobValProps = {
+  jobTitle: string;
+  jobDescription: string;
+  location: string;
+  estimatedTime: number;
+  minPay: number;
+  maxPay: number;
+};
+
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -105,6 +119,15 @@ const page: FC<PageProps> = ({ params }) => {
     link: "",
   });
   const [newTag, setNewTag] = useState("");
+
+  const [jobVal, setJobVal] = useState<jobValProps>({
+    jobTitle: "",
+    jobDescription: "",
+    location: "",
+    estimatedTime: 0,
+    maxPay: 0,
+    minPay: 0,
+  });
 
   const [updatedProjectData, setUpdatedProjectData] = useState({
     title: "",
@@ -237,6 +260,7 @@ const page: FC<PageProps> = ({ params }) => {
   useEffect(() => {
     if (deleteSuccess === true) {
       toast.success(deleteMessage);
+      dispatch(deleteProjectReset({}));
       dispatch(fetchMe());
     } else if (deleteSuccess === false) {
       toast.error(deleteMessage);
@@ -253,6 +277,7 @@ const page: FC<PageProps> = ({ params }) => {
   useEffect(() => {
     if (success) {
       toast.success("Project Added successfully!!");
+      dispatch(addNewProjectReducerReset({}));
     }
   }, [success]);
 
@@ -260,12 +285,14 @@ const page: FC<PageProps> = ({ params }) => {
     if (availabilityStatusSuccess === true) {
       setIsAvailable(!isAvailable);
       toast.success(availabilityStatusMessage);
+      dispatch(updateAvailabilityReset({}));
     }
   }, [availabilityStatusSuccess]);
   useEffect(() => {
     if (updateSuccess === true) {
       toast.success(updateMessage);
       dispatch(fetchMe());
+      dispatch(updateProjectReset({}));
     } else if (updateSuccess === false) {
       toast.error(updateMessage);
     }
@@ -278,6 +305,7 @@ const page: FC<PageProps> = ({ params }) => {
     } else if (updateUserDetailsSuccess === false) {
       toast.error(updateUserDetailsMessage);
     }
+    dispatch(updateUserControllerReset({}));
   }, [updateUserDetailsSuccess]);
 
   useEffect(() => {
@@ -337,7 +365,7 @@ const page: FC<PageProps> = ({ params }) => {
               </div>
             </div>
           )}
-          {user && user?.socialPlatform && user?.role === CONTENT_CREATOR && (
+          {user && user?.socialPlatform && (
             <div className=" w-full flex flex-col p-5 gap-2 ">
               <h3 className="w-full  text-2xl">Socials</h3>
               <div className="w-full flex flex-wrap gap-2">
@@ -472,277 +500,420 @@ const page: FC<PageProps> = ({ params }) => {
           <ScrollArea className="right h-[100%] lg:max-h-[calc(100vh-6rem)] ">
             <div className="flex flex-col gap-14">
               <div className="about flex flex-col gap-5">
-                <div className="flex gap-5">
-                  <h2 className="text-3xl font-bold">About</h2>
+                <div className="flex justify-between w-full">
+                  <div className="flex gap-5">
+                    <h2 className="text-3xl font-bold">About</h2>
 
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="secondary"
-                        className="flex gap-3"
-                        onClick={() => {
-                          setUpdatedUser({
-                            about: user?.about,
-                            avatar: user?.avatar,
-                            name: user?.name,
-                            servicesOffered: user?.servicesOffered,
-                            socials: user?.socialPlatform,
-                          });
-                        }}
-                      >
-                        Edit Profile
-                        <Edit className="w-5 h-5" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Edit profile</DialogTitle>
-                        <DialogDescription>
-                          Make changes to your profile here. Click save when
-                          you're done.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="w-full flex items-center justify-center ">
-                          <div
-                            className="relative"
-                            style={{ borderRadius: "100%" }}
-                          >
-                            <img
-                              src={
-                                updateUser?.avatar?.url ||
-                                "https://res.cloudinary.com/dpeldzvz6/image/upload/v1706350898/projectImages/l6tlo0eqdpxwchsqgc8r.jpg"
-                              }
-                              className="h-36 w-36 object-cover image "
-                              style={{ borderRadius: "100%" }}
-                            />
-                            <div className="absolute image-cover">
-                              <input
-                                type="file"
-                                accept=".jpg,.jpeg,.png"
-                                className="h-full w-full"
-                                onChange={async (e) => {
-                                  toast.loading(
-                                    "Uploading image.Please wait...",
-                                    {
-                                      duration: 3000,
-                                    }
-                                  );
-                                  const data = await cloudinaryUploader({
-                                    ele: e.target.files[0] as File,
-                                    location: "profile_pics",
-                                    type: "image",
-                                  });
-
-                                  setUpdatedUser({
-                                    ...updateUser,
-                                    avatar: data,
-                                  });
-                                }}
-                              />
-                              <Edit className="absolute h-11 w-11" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="name" className="text-right">
-                            Name
-                          </Label>
-                          <Input
-                            id="name"
-                            value={updateUser?.name}
-                            onChange={(e) => {
-                              setUpdatedUser({
-                                ...updateUser,
-                                name: e.target.value,
-                              });
-                            }}
-                            className="col-span-3"
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="description" className="text-right">
-                            About
-                          </Label>
-                          <Textarea
-                            id="description"
-                            value={updateUser?.about}
-                            onChange={(e) => {
-                              setUpdatedUser({
-                                ...updateUser,
-                                about: e.target.value,
-                              });
-                            }}
-                            className="col-span-3"
-                          />
-                        </div>
-                        {user && user?.role === SERVICE_PROVIDER && (
-                          <div className="grid gap-4 justify-end grid-cols-4">
-                            <Label htmlFor="tags" className="text-right">
-                              Tags
-                            </Label>
-
-                            <div className="tags flex flex-col gap-3 col-span-3">
-                              <Input
-                                id="tags"
-                                value={newTag}
-                                onChange={(e) => {
-                                  setNewTag(e.target.value);
-                                }}
-                                className="w-full"
-                                onKeyDownCapture={(e) => {
-                                  if (e.key === "Enter") {
-                                    let newTags = [];
-                                    updateUser?.servicesOffered?.map((l) => {
-                                      newTags.push(l);
-                                    });
-                                    // let newTags =
-                                    //   updateUser.servicesOffered as Array<string>;
-
-                                    newTags.push(newTag);
-                                    setUpdatedUser({
-                                      ...updateUser,
-                                      servicesOffered: newTags,
-                                    });
-                                  }
-                                }}
-                              />
-
-                              <div className="flex flex-wrap gap-2">
-                                {updateUser?.servicesOffered?.map(
-                                  (item, key) => (
-                                    <Badge key={key}>
-                                      {item}
-                                      <CancelIcon
-                                        className="w-4 h-4 cursor-pointer"
-                                        onClick={() => {
-                                          let newTags =
-                                            updateUser?.servicesOffered.filter(
-                                              (ele) => {
-                                                if (ele !== item) {
-                                                  return ele;
-                                                }
-                                              }
-                                            );
-
-                                          setUpdatedUser({
-                                            ...updateUser,
-                                            servicesOffered: newTags,
-                                          });
-                                        }}
-                                      />
-                                    </Badge>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        {user && user?.role === CONTENT_CREATOR && (
-                          <div className="flex flex-col gap-2">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label
-                                htmlFor="social-links"
-                                className="text-right"
-                              >
-                                Socials
-                              </Label>
-                              <div
-                                id="social-links"
-                                className=" flex w-full col-span-3 gap-2"
-                              >
-                                <Input
-                                  id="social-links-title"
-                                  placeholder="Title"
-                                  onChange={(e) => {
-                                    setTempSocials({
-                                      ...tempSocials,
-                                      title: e.target.value,
-                                    });
-                                  }}
-                                />
-                                <Input
-                                  placeholder="Link"
-                                  id="social-links-link"
-                                  onChange={(e) => {
-                                    setTempSocials({
-                                      ...tempSocials,
-                                      link: e.target.value,
-                                    });
-                                  }}
-                                />
-                                <Button
-                                  onClick={() => {
-                                    let newSocials = [];
-
-                                    for (let item of updateUser.socials) {
-                                      newSocials.push(item);
-                                    }
-                                    newSocials.push({
-                                      title: tempSocials.title,
-                                      link: tempSocials.link,
-                                    });
-
-                                    setUpdatedUser({
-                                      ...updateUser,
-                                      socials: newSocials,
-                                    });
-                                  }}
-                                >
-                                  Add
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {updateUser?.socials?.map((item, key) => (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <Badge
-                                        className="flex gap-2"
-                                        onClick={() => {
-                                          let newSocials = [];
-                                          for (let ele of updateUser?.socials) {
-                                            if (
-                                              ele.link !== item.link ||
-                                              ele.title !== item.title
-                                            ) {
-                                              newSocials.push(ele);
-                                            }
-                                          }
-
-                                          setUpdatedUser({
-                                            ...updateUser,
-                                            socials: newSocials,
-                                          });
-                                        }}
-                                      >
-                                        {item?.title}
-                                        <CancelIcon className="w-5 h-5 cursor-pointer" />
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{item?.link}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <DialogFooter>
+                    <Dialog>
+                      <DialogTrigger asChild>
                         <Button
+                          variant="secondary"
+                          className="flex gap-3"
                           onClick={() => {
-                            dispatch(updateUserController(updateUser));
+                            setUpdatedUser({
+                              about: user?.about,
+                              avatar: user?.avatar,
+                              name: user?.name,
+                              servicesOffered: user?.servicesOffered,
+                              socials: user?.socialPlatform,
+                            });
                           }}
                         >
-                          Save changes
+                          Edit Profile
+                          <Edit className="w-5 h-5" />
                         </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Edit profile</DialogTitle>
+                          <DialogDescription>
+                            Make changes to your profile here. Click save when
+                            you're done.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="w-full flex items-center justify-center ">
+                            <div
+                              className="relative"
+                              style={{ borderRadius: "100%" }}
+                            >
+                              <img
+                                src={
+                                  updateUser?.avatar?.url ||
+                                  "https://res.cloudinary.com/dpeldzvz6/image/upload/v1706350898/projectImages/l6tlo0eqdpxwchsqgc8r.jpg"
+                                }
+                                className="h-36 w-36 object-cover image "
+                                style={{ borderRadius: "100%" }}
+                              />
+                              <div className="absolute image-cover">
+                                <input
+                                  type="file"
+                                  accept=".jpg,.jpeg,.png"
+                                  className="h-full w-full"
+                                  onChange={async (e) => {
+                                    toast.loading(
+                                      "Uploading image.Please wait...",
+                                      {
+                                        duration: 3000,
+                                      }
+                                    );
+                                    const data = await cloudinaryUploader({
+                                      ele: e.target.files[0] as File,
+                                      location: "profile_pics",
+                                      type: "image",
+                                    });
+
+                                    setUpdatedUser({
+                                      ...updateUser,
+                                      avatar: data,
+                                    });
+                                  }}
+                                />
+                                <Edit className="absolute h-11 w-11" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                              Name
+                            </Label>
+                            <Input
+                              id="name"
+                              value={updateUser?.name}
+                              onChange={(e) => {
+                                setUpdatedUser({
+                                  ...updateUser,
+                                  name: e.target.value,
+                                });
+                              }}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="description" className="text-right">
+                              About
+                            </Label>
+                            <Textarea
+                              id="description"
+                              value={updateUser?.about}
+                              onChange={(e) => {
+                                setUpdatedUser({
+                                  ...updateUser,
+                                  about: e.target.value,
+                                });
+                              }}
+                              className="col-span-3"
+                            />
+                          </div>
+                          {user && user?.role === SERVICE_PROVIDER && (
+                            <div className="grid gap-4 justify-end grid-cols-4">
+                              <Label htmlFor="tags" className="text-right">
+                                Tags
+                              </Label>
+
+                              <div className="tags flex flex-col gap-3 col-span-3">
+                                <Input
+                                  id="tags"
+                                  value={newTag}
+                                  onChange={(e) => {
+                                    setNewTag(e.target.value);
+                                  }}
+                                  className="w-full"
+                                  onKeyDownCapture={(e) => {
+                                    if (e.key === "Enter") {
+                                      let newTags = [];
+                                      updateUser?.servicesOffered?.map((l) => {
+                                        newTags.push(l);
+                                      });
+                                      // let newTags =
+                                      //   updateUser.servicesOffered as Array<string>;
+
+                                      newTags.push(newTag);
+                                      setUpdatedUser({
+                                        ...updateUser,
+                                        servicesOffered: newTags,
+                                      });
+                                    }
+                                  }}
+                                />
+
+                                <div className="flex flex-wrap gap-2">
+                                  {updateUser?.servicesOffered?.map(
+                                    (item, key) => (
+                                      <Badge key={key}>
+                                        {item}
+                                        <CancelIcon
+                                          className="w-4 h-4 cursor-pointer"
+                                          onClick={() => {
+                                            let newTags =
+                                              updateUser?.servicesOffered.filter(
+                                                (ele) => {
+                                                  if (ele !== item) {
+                                                    return ele;
+                                                  }
+                                                }
+                                              );
+
+                                            setUpdatedUser({
+                                              ...updateUser,
+                                              servicesOffered: newTags,
+                                            });
+                                          }}
+                                        />
+                                      </Badge>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {user && (
+                            <div className="flex flex-col gap-2">
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label
+                                  htmlFor="social-links"
+                                  className="text-right"
+                                >
+                                  Socials
+                                </Label>
+                                <div
+                                  id="social-links"
+                                  className=" flex w-full col-span-3 gap-2"
+                                >
+                                  <Input
+                                    id="social-links-title"
+                                    placeholder="Title"
+                                    onChange={(e) => {
+                                      setTempSocials({
+                                        ...tempSocials,
+                                        title: e.target.value,
+                                      });
+                                    }}
+                                  />
+                                  <Input
+                                    placeholder="Link"
+                                    id="social-links-link"
+                                    onChange={(e) => {
+                                      setTempSocials({
+                                        ...tempSocials,
+                                        link: e.target.value,
+                                      });
+                                    }}
+                                  />
+                                  <Button
+                                    onClick={() => {
+                                      let newSocials = [];
+
+                                      for (let item of updateUser.socials) {
+                                        newSocials.push(item);
+                                      }
+                                      newSocials.push({
+                                        title: tempSocials.title,
+                                        link: tempSocials.link,
+                                      });
+
+                                      setUpdatedUser({
+                                        ...updateUser,
+                                        socials: newSocials,
+                                      });
+                                    }}
+                                  >
+                                    Add
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {updateUser?.socials?.map((item, key) => (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Badge
+                                          className="flex gap-2"
+                                          onClick={() => {
+                                            let newSocials = [];
+                                            for (let ele of updateUser?.socials) {
+                                              if (
+                                                ele.link !== item.link ||
+                                                ele.title !== item.title
+                                              ) {
+                                                newSocials.push(ele);
+                                              }
+                                            }
+
+                                            setUpdatedUser({
+                                              ...updateUser,
+                                              socials: newSocials,
+                                            });
+                                          }}
+                                        >
+                                          {item?.title}
+                                          <CancelIcon className="w-5 h-5 cursor-pointer" />
+                                        </Badge>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{item?.link}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            onClick={() => {
+                              dispatch(updateUserController(updateUser));
+                            }}
+                          >
+                            Save changes
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  {user && user?.role && user?.role === CONTENT_CREATOR && (
+                    <div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="secondary">Create Job Alert</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] lg:max-w-[600px]">
+                          <DialogHeader>
+                            <DialogTitle>Create Job</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="title" className="text-right">
+                                Job Title
+                              </Label>
+                              <Input
+                                id="title"
+                                value={jobVal?.jobTitle}
+                                onChange={(e) => {
+                                  setJobVal({
+                                    ...jobVal,
+                                    jobTitle: e.target.value,
+                                  });
+                                }}
+                                className="col-span-3"
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label
+                                htmlFor="job-description"
+                                className="text-right"
+                              >
+                                Job Description.
+                              </Label>
+                              <Textarea
+                                style={{ resize: "none" }}
+                                id="job-description"
+                                className="col-span-3"
+                                value={jobVal?.jobDescription}
+                                onChange={(e) => {
+                                  setJobVal({
+                                    ...jobVal,
+                                    jobDescription: e.target.value,
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label
+                                htmlFor="job-location"
+                                className="text-right"
+                              >
+                                Job Location
+                              </Label>
+                              <Input
+                                id="job-location"
+                                className="col-span-3"
+                                value={jobVal?.location}
+                                onChange={(e) => {
+                                  setJobVal({
+                                    ...jobVal,
+                                    location: e.target.value,
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label
+                                htmlFor="job-estimated-time"
+                                className="text-right"
+                              >
+                                Estimated time (in months)
+                              </Label>
+                              <Input
+                                id="job-estimated-time"
+                                className="col-span-3"
+                                type="number"
+                                value={jobVal?.estimatedTime}
+                                onChange={(e) => {
+                                  setJobVal({
+                                    ...jobVal,
+                                    estimatedTime: e.target.valueAsNumber,
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label
+                                htmlFor="job-min-pay"
+                                className="text-right"
+                              >
+                                Min. Pay (in Rupees)
+                              </Label>
+                              <Input
+                                id="job-min-pay"
+                                className="col-span-3"
+                                type="number"
+                                value={jobVal?.minPay}
+                                onChange={(e) => {
+                                  setJobVal({
+                                    ...jobVal,
+                                    minPay: e.target.valueAsNumber,
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label
+                                htmlFor="job-max-pay"
+                                className="text-right"
+                              >
+                                Max. Pay (in Rupees)
+                              </Label>
+                              <Input
+                                id="job-max-pay"
+                                className="col-span-3"
+                                type="number"
+                                value={jobVal?.maxPay}
+                                onChange={(e) => {
+                                  setJobVal({
+                                    ...jobVal,
+                                    maxPay: e.target.valueAsNumber,
+                                  });
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              onClick={() => {
+                                dispatch(createJob());
+                              }}
+                            >
+                              Save changes
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  )}
                 </div>
+
                 {user && user?.about && <p>{user?.about}</p>}
               </div>
               {user && user?.role === SERVICE_PROVIDER && (
@@ -758,233 +929,244 @@ const page: FC<PageProps> = ({ params }) => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {user?.providerPreviousWork?.map((ele, key: number) => {
-                          let media = [];
-                          for (let item of ele?.projectImages) {
-                            media.push(item);
-                          }
-                          for (let item of ele?.projectVideos) {
-                            media.push(item);
-                          }
-                          return (
-                            <>
-                              <TableRow key={key} className="">
-                                <TableCell className="font-medium  ">
-                                  <div className="flex items-center gap-5">
-                                    <img
-                                      alt="Project Picture"
-                                      src={ele?.projectImages[0]?.url}
-                                      style={{
-                                        borderRadius: "10px",
-                                        objectFit: "contain",
-                                        height: "100%",
-                                        width: "5rem",
-                                      }}
-                                    />
-                                    <p
-                                      style={{ display: "none" }}
-                                      className="lg:!block"
-                                    >
-                                      {ele?.projectTitle}
-                                    </p>
-                                  </div>
-                                </TableCell>
-
-                                <TableCell>
-                                  <Dialog>
-                                    <DialogTrigger>
-                                      <Button className="flex gap-2 text-blue-500 hover:text-blue-700 cursor-pointer">
-                                        About
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle className="flex gap-3">
+                        {user &&
+                          user?.providerPreviousWork?.map(
+                            (ele, key: number) => {
+                              let media = [];
+                              for (let item of ele?.projectImages) {
+                                media.push(item);
+                              }
+                              for (let item of ele?.projectVideos) {
+                                media.push(item);
+                              }
+                              return (
+                                <>
+                                  <TableRow key={key} className="">
+                                    <TableCell className="font-medium  ">
+                                      <div className="flex items-center gap-5">
+                                        <img
+                                          alt="Project Picture"
+                                          src={ele?.projectImages[0]?.url}
+                                          style={{
+                                            borderRadius: "10px",
+                                            objectFit: "contain",
+                                            height: "100%",
+                                            width: "5rem",
+                                          }}
+                                        />
+                                        <p
+                                          style={{ display: "none" }}
+                                          className="lg:!block"
+                                        >
                                           {ele?.projectTitle}
-                                          {ele?.projectLink && (
-                                            <a
-                                              href={ele?.projectLink}
-                                              target="_blank"
-                                            >
-                                              <Launch className="h-4 w-4 text-blue-600" />
-                                            </a>
-                                          )}
-                                        </DialogTitle>
-                                        <DialogDescription>
-                                          {ele?.projectDescription}
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <div className="w-full flex justify-center items-center">
-                                        <Carousel className="w-[80%] ">
-                                          <CarouselContent>
-                                            {media?.map((item, index) => {
-                                              return (
-                                                <CarouselItem key={index}>
-                                                  <div className="p-1">
-                                                    <Card>
-                                                      <CardContent className="flex aspect-square items-center justify-center p-6">
-                                                        {item?.resource_type ===
-                                                          "image" && (
-                                                          <>
-                                                            <img
-                                                              src={item.url}
-                                                              alt={
-                                                                item?.resource_type
-                                                              }
-                                                              className="w-full h-full"
-                                                            />
-                                                          </>
-                                                        )}
-                                                        {item?.resource_type ===
-                                                          "video" && (
-                                                          <>
-                                                            <ReactPlayer
-                                                              url={item?.url}
-                                                              playing={false}
-                                                              controls
-                                                              width={"100%"}
-                                                              height={"100%"}
-                                                            />
-                                                          </>
-                                                        )}
-                                                      </CardContent>
-                                                    </Card>
-                                                  </div>
-                                                </CarouselItem>
-                                              );
-                                            })}
-                                          </CarouselContent>
-                                          <CarouselPrevious />
-                                          <CarouselNext />
-                                        </Carousel>
+                                        </p>
                                       </div>
-                                    </DialogContent>
-                                  </Dialog>
-                                </TableCell>
-                                <TableCell className="h-full font-medium flex gap-x-3">
-                                  <Dialog>
-                                    <DialogTrigger asChild>
+                                    </TableCell>
+
+                                    <TableCell>
+                                      <Dialog>
+                                        <DialogTrigger>
+                                          <Button className="flex gap-2 text-blue-500 hover:text-blue-700 cursor-pointer">
+                                            About
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle className="flex gap-3">
+                                              {ele?.projectTitle}
+                                              {ele?.projectLink && (
+                                                <a
+                                                  href={ele?.projectLink}
+                                                  target="_blank"
+                                                >
+                                                  <Launch className="h-4 w-4 text-blue-600" />
+                                                </a>
+                                              )}
+                                            </DialogTitle>
+                                            <DialogDescription>
+                                              {ele?.projectDescription}
+                                            </DialogDescription>
+                                          </DialogHeader>
+                                          <div className="w-full flex justify-center items-center">
+                                            <Carousel className="w-[80%] ">
+                                              <CarouselContent>
+                                                {media?.map((item, index) => {
+                                                  return (
+                                                    <CarouselItem key={index}>
+                                                      <div className="p-1">
+                                                        <Card>
+                                                          <CardContent className="flex aspect-square items-center justify-center p-6">
+                                                            {item?.resource_type ===
+                                                              "image" && (
+                                                              <>
+                                                                <img
+                                                                  src={item.url}
+                                                                  alt={
+                                                                    item?.resource_type
+                                                                  }
+                                                                  className="w-full h-full"
+                                                                />
+                                                              </>
+                                                            )}
+                                                            {item?.resource_type ===
+                                                              "video" && (
+                                                              <>
+                                                                <ReactPlayer
+                                                                  url={
+                                                                    item?.url
+                                                                  }
+                                                                  playing={
+                                                                    false
+                                                                  }
+                                                                  controls
+                                                                  width={"100%"}
+                                                                  height={
+                                                                    "100%"
+                                                                  }
+                                                                />
+                                                              </>
+                                                            )}
+                                                          </CardContent>
+                                                        </Card>
+                                                      </div>
+                                                    </CarouselItem>
+                                                  );
+                                                })}
+                                              </CarouselContent>
+                                              <CarouselPrevious />
+                                              <CarouselNext />
+                                            </Carousel>
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                    </TableCell>
+                                    <TableCell className="h-full font-medium flex gap-x-3">
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button
+                                            className="cursor-pointer"
+                                            onClick={() => {
+                                              setUpdatedProjectData({
+                                                ...updatedProjectData,
+                                                link: ele?.projectLink,
+                                                title: ele?.projectTitle,
+                                                description:
+                                                  ele?.projectDescription,
+                                              });
+                                            }}
+                                          >
+                                            <Edit />
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-[425px]">
+                                          <DialogHeader>
+                                            <DialogTitle>
+                                              Edit Project : {ele?.projectTitle}
+                                            </DialogTitle>
+                                          </DialogHeader>
+                                          <div className="grid gap-4 py-4">
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label
+                                                htmlFor="title"
+                                                className="text-right"
+                                              >
+                                                Title
+                                              </Label>
+                                              <Input
+                                                id="title"
+                                                value={
+                                                  updatedProjectData?.title
+                                                }
+                                                className="col-span-3"
+                                                onChange={(e) => {
+                                                  setUpdatedProjectData({
+                                                    ...updatedProjectData,
+                                                    title: e.target.value,
+                                                  });
+                                                }}
+                                              />
+                                            </div>
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label
+                                                htmlFor="description"
+                                                className="text-right"
+                                              >
+                                                Description
+                                              </Label>
+                                              <Textarea
+                                                id="description"
+                                                value={
+                                                  updatedProjectData?.description
+                                                }
+                                                onChange={(e) => {
+                                                  setUpdatedProjectData({
+                                                    ...updatedProjectData,
+                                                    description: e.target.value,
+                                                  });
+                                                }}
+                                                className="col-span-3"
+                                              />
+                                            </div>
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label
+                                                htmlFor="link"
+                                                className="text-right"
+                                              >
+                                                Link
+                                              </Label>
+                                              <Input
+                                                id="link"
+                                                value={updatedProjectData?.link}
+                                                className="col-span-3"
+                                                onChange={(e) => {
+                                                  setUpdatedProjectData({
+                                                    ...updatedProjectData,
+                                                    link: e.target.value,
+                                                  });
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+                                          <DialogFooter>
+                                            <Button
+                                              onClick={() =>
+                                                dispatch(
+                                                  updateProject({
+                                                    projectLink:
+                                                      updatedProjectData.link,
+                                                    projectTitle:
+                                                      updatedProjectData.title,
+                                                    projectDescription:
+                                                      updatedProjectData.description,
+                                                    id: ele?._id,
+                                                  })
+                                                )
+                                              }
+                                            >
+                                              Save changes
+                                            </Button>
+                                          </DialogFooter>
+                                        </DialogContent>
+                                      </Dialog>
+
                                       <Button
                                         className="cursor-pointer"
+                                        variant={"destructive"}
                                         onClick={() => {
-                                          setUpdatedProjectData({
-                                            ...updatedProjectData,
-                                            link: ele?.projectLink,
-                                            title: ele?.projectTitle,
-                                            description:
-                                              ele?.projectDescription,
+                                          dispatch(deleteProject(ele?._id));
+                                          toast.loading("Deleting Project", {
+                                            duration: 2000,
                                           });
                                         }}
                                       >
-                                        <Edit />
+                                        <Delete />
                                       </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px]">
-                                      <DialogHeader>
-                                        <DialogTitle>
-                                          Edit Project : {ele?.projectTitle}
-                                        </DialogTitle>
-                                      </DialogHeader>
-                                      <div className="grid gap-4 py-4">
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label
-                                            htmlFor="title"
-                                            className="text-right"
-                                          >
-                                            Title
-                                          </Label>
-                                          <Input
-                                            id="title"
-                                            value={updatedProjectData?.title}
-                                            className="col-span-3"
-                                            onChange={(e) => {
-                                              setUpdatedProjectData({
-                                                ...updatedProjectData,
-                                                title: e.target.value,
-                                              });
-                                            }}
-                                          />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label
-                                            htmlFor="description"
-                                            className="text-right"
-                                          >
-                                            Description
-                                          </Label>
-                                          <Textarea
-                                            id="description"
-                                            value={
-                                              updatedProjectData?.description
-                                            }
-                                            onChange={(e) => {
-                                              setUpdatedProjectData({
-                                                ...updatedProjectData,
-                                                description: e.target.value,
-                                              });
-                                            }}
-                                            className="col-span-3"
-                                          />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label
-                                            htmlFor="link"
-                                            className="text-right"
-                                          >
-                                            Link
-                                          </Label>
-                                          <Input
-                                            id="link"
-                                            value={updatedProjectData?.link}
-                                            className="col-span-3"
-                                            onChange={(e) => {
-                                              setUpdatedProjectData({
-                                                ...updatedProjectData,
-                                                link: e.target.value,
-                                              });
-                                            }}
-                                          />
-                                        </div>
-                                      </div>
-                                      <DialogFooter>
-                                        <Button
-                                          onClick={() =>
-                                            dispatch(
-                                              updateProject({
-                                                projectLink:
-                                                  updatedProjectData.link,
-                                                projectTitle:
-                                                  updatedProjectData.title,
-                                                projectDescription:
-                                                  updatedProjectData.description,
-                                                id: ele?._id,
-                                              })
-                                            )
-                                          }
-                                        >
-                                          Save changes
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-
-                                  <Button
-                                    className="cursor-pointer"
-                                    variant={"destructive"}
-                                    onClick={() => {
-                                      dispatch(deleteProject(ele?._id));
-                                      toast.loading("Deleting Project", {
-                                        duration: 2000,
-                                      });
-                                    }}
-                                  >
-                                    <Delete />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            </>
-                          );
-                        })}
+                                    </TableCell>
+                                  </TableRow>
+                                </>
+                              );
+                            }
+                          )}
                       </TableBody>
                     </Table>
                   </div>

@@ -5,6 +5,7 @@ import userSlice from "./slices/userSlice";
 import serviceSlice from "./slices/serviceSlice";
 import profileSlice from "./slices/profileSlice";
 import projectSlice from "./slices/projectSlice";
+import jobSlice from "./slices/jobSlice";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     serviceSlice,
     profileSlice,
     projectSlice,
+    jobSlice,
   },
 });
 

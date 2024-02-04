@@ -213,6 +213,7 @@ const SignUpPage = () => {
                   id="avatar"
                   name="avatar"
                   type="file"
+                  accept=".jpg,.jpeg,.png"
                   autoComplete="current-avatar"
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-slate-600 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"

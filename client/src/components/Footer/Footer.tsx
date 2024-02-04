@@ -5,13 +5,13 @@ const Footer = () => {
     <footer className="flex flex-col bg-[#1f2937] dark:bg-slate-700 p-10 gap-5">
       <div className="flex justify-between items-center">
         <div className="logo flex  justify-center items-center gap-2">
-          <img src="/logo3.png" alt="CMS" className="h-20 w-20" />
+          <img src="/logo3.png" alt="QuickCollab" className="h-20 w-20" />
           <span
             className="text-white text-2xl mt-10 "
             style={{ fontWeight: "700" }}
           >
             {" "}
-            CMS
+            QuickCollab
           </span>
         </div>
         <div className="socials text-white flex gap-3 justify-center items-center">
@@ -34,7 +34,7 @@ const Footer = () => {
         style={{ borderBottom: "1px solid white" }}
       />
       <p className="w-full justify-center items-center text-center text-white font-bold">
-        © 2023 <a href="/">CMS </a> All rights Reserved
+        © 2023 <a href="/">QuickCollab </a> All rights Reserved
       </p>
     </footer>
   );

@@ -113,6 +113,19 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    updateAvailabilityReset: (state, action) => {
+      state.availabilityStatus.success = null;
+      state.availabilityStatus.message = "";
+    },
+    sendQueryEmailReset: (state, action) => {
+      state.sendQueryEmail.message = "";
+      state.sendQueryEmail.success = null;
+    },
+    updateUserControllerReset: (state, action) => {
+      state.updatedUser.success = null;
+      state.updatedUser.message = "";
+    },
+
     setUserData: (state, action) => {
       const { user, success, message, loading } = action.payload;
       // console.log("I am in");
@@ -183,4 +196,9 @@ export const userSlice = createSlice({
 });
 
 export default userSlice.reducer;
-export const { setUserData } = userSlice.actions;
+export const {
+  setUserData,
+  updateAvailabilityReset,
+  sendQueryEmailReset,
+  updateUserControllerReset,
+} = userSlice.actions;
