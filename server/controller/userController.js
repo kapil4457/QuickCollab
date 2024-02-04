@@ -183,7 +183,9 @@ exports.getUserDetails = async (req, res) => {
       })
 
       // .populate("providerPreviousWork", "projectVideos")
-      .populate("conversations");
+      .populate("conversations")
+      .populate("jobs")
+      .populate("jobsAppliedTo");
     return await res.status(200).send({
       success: true,
       user,
@@ -463,12 +465,14 @@ exports.getUserDetail = async (req, res) => {
     let details;
     if (user.role == "content-creator") {
       // If the requested user is a content-creator
+      user.populate("jobs");
       details = {
         name: user.name,
         avatar: user.avatar,
         about: user.about,
         _id: user._id,
         role: user.role,
+        jobs: user.jobs,
       };
     } else if (user.role == "service-provider") {
       // If the requested user is a service-provider

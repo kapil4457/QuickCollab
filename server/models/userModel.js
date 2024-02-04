@@ -7,6 +7,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  jobs: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      req: "Job",
+    },
+  ],
+  jobsAppliedTo: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      req: "Job",
+    },
+  ],
   email: {
     type: String,
     required: true,

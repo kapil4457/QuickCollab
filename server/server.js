@@ -43,12 +43,15 @@ const project = require("./routes/projectRoutes");
 const converastion = require("./routes/conversationRoutes");
 const message = require("./routes/messageRoutes");
 const cloudinary = require("./routes/cloudinaryRoutes");
+const jobs = require("./routes/projectRoutes");
 
 app.use("/api/v1/", user);
 app.use("/api/v1/", project);
 app.use("/api/v1/", converastion);
 app.use("/api/v1/", message);
 app.use("/api/v1/", cloudinary);
+app.use("/api/v1/", jobs);
+
 //Exception Handeling
 process.on("uncaughtException", (err) => {
   console.log(err.message);
