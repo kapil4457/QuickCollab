@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import Link from "next/link";
 import Rating from "@mui/material/Rating";
 import CancelIcon from "@mui/icons-material/Cancel";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import {
   Table,
   TableBody,
@@ -37,10 +38,19 @@ import {
 } from "@/components/ui/select";
 
 // import { useEffect, useState } from "react";
-import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { allJobs, applyToJob, applyToJobReset } from "@/redux/slices/jobSlice";
 
 type UserType = {
   avatar: any;
@@ -50,20 +60,39 @@ type UserType = {
   rating: any;
   _id: string;
 };
+type filterTypeProps = {
+  keywords: Array<string>;
+  range: {
+    minPay: number;
+    maxPaY: number;
+  };
+  location: string;
+  estimatedTime: number;
+};
 
 const page = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [pageNo, setPageNo] = useState(1);
-  const [filterTags, setFilterTags] = useState<string[]>([]);
+  const [filters, setFilters] = useState({
+    keywords: [],
+    range: {
+      minPay: 0,
+      maxPaY: 0,
+    },
+    location: "",
+    estimatedTime: 0,
+  });
   const [filterText, setFilterText] = useState("");
-  const { users, loading }: { users: UserType[]; loading: boolean } =
-    useAppSelector((state) => state.serviceSlice.value);
+  const { jobs } = useAppSelector((state) => state.jobSlice.allJobs);
   const {
     isAuthenticated,
     user,
     loading: userLoader,
   } = useAppSelector((state) => state.userSlice.value);
+  const { message: applyToJobMessage, success: applyToJobSuccess } =
+    useAppSelector((state) => state.jobSlice.applyToJob);
+
   const itemsPerPage = 10;
 
   const filterDropdownHelper = (e: string) => {
@@ -85,8 +114,20 @@ const page = () => {
     }
   };
   useEffect(() => {
-    dispatch(fetchServiceProviders(filterTags));
+    dispatch(allJobs());
   }, []);
+
+  useEffect(() => {
+    if (applyToJobSuccess === true) {
+      toast.success(applyToJobMessage);
+      dispatch(fetchMe());
+      // dispatch(allJobs(filters))
+    }
+    if (applyToJobSuccess === false) {
+      toast.error(applyToJobMessage);
+    }
+    dispatch(applyToJobReset());
+  }, [applyToJobSuccess]);
 
   useEffect(() => {
     if (isAuthenticated === false && userLoader === false) {
@@ -110,15 +151,18 @@ const page = () => {
                     toast.error("Tag cannot be empty !!");
                     return;
                   }
-                  setFilterTags([...filterTags, filterText]);
+                  let newKeywords = filters.keywords as Array<string>;
+                  newKeywords.push(filterText);
+                  setFilters({
+                    ...filters,
+                    keywords: newKeywords as Array<string>,
+                  });
+                  // setFilterTags([...filterTags, filterText]);
                   setFilterText("");
                 }
               }}
             />
-            <Button
-              type="submit"
-              onClick={() => dispatch(fetchServiceProviders(filterTags))}
-            >
+            <Button type="submit" onClick={() => dispatch(allJobs(filters))}>
               Apply Filter
             </Button>
           </div>
@@ -145,19 +189,19 @@ const page = () => {
           </Select>
         </div>
         <div className="filter-tags flex-wrap flex gap-2 w-full">
-          {filterTags?.map((tag, key) => (
+          {filters.keywords?.map((tag, key) => (
             <Badge key={key} className="flex gap-2">
               {tag}
               <CancelIcon
                 className="w-5 h-5 cursor-pointer"
                 onClick={() => {
-                  let newFilters = filterTags.filter((ele) => {
+                  let newFilters = filters.keywords.filter((ele) => {
                     if (ele !== tag) {
                       return ele;
                     }
                   });
 
-                  setFilterTags(newFilters);
+                  setFilters({ ...filters, keywords: newFilters });
                 }}
               />
             </Badge>
@@ -166,14 +210,15 @@ const page = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Experience in years</TableHead>
-              <TableHead className="text-right">About</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>About Job</TableHead>
+              <TableHead>Created By</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users
+            {jobs
               ?.filter((ele, key: number) => {
                 if (
                   key + 1 >= (pageNo - 1) * itemsPerPage &&
@@ -182,37 +227,91 @@ const page = () => {
                   return ele;
                 }
               })
-              ?.map((user, key) => (
+              ?.map((job, key) => (
                 <TableRow key={key} className="">
-                  <TableCell className="font-medium  ">
-                    <div className="flex items-center gap-5">
-                      <Image
-                        alt="Picture of the service provider"
-                        src={user?.avatar?.url}
-                        width={45}
-                        height={45}
-                        style={{ borderRadius: "10px", objectFit: "contain" }}
-                      />
-                      {user?.name}
-                    </div>
+                  <TableCell>{job?.jobTitle}</TableCell>
+                  <TableCell>{job?.estimatedTime} months</TableCell>
+                  <TableCell>{job?.location}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger>
+                        <Button>Details</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader className="flex flex-col gap-2">
+                          <DialogTitle>
+                            Job Description : {job?.jobTitle}
+                          </DialogTitle>
+                          <DialogDescription>
+                            <div>
+                              <b>Description : </b>
+                              {job?.jobDescription}
+                            </div>
+                            <div>
+                              <b>Location : </b>
+                              {job?.location}
+                            </div>
+                            <div>
+                              <b>Duration : </b>
+                              {job?.estimatedTime}
+                            </div>
+                            <div>
+                              <b>Pay Range : </b>
+                              {job?.minPay} - {job?.maxPay}
+                            </div>
+                            <div className="flex gap-2">
+                              <b>Skills : </b>
+                              {job?.skills?.map((item) => (
+                                <Badge>{item}</Badge>
+                              ))}
+                            </div>
+                            <div>
+                              <b>Posted at : </b>
+                              {job?.createdAt?.substr(0, 10)}
+                            </div>
+                            <div className="flex gap-2 ">
+                              <b>Posted by : </b>
+                              <Link
+                                href={`/user/${job?.jobCreatedBy}`}
+                                className="flex gap-2 
+                                items-center justify-center text-blue-500 hover:text-blue-700"
+                              >
+                                Profile
+                                <OpenInNewIcon className="w-4 h-4" />
+                              </Link>
+                            </div>
+                          </DialogDescription>
+
+                          <Button
+                            onClick={() => {
+                              dispatch(applyToJob(job?._id));
+                            }}
+                            disabled={
+                              job?.applicants?.includes(user?._id)
+                                ? true
+                                : false
+                            }
+                          >
+                            {job?.applicants?.includes(user?._id) ? (
+                              <>
+                                <CheckCircleOutlineIcon className="text-green-500" />
+                                You have already applied to this job.
+                              </>
+                            ) : (
+                              "Apply for Job"
+                            )}
+                          </Button>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
-                  <TableCell className="flex  items-center gap-2">
-                    <Rating
-                      name="user-rating"
-                      value={user?.rating}
-                      precision={0.1}
-                      readOnly
-                    />
-                    ({user?.providerPreviousWork?.length})
-                  </TableCell>
-                  <TableCell>{user?.experience}</TableCell>
-                  <TableCell className="text-right flex justify-end">
+                  <TableCell>
                     <Link
-                      href={`/user/${user?._id}`}
-                      className="flex gap-2 text-blue-500 hover:text-blue-700"
+                      href={`/user/${job?.jobCreatedBy}`}
+                      className="flex gap-2 items-center  text-blue-500 hover:text-blue-700"
                     >
                       Profile
-                      <OpenInNewIcon />
+                      <OpenInNewIcon className="w-4 h-4" />
                     </Link>
                   </TableCell>
                 </TableRow>
