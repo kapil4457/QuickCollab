@@ -90,18 +90,23 @@ const page: FC<PageProps> = ({ params }) => {
                 }}
               />
             </Tilt>
-
             <h3 className="w-full text-3xl self-center flex justify-center items-center font-bold">
               {user?.name}
             </h3>
-            {user && user?.rating && (
-              <Rating
-                value={user?.rating}
-                precision={0.1}
-                readOnly
-                className="w-full items-center self-center justify-center"
-              />
-            )}
+            {user &&
+              user?.rating &&
+              user?.role === SERVICE_PROVIDER &&
+              user?.rating > 0 && (
+                <div className="flex gap-2">
+                  <Rating
+                    name="user-rating"
+                    value={user?.rating}
+                    precision={0.1}
+                    readOnly
+                  />
+                  ({user?.providerPreviousWork?.length})
+                </div>
+              )}
           </div>
           {user && user?.services && (
             <div className="tags w-full flex flex-col p-5 gap-2 ">

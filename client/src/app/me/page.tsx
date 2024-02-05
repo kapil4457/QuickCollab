@@ -71,6 +71,14 @@ import { PageProps } from "../../../.next/types/app/layout";
 import { Switch } from "@/components/ui/switch";
 import { Delete, Edit, Launch } from "@mui/icons-material";
 import Link from "next/link";
+import {
+  createJob,
+  createJobReset,
+  deleteJob,
+  deleteJobReset,
+  updateJob,
+  updateJobReset,
+} from "@/redux/slices/jobSlice";
 
 type FormDataProps = {
   title: string;
@@ -100,6 +108,7 @@ type jobValProps = {
   estimatedTime: number;
   minPay: number;
   maxPay: number;
+  skills: Array<string>;
 };
 
 const page: FC<PageProps> = ({ params }) => {
@@ -127,6 +136,7 @@ const page: FC<PageProps> = ({ params }) => {
     estimatedTime: 0,
     maxPay: 0,
     minPay: 0,
+    skills: [],
   });
 
   const [updatedProjectData, setUpdatedProjectData] = useState({
@@ -143,6 +153,18 @@ const page: FC<PageProps> = ({ params }) => {
     about: "",
     servicesOffered: [],
     socials: [],
+  });
+
+  const [newSkill, setNewSkill] = useState("");
+
+  const [updatedJobVal, setUpdatedJobVal] = useState<jobValProps>({
+    jobTitle: "",
+    jobDescription: "",
+    location: "",
+    estimatedTime: 0,
+    maxPay: 0,
+    minPay: 0,
+    skills: [],
   });
 
   const {
@@ -171,6 +193,16 @@ const page: FC<PageProps> = ({ params }) => {
   const { message: deleteMessage, success: deleteSuccess } = useAppSelector(
     (state) => state.projectSlice.deleteValue
   );
+
+  const { message: jobCreateMessage, success: jobCreateSuccess } =
+    useAppSelector((state) => state.jobSlice.createJobVal);
+
+  const { success: deleteJobSuccess, message: deleteJobMessage } =
+    useAppSelector((state) => state.jobSlice.deleteJobVal);
+
+  const { message: updateJobMessage, success: updateJobSuccess } =
+    useAppSelector((state) => state.jobSlice.updateJobVal);
+
   const addProject = async () => {
     toast.loading("Adding project.Do not reload or leave the page.", {
       duration: 3000,
@@ -257,6 +289,141 @@ const page: FC<PageProps> = ({ params }) => {
     dispatch(addNewProjectReducer(data));
   };
 
+  const createJobHandler = async () => {
+    if (jobVal.jobTitle === "") {
+      toast.error("Title can not be empty.");
+      return;
+    }
+    if (jobVal.jobDescription === "") {
+      toast.error("Description can not be empty.");
+      return;
+    }
+    if (jobVal.location === "") {
+      toast.error("Location can not be empty.");
+      return;
+    }
+    if (jobVal.estimatedTime <= 0) {
+      toast.error("Plese enter a valid estimated time.");
+      return;
+    }
+    if (jobVal.minPay <= 0) {
+      toast.error("Plese enter a valid Minimum Pay.");
+      return;
+    }
+
+    if (jobVal.maxPay <= 0) {
+      toast.error("Plese enter a valid Maximum Pay.");
+      return;
+    }
+    if (jobVal.maxPay < jobVal.minPay) {
+      toast.error("Maximum pay can not be less than minimum pay.");
+      return;
+    }
+    if (jobVal.skills.length === 0) {
+      toast.error("Please enter atleast 1 skill.");
+      return;
+    }
+    const info = {
+      jobTitle: jobVal.jobTitle,
+      jobDescription: jobVal.jobDescription,
+      location: jobVal.location,
+      estimatedTime: jobVal.estimatedTime,
+      minPay: jobVal.minPay,
+      maxPay: jobVal.maxPay,
+      skills: jobVal.skills,
+    };
+
+    dispatch(createJob(info));
+  };
+
+  const updateJobHandler = async (id) => {
+    if (updatedJobVal.jobTitle === "") {
+      toast.error("Title can not be empty.");
+      return;
+    }
+    if (updatedJobVal.jobDescription === "") {
+      toast.error("Description can not be empty.");
+      return;
+    }
+    if (updatedJobVal.location === "") {
+      toast.error("Location can not be empty.");
+      return;
+    }
+    if (updatedJobVal.estimatedTime <= 0) {
+      toast.error("Plese enter a valid estimated time.");
+      return;
+    }
+    if (updatedJobVal.minPay <= 0) {
+      toast.error("Plese enter a valid Minimum Pay.");
+      return;
+    }
+
+    if (updatedJobVal.maxPay <= 0) {
+      toast.error("Plese enter a valid Maximum Pay.");
+      return;
+    }
+    if (updatedJobVal.maxPay < updatedJobVal.minPay) {
+      toast.error("Maximum pay can not be less than minimum pay.");
+      return;
+    }
+    if (updatedJobVal.skills.length === 0) {
+      toast.error("Please enter atleast 1 skill.");
+      return;
+    }
+    const info = {
+      jobTitle: updatedJobVal.jobTitle,
+      jobDescription: updatedJobVal.jobDescription,
+      location: updatedJobVal.location,
+      estimatedTime: updatedJobVal.estimatedTime,
+      minPay: updatedJobVal.minPay,
+      maxPay: updatedJobVal.maxPay,
+      skills: updatedJobVal.skills,
+      jobId: id,
+    };
+
+    dispatch(updateJob(info));
+  };
+
+  useEffect(() => {
+    if (updateJobSuccess === true) {
+      toast.success(updateJobMessage);
+      dispatch(fetchMe());
+      dispatch(updateJobReset());
+    }
+
+    if (updateJobSuccess === false) {
+      toast.error(updateJobMessage);
+    }
+  }, [updateJobSuccess]);
+  useEffect(() => {
+    if (deleteJobSuccess === true) {
+      toast.success(deleteJobMessage);
+      dispatch(fetchMe());
+      dispatch(deleteJobReset());
+    }
+    if (deleteJobSuccess === false) {
+      toast.error(deleteJobMessage);
+    }
+  }, [deleteJobSuccess]);
+  useEffect(() => {
+    if (jobCreateSuccess === true) {
+      toast.success(jobCreateMessage);
+      dispatch(fetchMe());
+      dispatch(createJobReset());
+      setJobVal({
+        estimatedTime: 0,
+        jobDescription: "",
+        jobTitle: "",
+        location: "",
+        maxPay: 0,
+        minPay: 0,
+      });
+    }
+    if (jobCreateSuccess === false) {
+      toast.error(jobCreateMessage);
+    }
+  }, [jobCreateSuccess]);
+
   useEffect(() => {
     if (deleteSuccess === true) {
       toast.success(deleteMessage);
@@ -342,14 +509,15 @@ const page: FC<PageProps> = ({ params }) => {
             <h3 className="w-full text-3xl self-center flex justify-center items-center font-bold">
               {user?.name}
             </h3>
-            {user && user?.rating && user?.role === SERVICE_PROVIDER && (
-              <Rating
-                value={user?.rating}
-                precision={0.1}
-                readOnly
-                className="w-full items-center self-center justify-center"
-              />
-            )}
+            {user &&
+              user?.rating &&
+              user?.role === SERVICE_PROVIDER &&
+              user?.rating > 0 && (
+                <div className="flex gap-2">
+                  <Rating value={user?.rating} precision={0.1} readOnly />(
+                  {user?.providerPreviousWork?.length})
+                </div>
+              )}
           </div>
           {user && user?.servicesOffered && user?.role === SERVICE_PROVIDER && (
             <div className="tags w-full flex flex-col p-5 gap-2 ">
@@ -898,15 +1066,74 @@ const page: FC<PageProps> = ({ params }) => {
                                 }}
                               />
                             </div>
+                            <div className="flex flex-col gap-2">
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label
+                                  htmlFor="job-skills"
+                                  className="text-right"
+                                >
+                                  Skills
+                                </Label>
+                                <Input
+                                  id="job-skills"
+                                  className="col-span-3"
+                                  type="text"
+                                  value={newSkill}
+                                  onChange={(e) => {
+                                    setNewSkill(e.target.value);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      if (newSkill === "") {
+                                        toast.error("Enter a valid skill.");
+                                        return;
+                                      }
+                                      let newSkillSet = [];
+                                      for (let ele of jobVal.skills) {
+                                        newSkillSet.push(ele);
+                                      }
+                                      newSkillSet.push(newSkill);
+                                      setJobVal({
+                                        ...jobVal,
+                                        skills: newSkillSet,
+                                      });
+                                      setNewSkill("");
+                                    }
+                                  }}
+                                />
+                              </div>
+
+                              <div className="flex gap-2 flex-wrap">
+                                {jobVal?.skills?.map((item, key) => {
+                                  return (
+                                    <Badge
+                                      className="cursor-pointer"
+                                      key={key}
+                                      onClick={() => {
+                                        let newSkillSet = jobVal.skills.filter(
+                                          (el) => {
+                                            if (item !== el) {
+                                              return el;
+                                            }
+                                          }
+                                        );
+
+                                        setJobVal({
+                                          ...jobVal,
+                                          skills: newSkillSet,
+                                        });
+                                      }}
+                                    >
+                                      {item}
+                                      <CancelIcon />
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           </div>
                           <DialogFooter>
-                            <Button
-                              onClick={() => {
-                                dispatch(createJob());
-                              }}
-                            >
-                              Save changes
-                            </Button>
+                            <Button onClick={createJobHandler}>Create</Button>
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
@@ -916,6 +1143,332 @@ const page: FC<PageProps> = ({ params }) => {
 
                 {user && user?.about && <p>{user?.about}</p>}
               </div>
+              {user && user?.role === CONTENT_CREATOR && (
+                <div className="previousWork flex flex-col gap-4">
+                  <h2 className="text-3xl font-bold">Live Jobs</h2>
+                  <div className="flex w-full justify-center items-center ">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {user &&
+                          user?.jobs?.map((ele, key: number) => {
+                            return (
+                              <>
+                                <TableRow key={key} className="">
+                                  <TableCell className="font-medium  ">
+                                    {ele?.jobTitle}
+                                  </TableCell>
+
+                                  <TableCell>
+                                    <Dialog>
+                                      <DialogTrigger>
+                                        <Button className="flex gap-2 text-blue-500 hover:text-blue-700 cursor-pointer">
+                                          About
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle className="flex gap-3">
+                                            {ele?.jobTitle}
+                                          </DialogTitle>
+                                          <DialogDescription className="flex flex-col gap-2">
+                                            <div className="flex w-full gap-1">
+                                              {ele?.jobDescription}
+                                            </div>
+                                            <div className="flex w-full gap-1">
+                                              <b>Location : </b>
+                                              {ele?.location}
+                                            </div>
+                                            <div className="flex w-full gap-1">
+                                              <b>Estimated time : </b>
+                                              {ele?.estimatedTime} month/s
+                                            </div>
+                                            <div className="flex w-full gap-1">
+                                              <b>Salary Range : </b>₹
+                                              {ele?.minPay} - ₹{ele?.maxPay}
+                                            </div>
+                                            <div className="flex gap-2 w-full">
+                                              <b>Skills : </b>
+                                              <div className="flex flex-wrap gap-2">
+                                                {ele?.skills?.map(
+                                                  (i: string, k: number) => {
+                                                    return (
+                                                      <Badge key={k}>{i}</Badge>
+                                                    );
+                                                  }
+                                                )}
+                                              </div>
+                                            </div>
+                                          </DialogDescription>
+                                        </DialogHeader>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </TableCell>
+                                  <TableCell className="h-full font-medium flex gap-x-3">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button
+                                          className="cursor-pointer"
+                                          onClick={() => {
+                                            setUpdatedJobVal({
+                                              jobTitle: ele?.jobTitle,
+                                              jobDescription:
+                                                ele?.jobDescription,
+                                              location: ele?.location,
+                                              estimatedTime: ele?.estimatedTime,
+                                              maxPay: ele?.maxPay,
+                                              minPay: ele?.minPay,
+                                              skills: ele?.skills,
+                                            });
+                                          }}
+                                        >
+                                          <Edit />
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="sm:max-w-[425px] lg:max-w-[600px]">
+                                        <DialogHeader>
+                                          <DialogTitle>
+                                            Update Job : {ele?.jobTitle}
+                                          </DialogTitle>
+                                        </DialogHeader>
+                                        <div className="grid gap-4 py-4">
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
+                                              htmlFor="title"
+                                              className="text-right"
+                                            >
+                                              Job Title
+                                            </Label>
+                                            <Input
+                                              id="title"
+                                              value={updatedJobVal?.jobTitle}
+                                              onChange={(e) => {
+                                                setUpdatedJobVal({
+                                                  ...updatedJobVal,
+                                                  jobTitle: e.target.value,
+                                                });
+                                              }}
+                                              className="col-span-3"
+                                            />
+                                          </div>
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
+                                              htmlFor="job-description"
+                                              className="text-right"
+                                            >
+                                              Job Description.
+                                            </Label>
+                                            <Textarea
+                                              style={{ resize: "none" }}
+                                              id="job-description"
+                                              className="col-span-3"
+                                              value={
+                                                updatedJobVal?.jobDescription
+                                              }
+                                              onChange={(e) => {
+                                                setUpdatedJobVal({
+                                                  ...updatedJobVal,
+                                                  jobDescription:
+                                                    e.target.value,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
+                                              htmlFor="job-location"
+                                              className="text-right"
+                                            >
+                                              Job Location
+                                            </Label>
+                                            <Input
+                                              id="job-location"
+                                              className="col-span-3"
+                                              value={updatedJobVal?.location}
+                                              onChange={(e) => {
+                                                setUpdatedJobVal({
+                                                  ...updatedJobVal,
+                                                  location: e.target.value,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
+                                              htmlFor="job-estimated-time"
+                                              className="text-right"
+                                            >
+                                              Estimated time (in months)
+                                            </Label>
+                                            <Input
+                                              id="job-estimated-time"
+                                              className="col-span-3"
+                                              type="number"
+                                              value={
+                                                updatedJobVal?.estimatedTime
+                                              }
+                                              onChange={(e) => {
+                                                setUpdatedJobVal({
+                                                  ...updatedJobVal,
+                                                  estimatedTime:
+                                                    e.target.valueAsNumber,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
+                                              htmlFor="job-min-pay"
+                                              className="text-right"
+                                            >
+                                              Min. Pay (in Rupees)
+                                            </Label>
+                                            <Input
+                                              id="job-min-pay"
+                                              className="col-span-3"
+                                              type="number"
+                                              value={updatedJobVal?.minPay}
+                                              onChange={(e) => {
+                                                setUpdatedJobVal({
+                                                  ...updatedJobVal,
+                                                  minPay:
+                                                    e.target.valueAsNumber,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
+                                              htmlFor="job-max-pay"
+                                              className="text-right"
+                                            >
+                                              Max. Pay (in Rupees)
+                                            </Label>
+                                            <Input
+                                              id="job-max-pay"
+                                              className="col-span-3"
+                                              type="number"
+                                              value={updatedJobVal?.maxPay}
+                                              onChange={(e) => {
+                                                setUpdatedJobVal({
+                                                  ...updatedJobVal,
+                                                  maxPay:
+                                                    e.target.valueAsNumber,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="flex flex-col gap-2">
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label
+                                                htmlFor="job-skills"
+                                                className="text-right"
+                                              >
+                                                Skills
+                                              </Label>
+                                              <Input
+                                                id="job-skills"
+                                                className="col-span-3"
+                                                type="text"
+                                                value={newSkill}
+                                                onChange={(e) => {
+                                                  setNewSkill(e.target.value);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                  if (e.key === "Enter") {
+                                                    if (newSkill === "") {
+                                                      toast.error(
+                                                        "Enter a valid skill."
+                                                      );
+                                                      return;
+                                                    }
+                                                    let newSkillSet = [];
+                                                    for (let ele of updatedJobVal.skills) {
+                                                      newSkillSet.push(ele);
+                                                    }
+                                                    newSkillSet.push(newSkill);
+                                                    setUpdatedJobVal({
+                                                      ...updatedJobVal,
+                                                      skills: newSkillSet,
+                                                    });
+                                                    setNewSkill("");
+                                                  }
+                                                }}
+                                              />
+                                            </div>
+
+                                            <div className="flex gap-2 flex-wrap">
+                                              {updatedJobVal?.skills?.map(
+                                                (item, key) => {
+                                                  return (
+                                                    <Badge
+                                                      className="cursor-pointer"
+                                                      key={key}
+                                                      onClick={() => {
+                                                        let newSkillSet =
+                                                          updatedJobVal.skills.filter(
+                                                            (el) => {
+                                                              if (item !== el) {
+                                                                return el;
+                                                              }
+                                                            }
+                                                          );
+
+                                                        setUpdatedJobVal({
+                                                          ...updatedJobVal,
+                                                          skills: newSkillSet,
+                                                        });
+                                                      }}
+                                                    >
+                                                      {item}
+                                                      <CancelIcon />
+                                                    </Badge>
+                                                  );
+                                                }
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <DialogFooter>
+                                          <Button
+                                            onClick={() =>
+                                              updateJobHandler(ele?._id)
+                                            }
+                                          >
+                                            Update
+                                          </Button>
+                                        </DialogFooter>
+                                      </DialogContent>
+                                    </Dialog>
+
+                                    <Button
+                                      className="cursor-pointer"
+                                      variant={"destructive"}
+                                      onClick={() => {
+                                        dispatch(deleteJob(ele?._id));
+                                        toast.loading("Deleting Project", {
+                                          duration: 2000,
+                                        });
+                                      }}
+                                    >
+                                      <Delete />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              </>
+                            );
+                          })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
               {user && user?.role === SERVICE_PROVIDER && (
                 <div className="previousWork flex flex-col gap-4">
                   <h2 className="text-3xl font-bold">Work Samples</h2>
