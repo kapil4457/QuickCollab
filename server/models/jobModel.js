@@ -5,12 +5,10 @@ const jobSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  jobDescription: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
+  jobDescription: {
+    type: String,
+    required: true,
+  },
   skills: [
     {
       type: String,

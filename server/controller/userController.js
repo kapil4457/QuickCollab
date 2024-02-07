@@ -166,7 +166,20 @@ exports.getUserDetails = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id)
-      .populate("avatar")
+      .populate(["avatar", "conversations"])
+      .populate({
+        path: "jobs",
+        // populate: {
+        //   path: "applicants",
+        //   model: "User",
+        //   select: ["name", "avatar", "rating", "providerPreviousWork", "_id"],
+        // },
+        model: "Job",
+      })
+      .populate({
+        path: "jobsAppliedTo",
+        model: "Job",
+      })
       .populate({
         path: "providerPreviousWork",
         populate: {
@@ -180,12 +193,7 @@ exports.getUserDetails = async (req, res) => {
           path: "projectVideos",
           model: "Cloudinary",
         },
-      })
-
-      // .populate("providerPreviousWork", "projectVideos")
-      .populate("conversations")
-      .populate("jobs")
-      .populate("jobsAppliedTo");
+      });
     return await res.status(200).send({
       success: true,
       user,
@@ -456,6 +464,7 @@ exports.getUserDetail = async (req, res) => {
           model: "Cloudinary",
         },
       });
+
     if (!user) {
       return await res.status(400).send({
         success: false,
@@ -465,7 +474,7 @@ exports.getUserDetail = async (req, res) => {
     let details;
     if (user.role == "content-creator") {
       // If the requested user is a content-creator
-      user.populate("jobs");
+      await user.populate({ path: "jobs", model: "Job" });
       details = {
         name: user.name,
         avatar: user.avatar,
@@ -694,7 +703,7 @@ exports.getContentCreator = async (req, res) => {
         available: true,
       })
         .populate("avatar")
-        .select(["name", "rating", "providerPreviousWork", "experience"]);
+        .select(["name", "rating", "providerPreviousWork"]);
       return await res.status(200).send({
         success: true,
         message: "Fetched all users successfully.",

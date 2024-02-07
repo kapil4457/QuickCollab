@@ -28,10 +28,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
-  experience: {
-    type: Number,
-    deafault: 0,
-  },
   avatar: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Cloudinary",

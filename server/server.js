@@ -43,7 +43,7 @@ const project = require("./routes/projectRoutes");
 const converastion = require("./routes/conversationRoutes");
 const message = require("./routes/messageRoutes");
 const cloudinary = require("./routes/cloudinaryRoutes");
-const jobs = require("./routes/projectRoutes");
+const jobs = require("./routes/jobRoutes");
 
 app.use("/api/v1/", user);
 app.use("/api/v1/", project);

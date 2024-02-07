@@ -12,6 +12,7 @@ exports.createJob = async (req, res) => {
       estimatedTime,
       minPay,
       maxPay,
+      skills,
     } = req.body;
 
     if (
@@ -20,7 +21,8 @@ exports.createJob = async (req, res) => {
       !location ||
       !estimatedTime ||
       !minPay ||
-      !maxPay
+      !maxPay ||
+      !skills
     ) {
       return await res.status(400).send({
         success: false,
@@ -62,15 +64,10 @@ exports.createJob = async (req, res) => {
       });
     }
 
-    if (
-      !validator.isLength(estimatedTime, {
-        min: 1,
-        max: undefined,
-      })
-    ) {
+    if (estimatedTime <= 0) {
       return await res.status(400).send({
         success: false,
-        message: "Estimated time can not be empty.",
+        message: "Estimated time can not be 0.",
       });
     }
 
@@ -80,6 +77,12 @@ exports.createJob = async (req, res) => {
         message: "Min Pay can not be less than equal to zero.",
       });
     }
+    if (skills.length === 0) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please enter atleast 1 skill.",
+      });
+    }
 
     const job = await Job.create({
       jobTitle,
@@ -87,6 +90,7 @@ exports.createJob = async (req, res) => {
       location,
       estimatedTime,
       minPay,
+      skills,
       maxPay,
       jobCreatedBy: req.user.id,
     });
@@ -168,6 +172,7 @@ exports.updateJob = async (req, res) => {
       jobDescription,
       location,
       estimatedTime,
+      skills,
       minPay,
       maxPay,
       jobId,
@@ -192,7 +197,8 @@ exports.updateJob = async (req, res) => {
       !location ||
       !estimatedTime ||
       !minPay ||
-      !maxPay
+      !maxPay ||
+      !skills
     ) {
       return await res.status(400).send({
         success: false,
@@ -233,13 +239,14 @@ exports.updateJob = async (req, res) => {
         message: "Location can not be empty.",
       });
     }
+    if (skills.length === 0) {
+      return await res.status(400).send({
+        success: false,
+        message: "Please enter atleast 1 skill.",
+      });
+    }
 
-    if (
-      !validator.isLength(estimatedTime, {
-        min: 1,
-        max: undefined,
-      })
-    ) {
+    if (estimatedTime <= 0) {
       return await res.status(400).send({
         success: false,
         message: "Estimated time can not be empty.",
@@ -260,6 +267,7 @@ exports.updateJob = async (req, res) => {
       estimatedTime,
       minPay,
       maxPay,
+      skills,
     };
     await Job.findByIdAndUpdate(jobId, info);
     return await res.status(200).send({
@@ -278,17 +286,8 @@ exports.updateJob = async (req, res) => {
 exports.fetchJobs = async (req, res) => {
   try {
     const { filters } = req.body;
-    const jobs = await Job.find().select([
-      "skills",
-      "jobTitle",
-      "jobDescription",
-      "location",
-      "createdAt",
-      "estimatedTime",
-      "minPay",
-      "maxPay",
-      "jobCreatedBy",
-    ]);
+    const jobs = await Job.find();
+
     if (!filters) {
       return await res.status(200).send({
         success: true,
@@ -297,51 +296,64 @@ exports.fetchJobs = async (req, res) => {
       });
     }
 
-    let ans = [];
-    for (let filter of filters.keywords) {
-      for (let job of jobs) {
-        for (let ele of job.skills) {
-          if (
-            (await ele.toLowerCase()) === filter.toLowerCase() ||
-            (await ele.toLowerCase().includes(filter.toLowerCase())) ||
-            (await filter.toLowerCase().includes(ele.toLowerCase()))
-          ) {
-            ans.push(job);
+    let ans = jobs;
+    let tempAns = [];
+    if (filters.keywords.length !== 0) {
+      for (let filter of filters.keywords) {
+        let lowerFilter = filter.toLowerCase();
+        for (let job of ans) {
+          for (let ele of job.skills) {
+            let lowerEle = ele.toLowerCase();
+            if (
+              lowerEle === lowerFilter ||
+              lowerEle.includes(lowerFilter) ||
+              lowerFilter.includes(lowerEle)
+            ) {
+              tempAns.push(job);
+              break;
+            }
           }
         }
       }
+
+      ans = tempAns;
     }
 
-    if (filters.location) {
-      ans = ans.filter((ele) => {
-        if (
-          ele.location.toLowerCase() === filters.location.toLowerCase() ||
-          ele.location.toLowerCase().includes(filters.location.toLowerCase()) ||
-          filters.location.toLowerCase().includes(ele.location.toLowerCase())
-        ) {
-          return ans;
+    if (filters?.location && filters.location.length != 0) {
+      let newAns = [];
+      for (let loc of filters?.location) {
+        for (let ele of ans) {
+          if (
+            ele.location.toLowerCase() === loc.toLowerCase() ||
+            ele.location.toLowerCase().includes(loc.toLowerCase()) ||
+            loc.toLowerCase().includes(ele.location.toLowerCase())
+          ) {
+            newAns.push(ele);
+          }
         }
-      });
+      }
+
+      ans = newAns;
     }
 
-    if (filters.estimatedTime) {
-      ans.filter((ele) => {
+    if (filters.estimatedTime != 0) {
+      ans = ans.filter((ele) => {
         if (ele.estimatedTime <= filters.estimatedTime) {
           return ele;
         }
       });
     }
 
-    if (filters.range.minPay) {
-      ans.filter((ele) => {
+    if (filters.range.minPay != NaN && filters.range.minPay != 0) {
+      ans = ans.filter((ele) => {
         if (ele.minPay >= filters.range.minPay) {
           return ele;
         }
       });
     }
-    if (filters.range.maxPay) {
-      ans.filter((ele) => {
-        if (ele.maxPay >= filters.range.maxPay) {
+    if (filters.range.maxPay != NaN && filters.range.maxPay != 0) {
+      ans = ans.filter((ele) => {
+        if (ele.maxPay <= filters.range.maxPay) {
           return ele;
         }
       });
@@ -360,6 +372,85 @@ exports.fetchJobs = async (req, res) => {
   }
 };
 
+exports.fetchJobApplicants = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId = req.user._id;
+    const { filters } = req.body;
+    const job = await Job.findById(id).populate({
+      path: "applicants",
+      populate: {
+        path: "avatar",
+        model: "Cloudinary",
+        select: ["url"],
+      },
+      model: "User",
+      select: ["name", "avatar", "rating", "servicesOffered"],
+    });
+    if (!job) {
+      return await res.status(400).send({
+        success: false,
+        message: "Job with this id does not exist.",
+      });
+    }
+    if (job.jobCreatedBy.toString() !== userId.toString()) {
+      return await res.status(400).send({
+        success: false,
+        message: "You are not allowed to access this job details.",
+      });
+    }
+    let applicants = job.applicants;
+    if (!filters) {
+      return await res.status(200).send({
+        success: true,
+        message: "Fetched all applicants.",
+        applicants,
+        jobCreator: job.jobCreatedBy.toString(),
+      });
+    }
+    const { keywords, rating } = filters;
+    let ans = applicants;
+
+    if (keywords.length !== 0) {
+      let tempAns = [];
+      for (let keyword of keywords) {
+        let lowerKeyword = keyword.toLowerCase();
+        for (let applicant of ans) {
+          for (let skill of applicant.servicesOffered) {
+            let skillLower = skill.toLowerCase();
+            if (
+              skillLower === lowerKeyword ||
+              skillLower.includes(lowerKeyword) ||
+              lowerKeyword.includes(skillLower)
+            ) {
+              tempAns.push(applicant);
+              break;
+            }
+          }
+        }
+      }
+      ans = tempAns;
+    }
+
+    if (rating !== 0) {
+      ans = ans.filter((ele) => {
+        if (ele.rating > rating) return ele;
+      });
+    }
+
+    return await res.status(200).send({
+      success: true,
+      message: "Fetched all applicants",
+      applicants: ans,
+      jobCreator: job.jobCreatedBy.toString(),
+    });
+  } catch (err) {
+    return res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
 exports.applyToJob = async (req, res) => {
   try {
     const jobId = req.params.id;

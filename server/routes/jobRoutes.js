@@ -4,7 +4,10 @@ const {
   deleteJob,
   updateJob,
   applyToJob,
+  fetchJobs,
+  fetchJobApplicants,
 } = require("../controller/jobController");
+const { isAuthenticatedUser, authorizeRole } = require("../middleware/auth");
 const router = express.Router();
 
 router
@@ -19,9 +22,16 @@ router
   .put(isAuthenticatedUser, authorizeRole("content-creator"), updateJob);
 router
   .route("/fetch/jobs")
-  .get(isAuthenticatedUser, authorizeRole("service-provider"), fetchJobs);
+  .post(isAuthenticatedUser, authorizeRole("service-provider"), fetchJobs);
 router
   .route("/apply/job/:id")
   .put(isAuthenticatedUser, authorizeRole("service-provider"), applyToJob);
+router
+  .route("/fetch/job/applicants/:id")
+  .post(
+    isAuthenticatedUser,
+    authorizeRole("content-creator"),
+    fetchJobApplicants
+  );
 
 module.exports = router;
