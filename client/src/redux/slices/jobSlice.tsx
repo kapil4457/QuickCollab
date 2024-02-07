@@ -1,6 +1,21 @@
 import requestHandler from "@/utils/requestHelper";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
+type jobProps = {
+  applicants: Array<string>;
+  createdAt: string;
+  estimatedTime: number;
+  jobCreatedBy: string;
+  jobDescription: string;
+  jobTitle: string;
+  location: string;
+  maxPay: number;
+  minPay: number;
+  skills: Array<string>;
+  __v: number;
+  _id: string;
+};
+
 type useValueProps = {
   success: boolean | null;
   loading: boolean;
@@ -22,12 +37,19 @@ type initialStateProps = {
     success: boolean | null;
     loading: boolean;
     message: string;
-    jobs: [] | null;
+    jobs: jobProps[] | null;
   };
   applyToJob: {
     success: boolean | null;
     loading: boolean;
     message: string;
+  };
+  currentJobApplicants: {
+    success: boolean | null;
+    loading: boolean;
+    message: string;
+    applicants: null | [];
+    jobCreator: string;
   };
 };
 
@@ -57,6 +79,13 @@ const initialState = {
     success: null,
     loading: false,
     message: "",
+  },
+  currentJobApplicants: {
+    success: null,
+    loading: false,
+    message: "",
+    applicants: [],
+    jobCreator: "",
   },
 } as initialStateProps;
 
@@ -118,6 +147,25 @@ export const applyToJob = createAsyncThunk("jobs/applyToJob", async (jobId) => {
     message: data.message,
   };
 });
+export const fetchJobApplicants = createAsyncThunk(
+  "jobs/fetchJobApplicants",
+  async (props) => {
+    const data = await requestHandler(
+      {
+        filters: props?.filters,
+      },
+      "POST",
+      `/api/v1/fetch/job/applicants/${props?.id}`
+    );
+    if (data.success) {
+      return data;
+    }
+    return {
+      success: data.success,
+      message: data.message,
+    };
+  }
+);
 export const jobSlice = createSlice({
   name: "services",
   initialState,
@@ -148,6 +196,55 @@ export const jobSlice = createSlice({
       state.applyToJob.success = null;
       state.applyToJob.message = "";
       state.applyToJob.loading = false;
+    },
+    sortApplicants: (state, action) => {
+      if (state.currentJobApplicants.applicants === null) {
+        return;
+      }
+      console.log(action.payload.type);
+
+      let newApplicants = [];
+      for (let ele of state.currentJobApplicants.applicants) {
+        newApplicants.push(ele);
+      }
+      console.log(newApplicants);
+    },
+    sortJobs: (state, action) => {
+      if (state.allJobs.jobs === null) {
+        return;
+      }
+      console.log(action.payload.type);
+
+      let newJobs = [];
+      for (let ele of state.allJobs.jobs) {
+        newJobs.push(ele);
+      }
+      switch (action.payload.type) {
+        case "salary-ascending":
+          newJobs = newJobs?.sort((a, b) => {
+            a.maxPay > b.maxPay;
+          });
+          console.log("newJobs : ", newJobs);
+          state.allJobs.jobs = newJobs;
+          break;
+        case "salary-descending":
+          newJobs = newJobs?.sort((a, b) => {
+            console.log("a : ", a);
+            console.log("b : ", b);
+            a.maxPay < b.maxPay;
+          });
+          console.log("newJobs : ", newJobs);
+          state.allJobs.jobs = newJobs;
+          break;
+        case "duration-high-to-low":
+          console.log(state.allJobs.jobs);
+          break;
+        case "duration-low-to-high":
+          console.log(state.allJobs.jobs);
+          break;
+        default:
+          break;
+      }
     },
   },
 
@@ -235,6 +332,24 @@ export const jobSlice = createSlice({
       state.applyToJob.message = "Fetching jobs";
       state.applyToJob.success = null;
     });
+    // fetch job applicants
+    builder.addCase(fetchJobApplicants.fulfilled, (state, action) => {
+      state.currentJobApplicants.message = action.payload.message;
+      state.currentJobApplicants.loading = false;
+      state.currentJobApplicants.success = action.payload.success;
+      state.currentJobApplicants.applicants = action.payload.applicants;
+      state.currentJobApplicants.jobCreator = action.payload.jobCreator;
+    });
+    builder.addCase(fetchJobApplicants.rejected, (state, action) => {
+      state.currentJobApplicants.loading = false;
+      state.currentJobApplicants.message = action.error.message as string;
+      state.currentJobApplicants.success = false;
+    });
+    builder.addCase(fetchJobApplicants.pending, (state, action) => {
+      state.currentJobApplicants.loading = true;
+      state.currentJobApplicants.message = "Fetching applicants.";
+      state.currentJobApplicants.success = null;
+    });
   },
 });
 
@@ -245,4 +360,6 @@ export const {
   updateJobReset,
   allJobsReset,
   applyToJobReset,
+  sortJobs,
+  sortApplicants,
 } = jobSlice.actions;

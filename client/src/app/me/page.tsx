@@ -119,6 +119,8 @@ const page: FC<PageProps> = ({ params }) => {
     title: "",
     link: "",
   });
+
+  const [applicantFilter, applicansetApplicantFilter] = useState("");
   const [isAvailable, setIsAvailable] = useState<boolean>();
   const [projectData, setProjectData] = useState<FormDataProps>({
     title: "",
@@ -445,6 +447,7 @@ const page: FC<PageProps> = ({ params }) => {
     if (success) {
       toast.success("Project Added successfully!!");
       dispatch(addNewProjectReducerReset({}));
+      dispatch(fetchMe());
     }
   }, [success]);
 
@@ -513,7 +516,7 @@ const page: FC<PageProps> = ({ params }) => {
               user?.rating &&
               user?.role === SERVICE_PROVIDER &&
               user?.rating > 0 && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full items-center justify-center">
                   <Rating value={user?.rating} precision={0.1} readOnly />(
                   {user?.providerPreviousWork?.length})
                 </div>
@@ -1205,6 +1208,14 @@ const page: FC<PageProps> = ({ params }) => {
                                                 )}
                                               </div>
                                             </div>
+                                            <div>
+                                              <b>Applicants : </b>
+                                              <Link
+                                                href={`/job/applicants/${ele?._id}`}
+                                              >
+                                                <Launch className="w-4 h-4 text-blue-500" />
+                                              </Link>
+                                            </div>
                                           </DialogDescription>
                                         </DialogHeader>
                                       </DialogContent>
@@ -1483,6 +1494,7 @@ const page: FC<PageProps> = ({ params }) => {
                       </TableHeader>
                       <TableBody>
                         {user &&
+                          user?.providerPreviousWork &&
                           user?.providerPreviousWork?.map(
                             (ele, key: number) => {
                               let media = [];

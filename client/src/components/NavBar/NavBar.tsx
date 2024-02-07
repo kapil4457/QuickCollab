@@ -6,7 +6,7 @@ import { useAppSelector } from "@/redux/store";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import requestHandler from "@/utils/requestHelper";
-import { setUserData } from "@/redux/slices/userSlice";
+import { logoutUser, setUserData } from "@/redux/slices/userSlice";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,6 +46,9 @@ const NavBar = () => {
   const { isAuthenticated, user } = useAppSelector(
     (state) => state.userSlice.value
   );
+  const { message: logoutMessage, success: logoutSuccess } = useAppSelector(
+    (state) => state.userSlice.logoutUser
+  );
 
   const dataFetch = async () => {
     try {
@@ -76,13 +79,21 @@ const NavBar = () => {
 
   const logoutHandler = async () => {
     if (isAuthenticated) {
-      const { data } = await axios.post("/api/logout");
-      toast.success(data.message);
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      dispatch(logoutUser());
+      // const { data } = await axios.post("/api/logout");
+      // toast.success(data.message);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 2000);
     }
   };
+  useEffect(() => {
+    if (logoutSuccess === true) {
+      toast.success(logoutMessage);
+    } else if (logoutSuccess === false) {
+      toast.error(logoutMessage);
+    }
+  }, [logoutSuccess]);
   useEffect(() => {
     if (!isAuthenticated) {
       dataFetch();

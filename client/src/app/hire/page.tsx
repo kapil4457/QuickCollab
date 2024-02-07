@@ -68,12 +68,6 @@ const page = () => {
 
   const filterDropdownHelper = (e: string) => {
     switch (e) {
-      case "experience-ascending":
-        users?.sort((a, b) => b.experience - a.experience);
-        break;
-      case "experience-descending":
-        users?.sort((a, b) => b.experience - a.experience);
-        break;
       case "rating-high-to-low":
         users?.sort((a, b) => b.rating - a.rating);
         break;
@@ -128,12 +122,6 @@ const page = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="experience-ascending">
-                  Experience (asc.)
-                </SelectItem>
-                <SelectItem value="experience-descending">
-                  Experience (des.)
-                </SelectItem>
                 <SelectItem value="rating-high-to-low">
                   Rating (High-Low)
                 </SelectItem>
@@ -240,6 +228,9 @@ const page = () => {
             <PaginationItem
               className="cursor-pointer"
               onClick={() => {
+                if (Math.ceil(user?.length / itemsPerPage) > pageNo) {
+                  setPageNo(pageNo + 1);
+                }
                 setPageNo(pageNo + 1);
               }}
             >

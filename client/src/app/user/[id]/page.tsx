@@ -26,6 +26,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 import {
   Table,
@@ -35,6 +37,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { PageProps } from "../../../../.next/types/app/layout";
 import { CONTENT_CREATOR, SERVICE_PROVIDER } from "@/utils/roles";
 import { Button } from "@/components/ui/button";
@@ -43,10 +53,13 @@ import ReactPlayer from "react-player";
 import { Chat, ChatBubble, Launch } from "@mui/icons-material";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { applyToJob } from "@/redux/slices/jobSlice";
 
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const itemsPerPage = 10;
+  const [pageNo, setPageNo] = useState(1);
   const { user, loading } = useAppSelector((state) => state.profileSlice.value);
   const {
     user: self,
@@ -72,7 +85,7 @@ const page: FC<PageProps> = ({ params }) => {
   return (
     <>
       <div
-        className="mb-10 flex flex-col  mt-[4rem] lg:mt-[6rem] lg:h-[calc(100vh-6rem)] lg:grid gap-6"
+        className="mb-10 flex flex-col   mt-[4rem] h-full lg:mt-[6rem] lg:h-[calc(100vh-6rem)] lg:grid gap-6"
         style={{ gridTemplateColumns: "20%  75%" }}
       >
         <div className=" max-h-[calc(100vh-6rem)] left border-r-2 flex flex-col items-center pt-20 gap-10 w-full">
@@ -136,7 +149,7 @@ const page: FC<PageProps> = ({ params }) => {
           )}
         </div>
         <div className="right p-3 lg:p-0">
-          <ScrollArea className="right max-h-[calc(100vh-6rem)]">
+          <ScrollArea className="right h-full min-h-[calc(100vh-6rem)]">
             <div className="flex flex-col gap-14">
               <div className="about flex flex-col gap-3">
                 <div className="flex justify-between">
@@ -285,6 +298,135 @@ const page: FC<PageProps> = ({ params }) => {
                     </Table>
                   </div>
                 </div>
+              )}
+              {user && user?.role === CONTENT_CREATOR && (
+                <>
+                  <h2 className="text-3xl font-bold">Live Job Postings </h2>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>About Job</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {user?.jobs
+                        ?.filter((ele, key: number) => {
+                          if (
+                            key + 1 >= (pageNo - 1) * itemsPerPage &&
+                            key + 1 <= pageNo * itemsPerPage
+                          ) {
+                            return ele;
+                          }
+                        })
+                        ?.map((job, key) => (
+                          <TableRow key={key} className="">
+                            <TableCell className="sm:text-center md:text-left">
+                              {job?.jobTitle}
+                            </TableCell>
+                            <TableCell>{job?.estimatedTime} months</TableCell>
+                            <TableCell>{job?.location}</TableCell>
+                            <TableCell>
+                              <Dialog>
+                                <DialogTrigger>
+                                  <Button>Details</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader className="flex flex-col gap-2">
+                                    <DialogTitle>
+                                      Job Description : {job?.jobTitle}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                      <div className="w-full flex items-start justify-start">
+                                        <b>Description : </b>
+                                        {job?.jobDescription}
+                                      </div>
+                                      <div className="w-full flex items-start justify-start">
+                                        <b>Location : </b>
+                                        {job?.location}
+                                      </div>
+                                      <div className="w-full flex items-start justify-start">
+                                        <b>Duration : </b>
+                                        {job?.estimatedTime}
+                                      </div>
+                                      <div className="w-full flex items-start justify-start">
+                                        <b>Pay Range : </b>
+                                        {job?.minPay} - {job?.maxPay}
+                                      </div>
+                                      <div className="flex gap-2 w-full items-start justify-start">
+                                        <b>Skills : </b>
+                                        {job?.skills?.map((item) => (
+                                          <Badge>{item}</Badge>
+                                        ))}
+                                      </div>
+                                      <div className="w-full flex items-start justify-start">
+                                        <b>Posted at : </b>
+                                        {job?.createdAt?.substr(0, 10)}
+                                      </div>
+                                    </DialogDescription>
+
+                                    <Button
+                                      onClick={() => {
+                                        dispatch(applyToJob(job?._id));
+                                      }}
+                                      disabled={
+                                        job?.applicants?.includes(user?._id)
+                                          ? true
+                                          : false
+                                      }
+                                    >
+                                      {job?.applicants?.includes(user?._id) ? (
+                                        <>
+                                          <CheckCircleOutlineIcon className="text-green-500" />
+                                          You have already applied to this job.
+                                        </>
+                                      ) : (
+                                        "Apply for Job"
+                                      )}
+                                    </Button>
+                                  </DialogHeader>
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (pageNo === 1) {
+                            return;
+                          }
+                          setPageNo(pageNo - 1);
+                        }}
+                      >
+                        <PaginationPrevious />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink>{pageNo}</PaginationLink>
+                      </PaginationItem>
+
+                      <PaginationItem
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (
+                            Math.ceil(user?.jobs?.length / itemsPerPage) >
+                            pageNo
+                          ) {
+                            setPageNo(pageNo + 1);
+                          }
+                        }}
+                      >
+                        <PaginationNext />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </>
               )}
             </div>
           </ScrollArea>

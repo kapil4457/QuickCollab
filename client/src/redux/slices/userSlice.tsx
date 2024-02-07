@@ -21,6 +21,10 @@ type initialStateProps = {
     success: boolean | null;
     message: string;
   };
+  logoutUser: {
+    success: boolean | null;
+    message: string;
+  };
 };
 
 const initialState = {
@@ -39,6 +43,10 @@ const initialState = {
     message: "",
   },
   sendQueryEmail: {
+    success: null,
+    message: "",
+  },
+  logoutUser: {
     success: null,
     message: "",
   },
@@ -109,6 +117,16 @@ export const updateUserController = createAsyncThunk(
     };
   }
 );
+export const logoutUser = createAsyncThunk("user/logoutUser", async () => {
+  const data = await requestHandler({}, "POST", `/api/v1/sign-out`);
+  if (data.success) {
+    return data;
+  }
+  return {
+    success: data.success,
+    message: data.message,
+  };
+});
 export const userSlice = createSlice({
   name: "user",
   initialState,
@@ -179,6 +197,19 @@ export const userSlice = createSlice({
     });
     builder.addCase(updateUserController.pending, (state, action) => {
       state.updatedUser.success = null;
+    });
+    // Logout User
+    builder.addCase(logoutUser.fulfilled, (state, action) => {
+      state.logoutUser.success = action.payload.success;
+      state.logoutUser.message = action.payload.message;
+      state.value.isAuthenticated = false;
+    });
+    builder.addCase(logoutUser.rejected, (state, action) => {
+      state.logoutUser.success = false;
+      state.logoutUser.message = action.error.message as string;
+    });
+    builder.addCase(logoutUser.pending, (state, action) => {
+      state.logoutUser.success = null;
     });
     // Send Email
     builder.addCase(sendQueryEmail.fulfilled, (state, action) => {
