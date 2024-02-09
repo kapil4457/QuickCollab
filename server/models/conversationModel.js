@@ -15,6 +15,10 @@ const conversationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: false,
   },
+  uuid: {
+    type: String,
+    required: false,
+  },
   name: {
     type: String,
     required: false,
@@ -23,13 +27,17 @@ const conversationSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
+  groupLogo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Cloudinary",
+  },
   messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
     },
   ],
-  users: [
+  members: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

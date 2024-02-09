@@ -1,14 +1,17 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const { createServer } = require("node:http");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-
+const { Server } = require("socket.io");
 // Config File connected
+
 dotenv.config({
   path: __dirname + "/.env",
 });
+
 app.use(
   cors({
     // allowedHeaders: ["Content-Type", "Authorization"],
@@ -37,6 +40,20 @@ app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Creating socket io server
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://127.0.0.1:3000",
+      process.env.FRONT_END_URL,
+      "http://localhost:3000",
+    ],
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
+});
+
 // Router
 const user = require("./routes/userRoutes");
 const project = require("./routes/projectRoutes");
@@ -59,8 +76,17 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
+// Events in  socket.io
+io.on("connection", (socket) => {
+  console.log("a user connected : ", socket.id);
+
+  socket.on("message", (data) => {
+    console.log("data : ", data);
+  });
+});
 // Listening to the server
-app.listen(process.env.PORT, () => {
+
+server.listen(process.env.PORT, () => {
   console.log(`Listening to port ${process.env.PORT}`);
 });
 
@@ -69,26 +95,3 @@ process.on("unhandledRejection", (err) => {
   console.log(`Error  :${err.message}`);
   console.log("Shutting down due to unhandled Promise Rejection ");
 });
-
-// {
-//   "asset_id": "6aa0eafeb975dffcc15c46d0771c3698",
-//   "public_id": "profile_pics/bg8kcggbawzrsswaszdp",
-//   "version": 1705412011,
-//   "version_id": "b2eaa4df0ba756e53199c8539999bf6e",
-//   "signature": "729f6d00df79c1240e97a91249fca6abe1e9bb85",
-//   "width": 800,
-//   "height": 480,
-//   "format": "jpg",
-//   "resource_type": "image",
-//   "created_at": "2024-01-16T13:33:31Z",
-//   "tags": [],
-//   "bytes": 34985,
-//   "type": "upload",
-//   "etag": "81a2c5b98ba6ea290e8dc9e2136ffcba",
-//   "placeholder": false,
-//   "url": "http://res.cloudinary.com/dpeldzvz6/image/upload/v1705412011/profile_pics/bg8kcggbawzrsswaszdp.jpg",
-//   "secure_url": "https://res.cloudinary.com/dpeldzvz6/image/upload/v1705412011/profile_pics/bg8kcggbawzrsswaszdp.jpg",
-//   "folder": "profile_pics",
-//   "access_mode": "public",
-//   "original_filename": "Findme"
-// }

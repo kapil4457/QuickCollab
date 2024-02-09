@@ -7,6 +7,7 @@ const {
   updateGroup,
   deleteGroup,
   leaveGroup,
+  getConversations,
 } = require("../controller/conversationController");
 
 const router = express.Router();
@@ -42,5 +43,7 @@ router
   .delete(isAuthenticatedUser, authorizeRole("content-creator"), deleteGroup);
 
 router.route("/user/leave/conversation/").put(isAuthenticatedUser, leaveGroup);
+
+router.route("/user/getContacts").get(isAuthenticatedUser, getConversations);
 
 module.exports = router;
