@@ -203,12 +203,16 @@ export const userSlice = createSlice({
       state.logoutUser.success = action.payload.success;
       state.logoutUser.message = action.payload.message;
       state.value.isAuthenticated = false;
+      state.value.loading = false;
     });
+
     builder.addCase(logoutUser.rejected, (state, action) => {
+      state.value.loading = false;
       state.logoutUser.success = false;
       state.logoutUser.message = action.error.message as string;
     });
     builder.addCase(logoutUser.pending, (state, action) => {
+      state.value.loading = true;
       state.logoutUser.success = null;
     });
     // Send Email

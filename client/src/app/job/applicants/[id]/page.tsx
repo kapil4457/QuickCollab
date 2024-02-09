@@ -52,6 +52,7 @@ import { Badge } from "@/components/ui/badge";
 import { fetchJobApplicants, sortApplicants } from "@/redux/slices/jobSlice";
 import { PageProps } from "../../../../../.next/types/app/layout";
 import { Rating } from "@mui/material";
+import { createConversation } from "@/redux/slices/chatSlice";
 
 type UserType = {
   avatar: any;
@@ -75,6 +76,7 @@ const page: FC<PageProps> = ({ params }) => {
     keywords: [],
     rating: 0,
   });
+
   const [filterText, setFilterText] = useState("");
   const { applicants, jobCreator } = useAppSelector(
     (state) => state.jobSlice.currentJobApplicants
@@ -89,6 +91,19 @@ const page: FC<PageProps> = ({ params }) => {
 
   const filterDropdownHelper = (e: string) => {
     dispatch(sortApplicants({ type: e }));
+  };
+  const chatHandler = (applicantId: string) => {
+    // Set this value in the redux store
+    // add to the conversations list
+    let members = [];
+    members.push(applicantId);
+    const info = {
+      isGroup: false,
+      members: members,
+    };
+    dispatch(createConversation(info));
+    // redirect to chats page
+    router.push("/chats");
   };
 
   useEffect(() => {
@@ -350,13 +365,14 @@ const page: FC<PageProps> = ({ params }) => {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Link
-                          href={`/chat/${applicant?._id}`}
+                        <Button
+                          variant={"link"}
+                          onClick={() => chatHandler(applicant?._id)}
                           className="flex gap-2 items-center  text-blue-500 hover:text-blue-700"
                         >
                           Chat
                           <OpenInNewIcon className="w-4 h-4" />
-                        </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

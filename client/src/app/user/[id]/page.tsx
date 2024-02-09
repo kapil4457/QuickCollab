@@ -85,7 +85,7 @@ const page: FC<PageProps> = ({ params }) => {
   return (
     <>
       <div
-        className="mb-10 flex flex-col   mt-[4rem] h-full lg:mt-[6rem] lg:h-[calc(100vh-6rem)] lg:grid gap-6"
+        className="mb-10 flex flex-col   mt-[4rem] h-full lg:mt-[7rem] lg:h-[calc(100vh-7rem)] lg:grid gap-6"
         style={{ gridTemplateColumns: "20%  75%" }}
       >
         <div className=" max-h-[calc(100vh-6rem)] left border-r-2 flex flex-col items-center pt-20 gap-10 w-full">
