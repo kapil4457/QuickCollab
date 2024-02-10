@@ -6,9 +6,16 @@ const messageSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Cloudinary",
     required: false,
   },
+  seenBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   createdAt: {
     type: String,
     required: true,

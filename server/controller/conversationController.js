@@ -271,7 +271,24 @@ exports.getConversations = async (req, res) => {
           select: ["name", "avatar"],
         },
       })
-      .select(["groupAdmin", "isGroup", "members", "messages", "createdAt"]);
+      .populate({
+        path: "conversations",
+        model: "Conversation",
+        populate: {
+          path: "messages",
+          populate: {
+            path: "senderId",
+            model: "User",
+            populate: {
+              path: "avatar",
+              model: "Cloudinary",
+              select: ["url"],
+            },
+            select: ["name", "avatar"],
+          },
+          select: ["body", "createdAt", "senderId"],
+        },
+      });
 
     return await res.status(200).send({
       success: true,

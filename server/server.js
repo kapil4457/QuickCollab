@@ -61,6 +61,7 @@ const converastion = require("./routes/conversationRoutes");
 const message = require("./routes/messageRoutes");
 const cloudinary = require("./routes/cloudinaryRoutes");
 const jobs = require("./routes/jobRoutes");
+const { isAuthenticatedUser } = require("./middleware/auth");
 
 app.use("/api/v1/", user);
 app.use("/api/v1/", project);
@@ -80,10 +81,14 @@ process.on("uncaughtException", (err) => {
 io.on("connection", (socket) => {
   console.log("a user connected : ", socket.id);
 
-  socket.on("message", (data) => {
-    console.log("data : ", data);
+  socket.on("join-room", ({ roomId }) => {
+    socket.join(roomId);
+  });
+  socket.on("typing-message", ({ roomId }) => {
+    socket.to(roomId).emit("recieve-message");
   });
 });
+
 // Listening to the server
 
 server.listen(process.env.PORT, () => {
