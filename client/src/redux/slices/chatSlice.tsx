@@ -3,6 +3,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 type chatProps = {
   isGroup: boolean;
+  _id: string;
   groupAdmin: {
     _id: string;
     name: string;
@@ -21,8 +22,9 @@ type chatProps = {
   members: [];
   messages: [
     {
-      message: string;
-      sender: {
+      body: string;
+      senderId: {
+        _id: string;
         name: string;
         avatar: {
           _id: string;
@@ -61,7 +63,6 @@ export const getKnownMembers = createAsyncThunk(
     return {
       success: data.success,
       message: data.message,
-      user: {},
     };
   }
 );
@@ -90,7 +91,7 @@ export const conversationSlice = createSlice({
   initialState,
   reducers: {
     setCurrentChat: (state, action) => {
-      console.log(action.payload);
+      console.log("currentChat : ", action.payload.conversation);
       state.currentChat.chat = action.payload.conversation;
     },
     createConversationReset: (state, action) => {
@@ -99,6 +100,7 @@ export const conversationSlice = createSlice({
       state.createConversation.loading = false;
     },
   },
+
   extraReducers: (builder) => {
     // get all contacts
     builder.addCase(getKnownMembers.fulfilled, (state, action) => {

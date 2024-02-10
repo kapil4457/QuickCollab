@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { Label } from "@/components/ui/label";
 import { useDispatch } from "react-redux";
+import { ThreeDots } from "react-loader-spinner";
 import {
   createConversationReset,
   getKnownMembers,
@@ -16,6 +17,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import CallIcon from "@mui/icons-material/Call";
 import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
+import SendIcon from "@mui/icons-material/Send";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { current } from "@reduxjs/toolkit";
+import { sendMessage } from "@/redux/slices/messageSlice";
 
 const page = () => {
   const router = useRouter();
@@ -39,10 +43,12 @@ const page = () => {
   const { chat: currentChat } = useAppSelector(
     (state) => state.chatSlice.currentChat
   );
-  const { isAuthenticated, loading: selfLoading } = useAppSelector(
-    (state) => state.userSlice.value
-  );
-  const { conversations } = useAppSelector(
+  const {
+    isAuthenticated,
+    loading: selfLoading,
+    user,
+  } = useAppSelector((state) => state.userSlice.value);
+  const { conversations, success: allConversationsSuccess } = useAppSelector(
     (state) => state.chatSlice.allConversations
   );
   const {
@@ -58,15 +64,16 @@ const page = () => {
   });
   const [chatFilter, setChatFilter] = useState("");
   const [newMessage, setNewMessage] = useState("");
-
+  const [showMessage, setShowMessage] = useState(false);
+  const [conversationNumber, setConversationNumber] = useState();
   useEffect(() => {
+    dispatch(getKnownMembers());
+
     if (isAuthenticated === false && selfLoading === false) {
       toast.error("Please login to access this page");
       router.push("/");
     }
     if (isAuthenticated === true && selfLoading === false) {
-      dispatch(getKnownMembers());
-
       function onConnect() {
         setIsConnected(true);
       }
@@ -74,16 +81,48 @@ const page = () => {
       function onDisconnect() {
         setIsConnected(false);
       }
+      socket.on("recieve-message", () => {
+        setShowMessage(true);
+        setTimeout(() => {
+          setShowMessage(false);
+        }, 5000);
+      });
 
       socket.on("connect", onConnect);
       socket.on("disconnect", onDisconnect);
       return () => {
+        socket.off("recieve-message", () => {
+          setShowMessage(false);
+        });
         socket.off("connect", onConnect);
         socket.off("disconnect", onDisconnect);
       };
     }
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (currentChat !== null) {
+      var element = document.getElementById("chat-box")!;
+      element.scrollTo({
+        top: 1000,
+        behavior: "smooth",
+      });
+      socket.emit("join-room", { roomId: currentChat._id });
+    }
+  }, [currentChat]);
+  const sendMessageHandler = (conversation_id) => {
+    socket.emit("newMessage", {
+      message: newMessage,
+      roomId: currentChat?._id,
+    });
+    dispatch(
+      sendMessage({
+        conversationId: conversation_id,
+        body: newMessage,
+      })
+    );
+    setNewMessage("");
+  };
   useEffect(() => {
     if (createConversationSuccess === true) {
       toast.success(createConversationMessage);
@@ -173,23 +212,34 @@ const page = () => {
                   }
                 }
               })
-              ?.map((conversation) => {
-                // console.log("conversation : ", conversation);
+              ?.map((conversation, key: number) => {
                 return (
                   <div
+                    key={key}
                     className="w-full h-[4rem] cursor-pointer"
-                    onClick={() => dispatch(setCurrentChat({ conversation }))}
+                    onClick={() => {
+                      setConversationNumber(key);
+                      dispatch(setCurrentChat({ conversation }));
+                    }}
                   >
                     <div className="h-full flex items-center  hover:opacity-60">
                       {conversation?.isGroup === false ? (
                         <div className="flex gap-2 items-center">
                           <img
-                            src={conversation?.members[0]?.avatar?.url}
+                            src={
+                              user?._id.toString() ===
+                              conversation?.members[1]?._id
+                                ? conversation?.members[0]?.avatar?.url
+                                : conversation?.members[1]?.avatar?.url
+                            }
                             alt=""
                             className="h-10 w-10 object-cover"
                             style={{ borderRadius: "10px" }}
                           />
-                          {conversation?.members[0]?.name}
+                          {user?._id.toString() ===
+                          conversation?.members[1]?._id
+                            ? conversation?.members[0]?.name
+                            : conversation?.members[1]?.name}
                         </div>
                       ) : (
                         <div className="flex gap-2 items-center">
@@ -216,13 +266,19 @@ const page = () => {
               {currentChat.isGroup === false ? (
                 <div className="flex gap-2 items-center ">
                   <img
-                    src={currentChat?.members[0]?.avatar?.url}
+                    src={
+                      user?._id.toString() === currentChat?.members[1]?._id
+                        ? currentChat?.members[0]?.avatar?.url
+                        : currentChat?.members[1]?.avatar?.url
+                    }
                     alt=""
                     className="h-14 w-14 object-cover"
                     style={{ borderRadius: "100%" }}
                   />
                   <Label className="text-2xl">
-                    {currentChat?.members[0]?.name}
+                    {user?._id.toString() === currentChat?.members[1]?._id
+                      ? currentChat?.members[0]?.name
+                      : currentChat?.members[1]?.name}
                   </Label>
                 </div>
               ) : (
@@ -249,7 +305,7 @@ const page = () => {
           )}
         </div>
         <Separator />
-        <ScrollArea className="h-[calc(100vh-16rem)]  p-4 ">
+        <ScrollArea className="h-[calc(100vh-16rem)]  p-4 " id="chat-box">
           {currentChat === null ? (
             <div className="h-[calc(100vh-20rem)] w-full flex justify-center items-center">
               <Label className="h-full w-full flex justify-center items-center text-2xl">
@@ -257,20 +313,101 @@ const page = () => {
               </Label>
             </div>
           ) : (
-            <></>
+            <div className="w-full h-full flex flex-col gap-3">
+              {currentChat?.messages?.map((message) => {
+                return (
+                  <>
+                    {currentChat?.isGroup ? (
+                      <div>
+                        <div>
+                          <img src={message?.senderId?.avatar?.url} alt="" />
+                          <p>{message?.senderId?.name}</p>
+                        </div>
+                        <Label>{message?.body}</Label>
+                      </div>
+                    ) : (
+                      <div
+                        className="w-full flex"
+                        style={{
+                          justifyContent:
+                            message?.senderId?._id.toString() === user?._id
+                              ? "flex-end"
+                              : "flex-start",
+                        }}
+                      >
+                        <div className="flex items-center gap-2  ">
+                          <img
+                            src={message?.senderId?.avatar?.url}
+                            alt=""
+                            className="h-10 w-10 self-start"
+                            style={{ borderRadius: "100%" }}
+                          />
+                          <Label
+                            className="text-white
+                          dark:bg-white
+                          bg-slate-700
+                          p-3
+                          min-h-[3.5rem]
+                          max-w-[25rem] 
+                          // w-full h-full 
+                          break-words
+                         dark:text-black "
+                            style={{ borderRadius: "10px" }}
+                          >
+                            {message?.body}
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })}
+              {showMessage && (
+                <div
+                  className="bg-white w-[5rem] h-[2rem] flex justify-center items-center ml-[3rem]"
+                  style={{ borderRadius: "10px" }}
+                >
+                  <ThreeDots
+                    visible={true}
+                    height="30"
+                    width="30"
+                    color="black"
+                    radius="1"
+                    ariaLabel="three-dots-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                  />
+                </div>
+              )}
+            </div>
           )}
         </ScrollArea>
-        <div className="h-[5rem] p-1 pl-5 pr-5 flex gap-3 items-center ">
-          <AddCircleIcon className="h-[2.5rem] w-[2.5rem] cursor-pointer " />
-          <Input
-            placeholder="Enter your message"
-            className="h-[3rem] w-[70%] focus:border-none focus:outline-none"
-            value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value);
-            }}
-          />
-        </div>
+        {currentChat !== null ? (
+          <div className="h-[5rem] p-1 pl-5 pr-5 flex gap-3 items-center ">
+            <AddCircleIcon className="h-[2.5rem] w-[2.5rem] cursor-pointer " />
+            <Input
+              placeholder="Enter your message"
+              className="h-[3rem] w-[70%] focus:border-none focus:outline-none"
+              value={newMessage}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  sendMessageHandler(currentChat._id);
+                }
+              }}
+              onChange={(e) => {
+                socket.emit("typing-message", { roomId: currentChat?._id });
+                setNewMessage(e.target.value);
+              }}
+            />
+            <SendIcon
+              className="h-[2.5rem] w-[2.5rem] cursor-pointer bg-green-500 text-white dark:bg-slate-600 dark:text-green-300 p-2 "
+              style={{ borderRadius: "100%" }}
+              onClick={() => sendMessageHandler(currentChat._id)}
+            />
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );
