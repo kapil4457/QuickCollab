@@ -12,6 +12,7 @@ type chatProps = {
       url: string;
     };
   };
+
   name: string;
   lastMessageAt: string;
   createdAt: string;
@@ -51,12 +52,21 @@ const initialState = {
     success: null,
     message: "",
   },
+  allknownMembers: {
+    knownMembers: null,
+    success: null,
+    loading: false,
+  },
 };
 
-export const getKnownMembers = createAsyncThunk(
-  "conversation/getContacts",
+export const getConversations = createAsyncThunk(
+  "conversation/getConversations",
   async () => {
-    const data = await requestHandler({}, "GET", `/api/v1/user/getContacts`);
+    const data = await requestHandler(
+      {},
+      "GET",
+      `/api/v1/user/getConversations`
+    );
     if (data.success) {
       return data;
     }
@@ -64,6 +74,19 @@ export const getKnownMembers = createAsyncThunk(
       success: data.success,
       message: data.message,
     };
+  }
+);
+
+export const getKnownMembers = createAsyncThunk(
+  "conversation/getKnownMembers",
+  async () => {
+    const data = await requestHandler(
+      {},
+      "GET",
+      "/api/v1/user/getKnownMembers"
+    );
+    console.log(data);
+    return data;
   }
 );
 
@@ -103,17 +126,17 @@ export const conversationSlice = createSlice({
 
   extraReducers: (builder) => {
     // get all contacts
-    builder.addCase(getKnownMembers.fulfilled, (state, action) => {
+    builder.addCase(getConversations.fulfilled, (state, action) => {
       state.allConversations.conversations = action.payload.conversations;
       state.allConversations.message = "Members fetched successfully.";
       state.allConversations.success = action.payload.success;
     });
-    builder.addCase(getKnownMembers.rejected, (state, action) => {
+    builder.addCase(getConversations.rejected, (state, action) => {
       state.allConversations.conversations = null;
       state.allConversations.message = action.error.message as string;
       state.allConversations.success = false;
     });
-    builder.addCase(getKnownMembers.pending, (state, action) => {
+    builder.addCase(getConversations.pending, (state, action) => {
       state.allConversations.conversations = null;
       state.allConversations.message = "Fetching members";
       state.allConversations.success = null;
@@ -133,6 +156,21 @@ export const conversationSlice = createSlice({
       state.createConversation.loading = true;
       state.createConversation.message = "";
       state.createConversation.success = null;
+    });
+    builder.addCase(getKnownMembers.fulfilled, (state, action) => {
+      state.allknownMembers.knownMembers = action.payload.knownMembers;
+      state.allknownMembers.loading = false;
+      state.allknownMembers.success = action.payload.success;
+    });
+    builder.addCase(getKnownMembers.rejected, (state, action) => {
+      state.allknownMembers.knownMembers = null;
+      state.allknownMembers.loading = false;
+      state.allknownMembers.success = false;
+    });
+    builder.addCase(getKnownMembers.pending, (state, action) => {
+      state.allknownMembers.knownMembers = null;
+      state.allknownMembers.loading = true;
+      state.allknownMembers.success = false;
     });
     // delete a group
     // leave a group

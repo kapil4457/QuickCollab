@@ -54,12 +54,17 @@ import { Chat, ChatBubble, Launch } from "@mui/icons-material";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { applyToJob } from "@/redux/slices/jobSlice";
+import { createConversation } from "@/redux/slices/chatSlice";
 
 const page: FC<PageProps> = ({ params }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const itemsPerPage = 10;
   const [pageNo, setPageNo] = useState(1);
+  const {
+    message: createConversationMessage,
+    success: createConversationSuccess,
+  } = useAppSelector((state) => state.chatSlice.createConversation);
   const { user, loading } = useAppSelector((state) => state.profileSlice.value);
   const {
     user: self,
@@ -75,6 +80,17 @@ const page: FC<PageProps> = ({ params }) => {
     }
   }, [self, user]);
 
+  const createConversationHandler = async () => {
+    const info = {
+      isGroup: false,
+      name: user?.name,
+      groupLogo: user?.avatar?._id,
+      members: [user?._id],
+    };
+
+    dispatch(createConversation(info));
+    router.push(`/chats/${params?.id}`);
+  };
   useEffect(() => {
     if (isAuthenticated === false && userLoader === false) {
       toast.success("Please log-in to access this page.");
@@ -159,7 +175,7 @@ const page: FC<PageProps> = ({ params }) => {
                       variant={"secondary"}
                       className="cursor-pointer flex justify-between gap-3"
                       onClick={() => {
-                        router.push(`/chats/${params?.id}`);
+                        createConversationHandler();
                       }}
                     >
                       Chat <Chat className="w-5 h-5" />

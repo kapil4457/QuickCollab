@@ -7,7 +7,7 @@ import NavBar from "@/components/NavBar/NavBar";
 import { ThemeProvider } from "@/components/theme-provider";
 import FooterComp from "@/components/Footer/Footer";
 import Head from "next/head";
-
+// import { HelmetProvider } from "react-helmet-async";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
