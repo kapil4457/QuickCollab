@@ -27,9 +27,10 @@ const conversationSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
-  groupLogo: {
+
+  associatedProject: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Cloudinary",
+    ref: "Project",
   },
   messages: [
     {

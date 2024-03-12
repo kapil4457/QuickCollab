@@ -85,7 +85,7 @@ export const getKnownMembers = createAsyncThunk(
       "GET",
       "/api/v1/user/getKnownMembers"
     );
-    console.log(data);
+    // console.log(data);
     return data;
   }
 );
@@ -114,7 +114,7 @@ export const conversationSlice = createSlice({
   initialState,
   reducers: {
     setCurrentChat: (state, action) => {
-      console.log("currentChat : ", action.payload.conversation);
+      // console.log("currentChat : ", action.payload.conversation);
       state.currentChat.chat = action.payload.conversation;
     },
     createConversationReset: (state, action) => {

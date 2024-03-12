@@ -41,6 +41,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  knownMembers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   servicesOffered: [
     {
       type: String,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -41,27 +41,41 @@ import {
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { sendMessage } from "@/redux/slices/messageSlice";
+import { CONTENT_CREATOR } from "@/utils/roles";
 
 const page = () => {
   const router = useRouter();
-  const URL =
-    process.env.NODE_ENV === "production"
-      ? undefined
-      : process.env.NEXT_PUBLIC_BACKEND_URL;
-  const socket = useMemo(() => io(URL as string), []);
-  const dispatch = useDispatch();
-
-  const { chat: currentChat } = useAppSelector(
-    (state) => state.chatSlice.currentChat
-  );
   const {
     isAuthenticated,
     loading: selfLoading,
     user,
   } = useAppSelector((state) => state.userSlice.value);
+
+  // let socket;
+  const [socket, setSocket] = useState(null);
+
+  // let tempSocket = useMemo(() => {
+  //   return io(URL as string, {
+  //     auth: {
+  //       token: user,
+  //     },
+  //   });
+  // }, []);
+
   const { conversations, success: allConversationsSuccess } = useAppSelector(
     (state) => state.chatSlice.allConversations
   );
+  const URL =
+    process.env.NODE_ENV === "production"
+      ? undefined
+      : process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  const dispatch = useDispatch();
+
+  const { chat: currentChat } = useAppSelector(
+    (state) => state.chatSlice.currentChat
+  );
+
   const {
     message: createConversationMessage,
     success: createConversationSuccess,
@@ -71,46 +85,34 @@ const page = () => {
     (state) => state.chatSlice.allknownMembers
   );
 
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  // const [isConnected, setIsConnected] = useState(socket.connected);
   const [newGroupDetails, setNewGroupDetails] = useState({
     groupName: "",
     members: [],
     associatedProject: "",
   });
+  const [isTyping, setIsTyping] = useState(false);
+  const [typerName, setTyperName] = useState("");
+  const [typerConversationId, sendTyperConversationId] = useState("");
   const [chatFilter, setChatFilter] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [newGroupMember, setNewGroupMember] = useState("");
   const [conversationNumber, setConversationNumber] = useState();
   const [chatId, setChatId] = useState(null);
-
-  useEffect(() => {
-    dispatch(getConversations());
-    dispatch(getKnownMembers());
-
-    if (isAuthenticated === false && selfLoading === false) {
-      toast.error("Please login to access this page");
-      router.push("/");
-    }
-    if (isAuthenticated === true && selfLoading === false) {
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (currentChat !== null) {
-      var element = document.getElementById("chat-box")!;
-      element.scrollTo({
-        top: 1000,
-        behavior: "smooth",
-      });
-      socket.emit("join-room", { roomId: currentChat._id });
-    }
-  }, [currentChat]);
-
   const sendMessageHandler = (conversation_id) => {
-    socket.emit("newMessage", {
+    if (!socket) {
+      toast.error("Internal Server error");
+      return;
+    }
+    socket.emit("new_message", {
       message: newMessage,
       roomId: currentChat?._id,
+      user: {
+        _id: user._id,
+        name: user.name,
+      },
+      members: currentChat?.members,
     });
     dispatch(
       sendMessage({
@@ -151,9 +153,99 @@ const page = () => {
     });
     await dispatch(createConversation(info));
   };
+
+  // Set  up socket.io
+  useLayoutEffect(() => {
+    if (conversations && user) {
+      const convIds = [];
+      for (let conv of conversations) {
+        convIds.push(conv._id);
+      }
+      setSocket(
+        io(URL as string, {
+          auth: {
+            token: convIds ? convIds : [],
+          },
+        })
+      );
+    }
+  }, [conversations, user]);
+
+  // Fetch Conversations and members
+  useEffect(() => {
+    dispatch(getConversations());
+    dispatch(getKnownMembers());
+
+    if (isAuthenticated === false && selfLoading === false) {
+      toast.error("Please login to access this page");
+      router.push("/");
+    }
+  }, [isAuthenticated, selfLoading]);
+
+  // Set current chat
+  useEffect(() => {
+    if (currentChat !== null) {
+      var element = document.getElementById("chat-box")!;
+      element.scrollTo({
+        top: 1000,
+        behavior: "smooth",
+      });
+      // socket.emit("join-room", { roomId: currentChat._id });
+    }
+  }, [currentChat]);
+
+  // Typing emit
+  useEffect(() => {
+    if (newMessage !== "" && user) {
+      socket.emit("typing", {
+        conversationId: currentChat?._id,
+        senderName: user?.name,
+        senderId: user?._id,
+        // sender: { name: user?.name },
+      });
+    }
+  }, [newMessage]);
+
+  // Typing listen
+  useEffect(() => {
+    if (socket) {
+      socket?.on(
+        "typing_from_server",
+        ({
+          senderName,
+          conversationId,
+          senderId,
+        }: {
+          senderName: string;
+          conversationId: string;
+          senderId: string;
+        }) => {
+          if (user?._id !== senderId) {
+            setIsTyping(true);
+            setTyperName(senderName);
+            sendTyperConversationId(conversationId);
+            setTimeout(() => {
+              setIsTyping(false);
+            }, 2000);
+          }
+        }
+      );
+      return () => {
+        // before the component is destroyed
+        // unbind all event handlers used in this component
+        socket?.off("typing_from_server", () => {
+          console.log("Not typing");
+        });
+      };
+    }
+  }, [socket]);
+
+  // Create a new group
   useEffect(() => {
     if (createConversationSuccess === true) {
-      toast.success(createConversationMessage);
+      if (createConversationMessage !== "Conversation already initialized.") {
+        toast.success(createConversationMessage);
+      }
       dispatch(getConversations());
       dispatch(createConversationReset());
       dispatch(getKnownMembers());
@@ -171,177 +263,182 @@ const page = () => {
             value={chatFilter}
             onChange={(e) => setChatFilter(e.target.value)}
           />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant={"secondary"}>Create a group</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[425px] md:max-w-[30rem]">
-              <DialogHeader>
-                <DialogTitle>Create a group</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="group-name" className="text-right">
-                    Group Name
-                  </Label>
-                  <Input
-                    id="group-name"
-                    value={newGroupDetails?.groupName}
-                    onChange={(e) =>
-                      setNewGroupDetails({
-                        ...newGroupDetails,
-                        groupName: e.target.value,
-                      })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Select
-                    id="attached-project"
-                    onValueChange={(e) => {
-                      console.log(e);
-                      setNewGroupDetails({
-                        ...newGroupDetails,
-                        associatedProject: e,
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        className="w-full"
-                        placeholder="Choose Related Project"
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {user?.jobs?.map((job) => {
-                        return (
-                          <SelectItem value={job?._id}>
-                            {job?.jobTitle}
-                          </SelectItem>
-                        );
-                      })}
-                      {/* <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem> */}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  {/* <Label htmlFor="members" className="text-right"></Label> */}
-                  <Input
-                    placeholder="Search Members"
-                    id="members"
-                    value={newGroupMember}
-                    onChange={(e) => {
-                      setNewGroupMember(e.target.value);
-                    }}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="flex w-full flex-col items-center gap-4">
-                  {knownMembers && (
-                    <ScrollArea
-                      className="w-full border min-h-[7rem] max-h-[15rem] border-gray-600 p-2"
-                      style={{ borderRadius: "10px" }}
-                    >
-                      {knownMembers
-                        ?.filter((item) => {
-                          let itemName = item?.name?.toLowerCase();
-
-                          if (newGroupMember === "") return item;
-
-                          if (
-                            newGroupMember.toLowerCase().includes(itemName) ||
-                            itemName?.includes(newGroupMember.toLowerCase()) ||
-                            newGroupMember.toLowerCase() ===
-                              itemName.toLowerCase()
-                          )
-                            return item;
+          {user && user?.role === CONTENT_CREATOR && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant={"secondary"}>Create a group</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[425px] md:max-w-[30rem]">
+                <DialogHeader>
+                  <DialogTitle>Create a group</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="group-name" className="text-right">
+                      Group Name
+                    </Label>
+                    <Input
+                      id="group-name"
+                      value={newGroupDetails?.groupName}
+                      onChange={(e) =>
+                        setNewGroupDetails({
+                          ...newGroupDetails,
+                          groupName: e.target.value,
                         })
-                        ?.map((item) => {
-                          return (
-                            <div className="w-full h-[4rem]">
-                              <div className="h-full  flex justify-between p-2 items-center">
-                                <div className="flex gap-3 items-center ">
-                                  <img
-                                    className="h-10 w-10"
-                                    src={item?.avatar?.url}
-                                    alt=""
-                                    style={{ borderRadius: "100%" }}
-                                  />
-                                  {item.name}
-                                </div>
-                                <Button
-                                  className="icon h-8 w-8 cursor-pointer"
-                                  style={{ borderRadius: "100%" }}
-                                  onClick={() => {
-                                    // Is it already included in the members list
-                                    if (
-                                      newGroupDetails?.members?.includes(
-                                        item?._id?.toString() as string
-                                      )
-                                    ) {
-                                      let newMembers = [];
+                      }
+                      className="col-span-3"
+                    />
+                  </div>
 
-                                      // for(let mem of newGroupDetails?.members){
-                                      //   if(mem?.toString() !==
-                                      //   item?._id.toString())
-                                      // }
-                                      newMembers =
-                                        newGroupDetails?.members?.filter(
-                                          (ele) => {
-                                            console.log("ele : ", item);
-                                            if (
-                                              ele?.toString() !==
-                                              item?._id.toString()
-                                            ) {
-                                              return ele;
-                                            }
-                                          }
-                                        );
-                                      setNewGroupDetails({
-                                        ...newGroupDetails,
-                                        members: newMembers,
-                                      });
-                                    } else {
-                                      let newMembers = newGroupDetails.members;
-                                      newMembers.push(item._id);
-                                      setNewGroupDetails({
-                                        ...newGroupDetails,
-                                        members: newMembers,
-                                      });
-                                    }
-                                  }}
-                                >
-                                  {newGroupDetails?.members?.includes(
-                                    item?._id?.toString() as string
-                                  ) ? (
-                                    <RemoveIcon className="text-red-600" />
-                                  ) : (
-                                    <AddIcon className="text-green-700" />
-                                  )}
-                                </Button>
-                              </div>
-                              {/* <Separator /> */}
-                            </div>
+                  <div className="flex items-center gap-4">
+                    <Select
+                      id="attached-project"
+                      onValueChange={(e) => {
+                        console.log(e);
+                        setNewGroupDetails({
+                          ...newGroupDetails,
+                          associatedProject: e,
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          className="w-full"
+                          placeholder="Choose Related Project"
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {user?.jobs?.map((job) => {
+                          return (
+                            <SelectItem value={job?._id}>
+                              {job?.jobTitle}
+                            </SelectItem>
                           );
                         })}
-                    </ScrollArea>
-                  )}
+                        {/* <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem> */}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    {/* <Label htmlFor="members" className="text-right"></Label> */}
+                    <Input
+                      placeholder="Search Members"
+                      id="members"
+                      value={newGroupMember}
+                      onChange={(e) => {
+                        setNewGroupMember(e.target.value);
+                      }}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="flex w-full flex-col items-center gap-4">
+                    {knownMembers && (
+                      <ScrollArea
+                        className="w-full border min-h-[7rem] max-h-[15rem] border-gray-600 p-2"
+                        style={{ borderRadius: "10px" }}
+                      >
+                        {knownMembers
+                          ?.filter((item) => {
+                            let itemName = item?.name?.toLowerCase();
+
+                            if (newGroupMember === "") return item;
+
+                            if (
+                              newGroupMember.toLowerCase().includes(itemName) ||
+                              itemName?.includes(
+                                newGroupMember.toLowerCase()
+                              ) ||
+                              newGroupMember.toLowerCase() ===
+                                itemName.toLowerCase()
+                            )
+                              return item;
+                          })
+                          ?.map((item) => {
+                            return (
+                              <div className="w-full h-[4rem]">
+                                <div className="h-full  flex justify-between p-2 items-center">
+                                  <div className="flex gap-3 items-center ">
+                                    <img
+                                      className="h-10 w-10"
+                                      src={item?.avatar?.url}
+                                      alt=""
+                                      style={{ borderRadius: "100%" }}
+                                    />
+                                    {item.name}
+                                  </div>
+                                  <Button
+                                    className="icon h-8 w-8 cursor-pointer"
+                                    style={{ borderRadius: "100%" }}
+                                    onClick={() => {
+                                      // Is it already included in the members list
+                                      if (
+                                        newGroupDetails?.members?.includes(
+                                          item?._id?.toString() as string
+                                        )
+                                      ) {
+                                        let newMembers = [];
+
+                                        // for(let mem of newGroupDetails?.members){
+                                        //   if(mem?.toString() !==
+                                        //   item?._id.toString())
+                                        // }
+                                        newMembers =
+                                          newGroupDetails?.members?.filter(
+                                            (ele) => {
+                                              console.log("ele : ", item);
+                                              if (
+                                                ele?.toString() !==
+                                                item?._id.toString()
+                                              ) {
+                                                return ele;
+                                              }
+                                            }
+                                          );
+                                        setNewGroupDetails({
+                                          ...newGroupDetails,
+                                          members: newMembers,
+                                        });
+                                      } else {
+                                        let newMembers =
+                                          newGroupDetails.members;
+                                        newMembers.push(item._id);
+                                        setNewGroupDetails({
+                                          ...newGroupDetails,
+                                          members: newMembers,
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    {newGroupDetails?.members?.includes(
+                                      item?._id?.toString() as string
+                                    ) ? (
+                                      <RemoveIcon className="text-red-600" />
+                                    ) : (
+                                      <AddIcon className="text-green-700" />
+                                    )}
+                                  </Button>
+                                </div>
+                                {/* <Separator /> */}
+                              </div>
+                            );
+                          })}
+                      </ScrollArea>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  onClick={() => {
-                    createGroupHandler();
-                  }}
-                >
-                  Create group
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button
+                    onClick={() => {
+                      createGroupHandler();
+                    }}
+                  >
+                    Create group
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
         <ScrollArea className=" h-full  p-4 flex flex-col gap-2 ">
           {conversations &&
@@ -399,42 +496,45 @@ const page = () => {
                             conversation?.members[1]?._id
                               ? conversation?.members[0]?.name
                               : conversation?.members[1]?.name}
-                            {conversation?.newMessages?.length > 0 && (
-                              <div className="flex gap-1 items-center justify-center">
-                                <div
-                                  className="greendot w-1 h-1 bg-green-500"
-                                  style={{ borderRadius: "100%" }}
+
+                            {conversation?._id === typerConversationId &&
+                              isTyping && (
+                                <ThreeDots
+                                  visible={true}
+                                  height="30"
+                                  width="30"
+                                  color="green"
+                                  radius="1"
+                                  ariaLabel="three-dots-loading"
+                                  wrapperStyle={{}}
+                                  wrapperClass=""
                                 />
-                                <em className="text-xs text-gray-500 font-bold">
-                                  {conversation?.newMessages?.length} unread
-                                  messages
-                                </em>
-                              </div>
-                            )}
+                              )}
                           </div>
                         </div>
                       ) : (
                         <div className="flex gap-2 items-center">
                           <img
-                            src={conversation?.groupLogo?.url}
+                            src="/projectGroup.jpg"
                             alt=""
                             className="h-10 w-10 object-cover"
                             style={{ borderRadius: "10px" }}
                           />
                           <div className="flex flex-col">
                             {conversation?.name}
-                            {conversation?.newMessages?.length > 0 && (
-                              <div className="flex gap-1 items-center justify-center">
-                                <div
-                                  className="greendot w-1 h-1 bg-green-500"
-                                  style={{ borderRadius: "100%" }}
+                            {conversation?._id === typerConversationId &&
+                              isTyping && (
+                                <ThreeDots
+                                  visible={true}
+                                  height="30"
+                                  width="30"
+                                  color="green"
+                                  radius="1"
+                                  ariaLabel="three-dots-loading"
+                                  wrapperStyle={{}}
+                                  wrapperClass=""
                                 />
-                                <em className="text-xs text-gray-500 font-bold">
-                                  {conversation?.newMessages?.length} unread
-                                  messages
-                                </em>
-                              </div>
-                            )}
+                              )}
                           </div>
                         </div>
                       )}
@@ -470,12 +570,20 @@ const page = () => {
               ) : (
                 <div className="flex gap-2 items-center ">
                   <img
-                    src={currentChat?.groupLogo}
+                    src="/projectGroup.jpg"
                     alt=""
                     className="h-14 w-14 object-cover"
                     style={{ borderRadius: "100%" }}
                   />
-                  <Label className="text-2xl">{currentChat?.groupname}</Label>
+                  <div>
+                    <Label className="text-2xl">{currentChat?.name}</Label>
+                    <p className="text-sm">
+                      {currentChat._id === typerConversationId &&
+                        isTyping &&
+                        typerName !== "" &&
+                        typerName + " is typing..."}
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -499,17 +607,47 @@ const page = () => {
               </Label>
             </div>
           ) : (
-            <div className="w-full h-full flex flex-col gap-3">
+            <div className="w-full h-[calc(100vh-20rem)] flex flex-col gap-3 justify-end">
               {currentChat?.messages?.map((message) => {
                 return (
                   <>
                     {currentChat?.isGroup ? (
-                      <div>
-                        <div>
-                          <img src={message?.senderId?.avatar?.url} alt="" />
-                          <p>{message?.senderId?.name}</p>
-                        </div>
-                        <Label>{message?.body}</Label>
+                      <div
+                        className="w-full flex"
+                        style={{
+                          justifyContent:
+                            message?.senderId?._id.toString() === user?._id
+                              ? "flex-end"
+                              : "flex-start",
+                        }}
+                      >
+                        <Label
+                          className="text-white
+                          dark:bg-white
+                          bg-slate-700
+                          p-3
+                          min-h-[3.5rem]
+                          max-w-[25rem]
+                          // w-full h-full
+                          break-words
+                         dark:text-black 
+                         flex flex-col gap-2
+                         "
+                          style={{ borderRadius: "10px" }}
+                        >
+                          <div className="flex items-center gap-2  ">
+                            <img
+                              className="h-7 w-7 self-start"
+                              style={{ borderRadius: "100%" }}
+                              src={message?.senderId?.avatar?.url}
+                              alt=""
+                            />
+                            <p className="text-gray-600">
+                              {message?.senderId?.name}
+                            </p>
+                          </div>
+                          <p>{message?.body}</p>
+                        </Label>
                       </div>
                     ) : (
                       <div
@@ -548,23 +686,50 @@ const page = () => {
                   </>
                 );
               })}
-              {showMessage && (
-                <div
-                  className="bg-white w-[5rem] h-[2rem] flex justify-center items-center ml-[3rem]"
-                  style={{ borderRadius: "10px" }}
-                >
-                  <ThreeDots
-                    visible={true}
-                    height="30"
-                    width="30"
-                    color="black"
-                    radius="1"
-                    ariaLabel="three-dots-loading"
-                    wrapperStyle={{}}
-                    wrapperClass=""
-                  />
-                </div>
-              )}
+
+              {currentChat._id === typerConversationId &&
+                isTyping &&
+                (currentChat.isGroup ? (
+                  <div
+                    className="bg-white w-[10rem] h-[100%] flex justify-center items-center flex-col"
+                    style={{ borderRadius: "10px" }}
+                  >
+                    <em className="text-base text-black">
+                      {`${
+                        typerName.length >= 7
+                          ? typerName.slice(0, 6)
+                          : typerName
+                      } 
+                       is typing...`}
+                    </em>
+                    <ThreeDots
+                      visible={true}
+                      height="30"
+                      width="30"
+                      color="black"
+                      radius="1"
+                      ariaLabel="three-dots-loading"
+                      wrapperStyle={{}}
+                      wrapperClass=""
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="bg-white w-[5rem] h-[2rem] flex justify-center items-center"
+                    style={{ borderRadius: "10px" }}
+                  >
+                    <ThreeDots
+                      visible={true}
+                      height="30"
+                      width="30"
+                      color="black"
+                      radius="1"
+                      ariaLabel="three-dots-loading"
+                      wrapperStyle={{}}
+                      wrapperClass=""
+                    />
+                  </div>
+                ))}
             </div>
           )}
         </ScrollArea>

@@ -8,6 +8,7 @@ const {
   deleteGroup,
   leaveGroup,
   getConversations,
+  getKnownMembers,
 } = require("../controller/conversationController");
 
 const router = express.Router();
@@ -44,6 +45,9 @@ router
 
 router.route("/user/leave/conversation/").put(isAuthenticatedUser, leaveGroup);
 
-router.route("/user/getContacts").get(isAuthenticatedUser, getConversations);
+router
+  .route("/user/getConversations/")
+  .get(isAuthenticatedUser, getConversations);
 
+router.route("/user/getKnownMembers").get(isAuthenticatedUser, getKnownMembers);
 module.exports = router;

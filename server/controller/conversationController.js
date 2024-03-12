@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 
 exports.createConversationDetails = async (req, res) => {
   try {
-    const { name, members, isGroup, groupLogo } = req.body;
+    const { name, members, isGroup, associatedProject } = req.body;
     const user = await User.findById(req.user.id);
     if (isGroup === false) {
       const checkConversation = await Conversation.findOne({
@@ -18,12 +18,12 @@ exports.createConversationDetails = async (req, res) => {
         });
       }
 
-      if (!groupLogo) {
-        return await res.status(400).send({
-          success: false,
-          message: "Please select a group logo.",
-        });
-      }
+      // if (!groupLogo) {
+      //   return await res.status(400).send({
+      //     success: false,
+      //     message: "Please select a group logo.",
+      //   });
+      // }
     }
     if (!members || isGroup === null) {
       return await res.status(400).send({
@@ -45,6 +45,19 @@ exports.createConversationDetails = async (req, res) => {
       }
     }
 
+    for (let member of members) {
+      if (!user.knownMembers.includes(member.toString())) {
+        user.knownMembers.push(member.toString());
+      }
+    }
+
+    for (let member of members) {
+      let tempMember = await User.findById(member.toString());
+      if (!tempMember.knownMembers.includes(req.user._id.toString())) {
+        tempMember.knownMembers.push(req.user._id.toString());
+      }
+      await tempMember.save();
+    }
     members.push(req.user.id);
     let details = {
       members: members,
@@ -55,10 +68,14 @@ exports.createConversationDetails = async (req, res) => {
       details.uuid = members[0].toString();
     }
     if (isGroup) {
-      const Image = await Cloudinary.create(avatar);
-      details.groupLogo = Image._id;
+      details.associatedProject = associatedProject;
       details.name = name;
     }
+    // if (isGroup) {
+    //   const Image = await Cloudinary.create(avatar);
+    //   details.groupLogo = Image._id;
+    //   details.name = name;
+    // }
 
     const conversation = await Conversation.create(details);
     for (let ele of members) {
@@ -289,7 +306,7 @@ exports.getConversations = async (req, res) => {
           select: ["body", "createdAt", "senderId"],
         },
       });
-
+    // console.log(user?.conversations);
     return await res.status(200).send({
       success: true,
       message: "Fetched all contacts",
@@ -409,6 +426,34 @@ exports.leaveGroup = async (req, res) => {
     return await res.status(200).send({
       success: true,
       messge: "You successfully left the group.",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.getKnownMembers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: "knownMembers",
+        model: "User",
+
+        populate: {
+          path: "avatar",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+        select: ["name", "avatar", "_id"],
+      })
+      .select(["knownMembers"]);
+    // await user.populate("knownMembers").select(["_id", "name", "avatar"]);
+    return await res.status(200).send({
+      success: true,
+      knownMembers: user.knownMembers,
     });
   } catch (err) {
     return await res.status(400).send({
