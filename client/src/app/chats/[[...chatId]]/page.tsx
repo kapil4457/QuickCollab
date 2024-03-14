@@ -15,6 +15,7 @@ import {
   createConversationReset,
   getConversations,
   getKnownMembers,
+  setConversation,
   setCurrentChat,
 } from "@/redux/slices/chatSlice";
 import { useAppSelector } from "@/redux/store";
@@ -96,30 +97,30 @@ const page = () => {
   const [typerConversationId, sendTyperConversationId] = useState("");
   const [chatFilter, setChatFilter] = useState("");
   const [newMessage, setNewMessage] = useState("");
-  const [showMessage, setShowMessage] = useState(false);
   const [newGroupMember, setNewGroupMember] = useState("");
   const [conversationNumber, setConversationNumber] = useState();
-  const [chatId, setChatId] = useState(null);
+
   const sendMessageHandler = (conversation_id) => {
     if (!socket) {
       toast.error("Internal Server error");
       return;
     }
+    if (!user) {
+      toast.error("Please login first..");
+      return;
+    }
     socket.emit("new_message", {
-      message: newMessage,
-      roomId: currentChat?._id,
-      user: {
-        _id: user._id,
-        name: user.name,
-      },
-      members: currentChat?.members,
+      message: { type: "text", content: newMessage },
+      conversationId: currentChat?._id,
+      userName: user?.name,
+      senderId: user?._id,
     });
-    dispatch(
-      sendMessage({
-        conversationId: conversation_id,
-        body: newMessage,
-      })
-    );
+    // dispatch(
+    //   sendMessage({
+    //     conversationId: conversation_id,
+    //     body: newMessage,
+    //   })
+    // );
     setNewMessage("");
   };
 
@@ -240,6 +241,27 @@ const page = () => {
     }
   }, [socket]);
 
+  // recieve new message
+
+  const [newCurrentChat, setNewCurrentChat] = useState(null);
+  useEffect(() => {
+    if (newCurrentChat) {
+      console.log("newCurrentChat : ", newCurrentChat);
+      dispatch(setCurrentChat({ conversation: newCurrentChat }));
+      setNewCurrentChat(null);
+    }
+  }, [newCurrentChat]);
+  useEffect(() => {
+    if (socket && conversations) {
+      socket.on("new_message_recieve", (data) => {
+        console.log("Hii");
+        const conversations = data.allConversations;
+        const currentConversation = data.currentConversation;
+        setNewCurrentChat(currentConversation);
+        dispatch(setConversation({ conversations: conversations }));
+      });
+    }
+  }, [socket, conversations]);
   // Create a new group
   useEffect(() => {
     if (createConversationSuccess === true) {
@@ -441,7 +463,7 @@ const page = () => {
           )}
         </div>
         <ScrollArea className=" h-full  p-4 flex flex-col gap-2 ">
-          {conversations &&
+          {conversations != null &&
             conversations
               ?.filter((item) => {
                 if (chatFilter === "") return item;
@@ -607,7 +629,7 @@ const page = () => {
               </Label>
             </div>
           ) : (
-            <div className="w-full h-[calc(100vh-20rem)] flex flex-col gap-3 justify-end">
+            <div className="w-full h-[calc(100vh-20rem)] flex flex-col gap-3 justify-end ">
               {currentChat?.messages?.map((message) => {
                 return (
                   <>
@@ -687,7 +709,8 @@ const page = () => {
                 );
               })}
 
-              {currentChat._id === typerConversationId &&
+              {currentChat &&
+                currentChat?._id === typerConversationId &&
                 isTyping &&
                 (currentChat.isGroup ? (
                   <div

@@ -7,7 +7,10 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const { v4: uuid } = require("uuid");
-
+const Cloudinary = require("./models/cloudinaryModel");
+const Conversation = require("./models/conversationModel");
+const Message = require("./models/messageModel");
+const User = require("./models/userModel");
 // Config File connected
 
 dotenv.config({
@@ -51,7 +54,6 @@ const cloudinary = require("./routes/cloudinaryRoutes");
 const jobs = require("./routes/jobRoutes");
 const { isAuthenticatedUser } = require("./middleware/auth");
 const { getSockets } = require("./utils/helper");
-
 app.use("/api/v1/", user);
 app.use("/api/v1/", project);
 app.use("/api/v1/", converastion);
@@ -121,11 +123,135 @@ io.on("connection", (socket) => {
       }
     }
   });
-  socket.on("new_message", async (data) => {
-    io.to(usersSockets).emit("new_message_alert", {
-      roomId: data.roomId,
-    });
-  });
+  socket.on(
+    "new_message",
+    async ({ message, conversationId, userName, senderId }) => {
+      // Create a new message
+      const conversation = await Conversation.findById(conversationId);
+
+      const info = {
+        messageType: message.type,
+        conversationId,
+        senderId,
+      };
+      if (message.type === "content") {
+        let newImage = await Cloudinary.create(message.content);
+        info.image = newImage._id;
+      }
+      if (message.type === "text") {
+        info.body = message.content;
+      }
+      const newMessage = await Message.create(info);
+      conversation.messages.push(newMessage._id);
+      await conversation.save();
+
+      const currentConversation = await Conversation.findById(conversationId)
+        .populate({
+          path: "members",
+          model: "User",
+          select: ["avatar", "name", "_id", "role"],
+          populate: {
+            path: "avatar",
+            model: "Cloudinary",
+            select: ["url"],
+          },
+        })
+        .populate({
+          path: "messages",
+          model: "Message",
+        })
+        .populate({
+          path: "groupAdmin",
+          model: "User",
+          populate: {
+            path: "avatar",
+            model: "Cloudinary",
+            select: ["url"],
+          },
+          select: ["name", "avatar"],
+        })
+        .populate({
+          path: "messages",
+          populate: {
+            path: "senderId",
+            model: "User",
+            populate: {
+              path: "avatar",
+              model: "Cloudinary",
+              select: ["url"],
+            },
+            select: ["name", "avatar"],
+          },
+          select: ["body", "createdAt", "senderId"],
+        });
+      let allConversations = await User.findById(senderId)
+        .populate({
+          path: "conversations",
+          model: "Conversation",
+          populate: {
+            path: "members",
+            model: "User",
+            select: ["avatar", "name", "_id", "role"],
+            populate: {
+              path: "avatar",
+              model: "Cloudinary",
+              select: ["url"],
+            },
+          },
+        })
+        .populate({
+          path: "conversations",
+          model: "Conversation",
+          populate: {
+            path: "messages",
+            model: "Message",
+          },
+        })
+        .populate({
+          path: "conversations",
+          model: "Conversation",
+          populate: {
+            path: "groupAdmin",
+            model: "User",
+            populate: {
+              path: "avatar",
+              model: "Cloudinary",
+              select: ["url"],
+            },
+            select: ["name", "avatar"],
+          },
+        })
+        .populate({
+          path: "conversations",
+          model: "Conversation",
+          populate: {
+            path: "messages",
+            populate: {
+              path: "senderId",
+              model: "User",
+              populate: {
+                path: "avatar",
+                model: "Cloudinary",
+                select: ["url"],
+              },
+              select: ["name", "avatar"],
+            },
+            select: ["body", "createdAt", "senderId"],
+          },
+        });
+      let currentMessages = conversation.messages;
+      // Alert all othe users
+      let members = Conversations.get(conversationId);
+      for (let ele of members) {
+        io.to(ele.toString()).emit("new_message_recieve", {
+          message: newMessage,
+          currentConversation: currentConversation,
+          allConversations: allConversations.conversations,
+          currentMessages: currentMessages,
+        });
+      }
+    }
+  );
   socket.on("disconnect", () => {
     const newMap = new Map();
     console.log("User disconnected");

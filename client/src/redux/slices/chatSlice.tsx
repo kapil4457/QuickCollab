@@ -114,8 +114,11 @@ export const conversationSlice = createSlice({
   initialState,
   reducers: {
     setCurrentChat: (state, action) => {
-      // console.log("currentChat : ", action.payload.conversation);
+      // console.log(action.payload.conversation);
       state.currentChat.chat = action.payload.conversation;
+    },
+    setConversation: (state, action) => {
+      state.allConversations.conversations = action.payload.conversations;
     },
     createConversationReset: (state, action) => {
       state.createConversation.message = "";
@@ -181,5 +184,5 @@ export const conversationSlice = createSlice({
 });
 
 export default conversationSlice.reducer;
-export const { setCurrentChat, createConversationReset } =
+export const { setConversation, setCurrentChat, createConversationReset } =
   conversationSlice.actions;

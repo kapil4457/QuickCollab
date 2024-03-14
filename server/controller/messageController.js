@@ -5,7 +5,6 @@ const Message = require("../models/messageModel");
 exports.createMessage = async (req, res) => {
   try {
     const { conversationId, body, image } = req.body;
-    console.log;
     const senderId = req.user.id;
     const conversation = await Conversation.findById(conversationId);
     if (!conversation.members.includes(senderId)) {

@@ -3,7 +3,11 @@ const mongoose = require("mongoose");
 const messageSchema = new mongoose.Schema({
   body: {
     type: String,
-    required: true,
+    required: false,
+  },
+  messageType: {
+    type: String,
+    require: true,
   },
   image: {
     type: mongoose.Schema.Types.ObjectId,
