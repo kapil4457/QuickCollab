@@ -621,7 +621,10 @@ const page = () => {
           )}
         </div>
         <Separator />
-        <ScrollArea className="h-[calc(100vh-16rem)]  p-4 " id="chat-box">
+        <ScrollArea
+          className="h-[calc(100vh-16rem)] w-full  p-4 "
+          id="chat-box"
+        >
           {currentChat === null ? (
             <div className="h-[calc(100vh-20rem)] w-full flex justify-center items-center">
               <Label className="h-full w-full flex justify-center items-center text-2xl">
@@ -629,13 +632,13 @@ const page = () => {
               </Label>
             </div>
           ) : (
-            <div className="w-full h-[calc(100vh-20rem)] flex flex-col gap-3 justify-end ">
+            <ScrollArea className="w-full h-[calc(100vh-20rem)] flex flex-col gap-3 justify-end ">
               {currentChat?.messages?.map((message) => {
                 return (
                   <>
                     {currentChat?.isGroup ? (
                       <div
-                        className="w-full flex"
+                        className="w-full flex  p-2"
                         style={{
                           justifyContent:
                             message?.senderId?._id.toString() === user?._id
@@ -673,7 +676,7 @@ const page = () => {
                       </div>
                     ) : (
                       <div
-                        className="w-full flex"
+                        className="w-full flex p-2"
                         style={{
                           justifyContent:
                             message?.senderId?._id.toString() === user?._id
@@ -694,6 +697,7 @@ const page = () => {
                           bg-slate-700
                           p-3
                           min-h-[3.5rem]
+                          min-w-[6rem]
                           max-w-[25rem]
                           // w-full h-full
                           break-words
@@ -753,7 +757,7 @@ const page = () => {
                     />
                   </div>
                 ))}
-            </div>
+            </ScrollArea>
           )}
         </ScrollArea>
         {currentChat !== null ? (
