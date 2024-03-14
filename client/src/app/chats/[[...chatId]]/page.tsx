@@ -43,6 +43,8 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { sendMessage } from "@/redux/slices/messageSlice";
 import { CONTENT_CREATOR } from "@/utils/roles";
+import cloudinaryUploader from "@/utils/cloudinary";
+import { Close } from "@mui/icons-material";
 
 const page = () => {
   const router = useRouter();
@@ -52,7 +54,6 @@ const page = () => {
     user,
   } = useAppSelector((state) => state.userSlice.value);
 
-  // let socket;
   const [socket, setSocket] = useState(null);
 
   // let tempSocket = useMemo(() => {
@@ -100,7 +101,45 @@ const page = () => {
   const [newGroupMember, setNewGroupMember] = useState("");
   const [conversationNumber, setConversationNumber] = useState();
 
-  const sendMessageHandler = (conversation_id) => {
+  const [fileData, setFileData] = useState({
+    fileName: "",
+    type: "",
+    file: null,
+  });
+  const [isFileSelected, setIsFileSelected] = useState(false);
+
+  const unSelectFileHandler = async () => {
+    setIsFileSelected(false);
+    setFileData({
+      fileName: "",
+      type: "",
+      file: null,
+    });
+  };
+  const fileHandler = async (Files) => {
+    const file = Files[0];
+    const type = file.type.split("/")[0];
+    setFileData({
+      ...fileData,
+      fileName: file.name,
+      type: type,
+      file: file,
+    });
+
+    setIsFileSelected(true);
+
+    // console.log(file);
+  };
+  const fileUploader = async () => {
+    const data = await cloudinaryUploader({
+      ele: fileData.file!,
+      location: "chat-media",
+      type: fileData.type,
+    });
+    return data;
+  };
+
+  const sendMessageHandler = async (conversation_id) => {
     if (!socket) {
       toast.error("Internal Server error");
       return;
@@ -109,12 +148,46 @@ const page = () => {
       toast.error("Please login first..");
       return;
     }
-    socket.emit("new_message", {
-      message: { type: "text", content: newMessage },
+
+    let image = null;
+
+    if (isFileSelected) {
+      toast.loading("Please wait...", {
+        duration: 1000,
+      });
+      image = await fileUploader();
+      setIsFileSelected(false);
+      setFileData({
+        file: null,
+        fileName: "",
+        type: "",
+      });
+    }
+
+    const data = {
       conversationId: currentChat?._id,
       userName: user?.name,
       senderId: user?._id,
-    });
+      message: {
+        type: "",
+        image: null,
+        content: null,
+      },
+    };
+
+    if (newMessage !== "" && image != null) {
+      data.message.type = "mixed";
+      data.message.image = image;
+      data.message.content = newMessage;
+    } else if (newMessage !== "") {
+      data.message.type = "text";
+      data.message.content = newMessage;
+    } else if (image != null) {
+      data.message.type = "image";
+      data.message.image = image;
+    }
+
+    socket.emit("new_message", data);
     // dispatch(
     //   sendMessage({
     //     conversationId: conversation_id,
@@ -246,7 +319,7 @@ const page = () => {
   const [newCurrentChat, setNewCurrentChat] = useState(null);
   useEffect(() => {
     if (newCurrentChat) {
-      console.log("newCurrentChat : ", newCurrentChat);
+      // console.log("newCurrentChat : ", newCurrentChat);
       dispatch(setCurrentChat({ conversation: newCurrentChat }));
       setNewCurrentChat(null);
     }
@@ -254,11 +327,13 @@ const page = () => {
   useEffect(() => {
     if (socket && conversations) {
       socket.on("new_message_recieve", (data) => {
-        console.log("Hii");
+        // console.log("Hii");
         const conversations = data.allConversations;
+        // console.log("conversations : ", conversations);
         const currentConversation = data.currentConversation;
         setNewCurrentChat(currentConversation);
-        dispatch(setConversation({ conversations: conversations }));
+        // dispatch(setConversation({ conversations: conversations }));
+        // dispatch(getConversations());
       });
     }
   }, [socket, conversations]);
@@ -316,7 +391,7 @@ const page = () => {
                     <Select
                       id="attached-project"
                       onValueChange={(e) => {
-                        console.log(e);
+                        // console.log(e);
                         setNewGroupDetails({
                           ...newGroupDetails,
                           associatedProject: e,
@@ -496,6 +571,7 @@ const page = () => {
                     className="w-full h-[4rem] cursor-pointer"
                     onClick={() => {
                       setConversationNumber(key);
+                      dispatch(getConversations());
                       dispatch(setCurrentChat({ conversation }));
                     }}
                   >
@@ -632,7 +708,7 @@ const page = () => {
               </Label>
             </div>
           ) : (
-            <ScrollArea className="w-full h-[calc(100vh-20rem)] flex flex-col gap-3 justify-end ">
+            <ScrollArea className="w-full h-[calc(100vh-10rem)] flex flex-col gap-3 justify-end ">
               {currentChat?.messages?.map((message) => {
                 return (
                   <>
@@ -667,11 +743,28 @@ const page = () => {
                               src={message?.senderId?.avatar?.url}
                               alt=""
                             />
-                            <p className="text-gray-600">
+                            <p className="text-gray-300 dark:text-gray-600">
                               {message?.senderId?.name}
                             </p>
                           </div>
-                          <p>{message?.body}</p>
+                          {message?.messageType === "image" ||
+                          message?.messageType === "mixed" ? (
+                            <>
+                              <img
+                                src={message.image.url}
+                                alt="attached-image"
+                                className="w-[20rem] h-[15rem]"
+                              />
+                            </>
+                          ) : (
+                            <></>
+                          )}
+                          {message?.messageType === "text" ||
+                          message?.messageType === "mixed" ? (
+                            <p>{message?.body}</p>
+                          ) : (
+                            <></>
+                          )}
                         </Label>
                       </div>
                     ) : (
@@ -691,6 +784,7 @@ const page = () => {
                             className="h-10 w-10 self-start"
                             style={{ borderRadius: "100%" }}
                           />
+
                           <Label
                             className="text-white
                           dark:bg-white
@@ -701,10 +795,27 @@ const page = () => {
                           max-w-[25rem]
                           // w-full h-full
                           break-words
-                         dark:text-black "
+                         dark:text-black flex flex-col gap-[1rem] "
                             style={{ borderRadius: "10px" }}
                           >
-                            {message?.body}
+                            {message?.messageType === "image" ||
+                            message?.messageType === "mixed" ? (
+                              <>
+                                <img
+                                  src={message.image.url}
+                                  alt="attached-image"
+                                  className="w-[20rem] h-[15rem]"
+                                />
+                              </>
+                            ) : (
+                              <></>
+                            )}
+                            {message?.messageType === "text" ||
+                            message?.messageType === "mixed" ? (
+                              <p>{message?.body}</p>
+                            ) : (
+                              <></>
+                            )}
                           </Label>
                         </div>
                       </div>
@@ -761,27 +872,57 @@ const page = () => {
           )}
         </ScrollArea>
         {currentChat !== null ? (
-          <div className="h-[5rem] p-1 pl-5 pr-5 flex gap-3 items-center ">
-            <AddCircleIcon className="h-[2.5rem] w-[2.5rem] cursor-pointer " />
-            <Input
-              placeholder="Enter your message"
-              className="h-[3rem] w-[70%] focus:border-none focus:outline-none"
-              value={newMessage}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  sendMessageHandler(currentChat._id);
-                }
-              }}
-              onChange={(e) => {
-                socket.emit("typing-message", { roomId: currentChat?._id });
-                setNewMessage(e.target.value);
-              }}
-            />
-            <SendIcon
-              className="h-[2.5rem] w-[2.5rem] cursor-pointer bg-green-500 text-white dark:bg-slate-600 dark:text-green-300 p-2 "
-              style={{ borderRadius: "100%" }}
-              onClick={() => sendMessageHandler(currentChat._id)}
-            />
+          <div className="relative">
+            {isFileSelected && (
+              <div
+                className="absolute bottom-[5rem] left-[4rem] w-[67%] p-[10px] flex flex-col gap-[0.5rem] dark:bg-gray-600 bg-slate-300"
+                style={{ borderRadius: "10px" }}
+              >
+                <Close
+                  className="absolute top-[5px] right-[5px] text-red-500 font-bold cursor-pointer hover:text-red-700 "
+                  onClick={unSelectFileHandler}
+                />
+                <p>
+                  <b>File name : </b> {fileData.fileName}
+                </p>
+                <p>
+                  <b>File type : </b> {fileData.type}
+                </p>
+              </div>
+            )}
+            <div className="h-[5rem] p-1 pl-5 pr-5 flex gap-3 items-center ">
+              <div className="relative">
+                <Input
+                  accept=".jpg,.jpeg,.png"
+                  type="file"
+                  className="absolute opacity-0"
+                  onChange={(e) => {
+                    fileHandler(e.target.files);
+                  }}
+                  id="media-file"
+                />
+                <AddCircleIcon className="h-[2.5rem] w-[2.5rem] cursor-pointer z-50" />
+              </div>
+              <Input
+                placeholder="Enter your message"
+                className="h-[3rem] w-[70%] focus:border-none focus:outline-none"
+                value={newMessage}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    sendMessageHandler(currentChat._id);
+                  }
+                }}
+                onChange={(e) => {
+                  socket.emit("typing-message", { roomId: currentChat?._id });
+                  setNewMessage(e.target.value);
+                }}
+              />
+              <SendIcon
+                className="h-[2.5rem] w-[2.5rem] cursor-pointer bg-green-500 text-white dark:bg-slate-600 dark:text-green-300 p-2 "
+                style={{ borderRadius: "100%" }}
+                onClick={() => sendMessageHandler(currentChat._id)}
+              />
+            </div>
           </div>
         ) : (
           <></>
