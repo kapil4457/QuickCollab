@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   createConversation,
   createConversationReset,
@@ -116,7 +117,7 @@ const page = () => {
   const [conversationNumber, setConversationNumber] = useState();
   const [searchNewMember, setSearchNewMember] = useState("");
   const [newAddedMembers, setNewAddedMembers] = useState([]);
-
+  const [updateGroupName, setUpdateGroupName] = useState("");
   const [fileData, setFileData] = useState({
     fileName: "",
     type: "",
@@ -287,6 +288,34 @@ const page = () => {
       // setTimeout(() => {
       //   window.location.reload();
       // }, 1500);
+    } else {
+      toast.error(data.message);
+    }
+  };
+  const changeGroupName = async () => {
+    if (updateGroupName === "") {
+      toast.error("Group name can not be empty!");
+      return;
+    }
+
+    if (currentChat?.groupAdmin?._id.toString() != user?._id?.toString()) {
+      toast.error("You are not allowed to perform this operation!");
+      return;
+    }
+
+    const data = await requestHandler(
+      {
+        name: updateGroupName,
+        conversationId: currentChat?._id?.toString(),
+      },
+      "PUT",
+      "/api/v1/user/update/conversation/"
+    );
+
+    if (data.success) {
+      toast.success(data.message);
+      dispatch(setCurrentChat({ conversation: data.currentChat }));
+      dispatch(getConversations());
     } else {
       toast.error(data.message);
     }
@@ -747,7 +776,38 @@ const page = () => {
                     style={{ borderRadius: "100%" }}
                   />
                   <div>
-                    <Label className="text-2xl">{currentChat?.name}</Label>
+                    <Label className="text-2xl flex gap-3 items-center">
+                      {currentChat?.name}
+                      {currentChat?.groupAdmin?._id.toString() ===
+                        user?._id?.toString() && (
+                        <Dialog>
+                          <DialogTrigger>
+                            <Button variant={"secondary"}>
+                              <EditIcon />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader className="flex flex-col gap-5">
+                              <DialogTitle>Enter a new Name</DialogTitle>
+                            </DialogHeader>
+                            <Input
+                              placeholder="Enter a new group name"
+                              value={updateGroupName}
+                              onChange={(e) => {
+                                setUpdateGroupName(e.target.value);
+                              }}
+                            />
+                            <Button
+                              className="w-full"
+                              variant={"secondary"}
+                              onClick={changeGroupName}
+                            >
+                              Update
+                            </Button>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </Label>
                     <p className="text-sm">
                       {currentChat._id === typerConversationId &&
                         isTyping &&

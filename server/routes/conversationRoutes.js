@@ -48,7 +48,7 @@ router
     removeUsersFromConversationGroup
   );
 router
-  .route("/user/updatein/conversation/")
+  .route("/user/update/conversation/")
   .put(isAuthenticatedUser, authorizeRole("content-creator"), updateGroup);
 
 router
