@@ -97,19 +97,9 @@ io.use((socket, next) => {
 });
 // Events in  socket.io
 io.on("connection", (socket) => {
-  console.log("a user connected : ", socket.id);
-  const user = {
-    _id: "123",
-    name: "name",
-  };
-  // userSocketIDs.set(data.id.toString(), socket.id);
-  // console.log("userSocketIDs : ", userSocketIDs);
-  // socket.on("connection", async (data) => {
-  //   console.log(data);
-  // });
+  // console.log("a user connected : ", socket.id);
 
   socket.on("typing", async ({ conversationId, senderName, senderId }) => {
-    // console.log("typing emitted");
     const sender = socket.id;
     let members = Conversations.get(conversationId);
 
@@ -134,11 +124,11 @@ io.on("connection", (socket) => {
         conversationId,
         senderId,
       };
-      if (message.type === "content") {
-        let newImage = await Cloudinary.create(message.content);
+      if (message.type === "image" || message.type === "mixed") {
+        let newImage = await Cloudinary.create(message.image);
         info.image = newImage._id;
       }
-      if (message.type === "text") {
+      if (message.type === "text" || message.type === "mixed") {
         info.body = message.content;
       }
       const newMessage = await Message.create(info);
@@ -160,6 +150,7 @@ io.on("connection", (socket) => {
           path: "messages",
           model: "Message",
         })
+
         .populate({
           path: "groupAdmin",
           model: "User",
@@ -183,6 +174,15 @@ io.on("connection", (socket) => {
             select: ["name", "avatar"],
           },
           select: ["body", "createdAt", "senderId"],
+        })
+        .populate({
+          path: "messages",
+          model: "Message",
+          populate: {
+            path: "image",
+            model: "Cloudinary",
+            select: ["url"],
+          },
         });
       let allConversations = await User.findById(senderId)
         .populate({
@@ -196,6 +196,18 @@ io.on("connection", (socket) => {
               path: "avatar",
               model: "Cloudinary",
               select: ["url"],
+            },
+          },
+        })
+        .populate({
+          path: "conversations",
+          model: "Conversation",
+          populate: {
+            path: "messages",
+            model: "Message",
+            populate: {
+              path: "image",
+              model: "Cloudinary",
             },
           },
         })
@@ -236,9 +248,23 @@ io.on("connection", (socket) => {
               },
               select: ["name", "avatar"],
             },
-            select: ["body", "createdAt", "senderId"],
+            select: ["body", "createdAt", "senderId", "image", "messageType"],
+          },
+        })
+        .populate({
+          path: "conversations",
+          model: "Conversation",
+          populate: {
+            path: "messages",
+            model: "Message",
+            populate: {
+              path: "image",
+              model: "Cloudinary",
+              select: ["url"],
+            },
           },
         });
+
       let currentMessages = conversation.messages;
       // Alert all othe users
       let members = Conversations.get(conversationId);

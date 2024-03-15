@@ -214,6 +214,74 @@ exports.removeUsersFromConversationGroup = async (req, res) => {
   }
 };
 
+exports.addGroupMembers = async (req, res) => {
+  try {
+    const { newMembers, conversationId } = req.body;
+
+    const conversation = await Conversation.findById(conversationId);
+
+    for (let member of newMembers) {
+      const user = await User.findById(member);
+      user.conversations.push(conversationId);
+      await user.save();
+      conversation.members.push(member);
+    }
+    await conversation.save();
+
+    return await res.status(200).send({
+      success: true,
+      message: "Members added successfully",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+exports.removeGroupMembers = async (req, res) => {
+  try {
+    const { memberId, conversationId } = req.body;
+
+    const conversation = await Conversation.findById(conversationId);
+
+    if (conversation.members.length - 1 < 3) {
+      return await res.status(400).send({
+        success: false,
+        message: "A group can not have less than 3 members",
+      });
+    }
+
+    let newMembers = conversation.members;
+
+    // remove conversation from the members data
+    let user = await User.findById(memberId);
+    let conversations = user.conversations;
+
+    conversations = conversations.filter((item) => {
+      if (item._id.toString() != conversationId.toString()) return item;
+    });
+    user.conversations = conversations;
+    await user.save();
+    // remove member from the conversation
+    newMembers = newMembers.filter((item) => {
+      if (item._id.toString() !== memberId.toString()) return item;
+    });
+
+    conversation.members = newMembers;
+    await conversation.save();
+    return await res.status(200).send({
+      success: true,
+      message: "Members removed successfully",
+    });
+  } catch (err) {
+    return await res.status(400).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 exports.updateGroup = async (req, res) => {
   try {
     const { name, conversationId } = req.body;
@@ -272,6 +340,18 @@ exports.getConversations = async (req, res) => {
         populate: {
           path: "messages",
           model: "Message",
+          populate: {
+            path: "image",
+            model: "Cloudinary",
+          },
+        },
+      })
+      .populate({
+        path: "conversations",
+        model: "Conversation",
+        populate: {
+          path: "messages",
+          model: "Message",
         },
       })
       .populate({
@@ -303,7 +383,20 @@ exports.getConversations = async (req, res) => {
             },
             select: ["name", "avatar"],
           },
-          select: ["body", "createdAt", "senderId"],
+          select: ["body", "createdAt", "senderId", "image", "messageType"],
+        },
+      })
+      .populate({
+        path: "conversations",
+        model: "Conversation",
+        populate: {
+          path: "messages",
+          model: "Message",
+          populate: {
+            path: "image",
+            model: "Cloudinary",
+            select: ["url"],
+          },
         },
       });
     // console.log(user?.conversations);

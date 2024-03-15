@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import InfoIcon from "@mui/icons-material/Info";
 import CallIcon from "@mui/icons-material/Call";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import SendIcon from "@mui/icons-material/Send";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -44,7 +46,19 @@ import { useRouter } from "next/navigation";
 import { sendMessage } from "@/redux/slices/messageSlice";
 import { CONTENT_CREATOR } from "@/utils/roles";
 import cloudinaryUploader from "@/utils/cloudinary";
-import { Close } from "@mui/icons-material";
+import { Close, OpenInNew } from "@mui/icons-material";
+import Link from "next/link";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import requestHandler from "@/utils/requestHelper";
 
 const page = () => {
   const router = useRouter();
@@ -100,6 +114,8 @@ const page = () => {
   const [newMessage, setNewMessage] = useState("");
   const [newGroupMember, setNewGroupMember] = useState("");
   const [conversationNumber, setConversationNumber] = useState();
+  const [searchNewMember, setSearchNewMember] = useState("");
+  const [newAddedMembers, setNewAddedMembers] = useState([]);
 
   const [fileData, setFileData] = useState({
     fileName: "",
@@ -228,6 +244,55 @@ const page = () => {
     await dispatch(createConversation(info));
   };
 
+  const updateGroupMembersHandler = async () => {
+    if (newAddedMembers.length === 0) {
+      toast.error("Plese select a person to add to the group..!");
+      return;
+    }
+    if (!currentChat) return;
+
+    const data = await requestHandler(
+      {
+        conversationId: currentChat?._id,
+        newMembers: newAddedMembers,
+      },
+      "PUT",
+      "/api/v1/add/members"
+    );
+
+    if (data.success) {
+      toast.success(data.message);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      toast.error(data.message);
+    }
+  };
+
+  const removeGroupMemberHandler = async (memberId) => {
+    if (!currentChat) return;
+
+    const data = await requestHandler(
+      {
+        conversationId: currentChat?._id,
+        memberId: memberId,
+      },
+      "PUT",
+      "/api/v1/remove/members"
+    );
+
+    if (data.success) {
+      toast.success(data.message);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      toast.error(data.message);
+    }
+  };
   // Set  up socket.io
   useLayoutEffect(() => {
     if (conversations && user) {
@@ -258,8 +323,10 @@ const page = () => {
 
   // Set current chat
   useEffect(() => {
+    setNewAddedMembers([]);
+
     if (currentChat !== null) {
-      var element = document.getElementById("chat-box")!;
+      var element = document.getElementById("all-messages")!;
       element.scrollTo({
         top: 1000,
         behavior: "smooth",
@@ -648,7 +715,14 @@ const page = () => {
           {currentChat && (
             <>
               {currentChat.isGroup === false ? (
-                <div className="flex gap-2 items-center ">
+                <Link
+                  href={`/user/${
+                    user?._id.toString() === currentChat?.members[1]?._id
+                      ? currentChat?.members[0]?._id
+                      : currentChat?.members[1]?._id
+                  }`}
+                  className="flex gap-2 items-center "
+                >
                   <img
                     src={
                       user?._id.toString() === currentChat?.members[1]?._id
@@ -664,7 +738,7 @@ const page = () => {
                       ? currentChat?.members[0]?.name
                       : currentChat?.members[1]?.name}
                   </Label>
-                </div>
+                </Link>
               ) : (
                 <div className="flex gap-2 items-center ">
                   <img
@@ -686,12 +760,211 @@ const page = () => {
               )}
 
               <div className="about-and-call flex items-center gap-5">
-                <Button variant={"secondary"}>
-                  <CallIcon />
-                </Button>
-                <Button variant={"secondary"}>
-                  <InfoIcon />
-                </Button>
+                {currentChat?.isGroup === true && (
+                  <>
+                    <Button variant={"secondary"}>
+                      <CallIcon />
+                    </Button>
+
+                    <Dialog>
+                      <DialogTrigger>
+                        {" "}
+                        <Button
+                          variant={"secondary"}
+                          className="flex gap-2 text-green-400 "
+                        >
+                          <GroupAddIcon />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          {/* <Label htmlFor="members" className="text-right"></Label> */}
+                          <Input
+                            placeholder="Search Members"
+                            id="members"
+                            value={searchNewMember}
+                            onChange={(e) => {
+                              setSearchNewMember(e.target.value);
+                            }}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="flex w-full flex-col items-center gap-4">
+                          {knownMembers && (
+                            <ScrollArea
+                              className="w-full border min-h-[7rem] max-h-[15rem] border-gray-600 p-2"
+                              style={{ borderRadius: "10px" }}
+                            >
+                              {knownMembers
+                                ?.filter((item) => {
+                                  let itemName = item?.name?.toLowerCase();
+                                  var isIncluded = false;
+                                  for (let member of currentChat?.members) {
+                                    if (
+                                      member?._id?.toString() ===
+                                      item?._id?.toString()
+                                    ) {
+                                      isIncluded = true;
+                                      break;
+                                    }
+                                  }
+                                  if (
+                                    isIncluded === false &&
+                                    searchNewMember !== "" &&
+                                    (searchNewMember
+                                      .toLowerCase()
+                                      .includes(itemName) ||
+                                      itemName?.includes(
+                                        searchNewMember.toLowerCase()
+                                      ) ||
+                                      searchNewMember.toLowerCase() ===
+                                        itemName.toLowerCase())
+                                  ) {
+                                    return item;
+                                  }
+                                  if (isIncluded) return;
+
+                                  if (searchNewMember === "") return item;
+                                })
+                                ?.map((item) => {
+                                  return (
+                                    <div className="w-full h-[4rem]">
+                                      <div className="h-full  flex justify-between p-2 items-center">
+                                        <div className="flex gap-3 items-center ">
+                                          <img
+                                            className="h-10 w-10"
+                                            src={item?.avatar?.url}
+                                            alt=""
+                                            style={{ borderRadius: "100%" }}
+                                          />
+                                          {item.name}
+                                        </div>
+                                        <Button
+                                          className="icon h-8 w-8 cursor-pointer"
+                                          style={{ borderRadius: "100%" }}
+                                          onClick={async () => {
+                                            // Is it already included in the members list
+
+                                            if (
+                                              newAddedMembers?.includes(
+                                                item?._id?.toString() as string
+                                              )
+                                            ) {
+                                              let newMembers = [];
+
+                                              // for(let mem of newGroupDetails?.members){
+                                              //   if(mem?.toString() !==
+                                              //   item?._id.toString())
+                                              // }
+                                              newMembers =
+                                                newAddedMembers?.filter(
+                                                  (ele) => {
+                                                    if (
+                                                      ele?.toString() !==
+                                                      item?._id.toString()
+                                                    ) {
+                                                      return ele;
+                                                    }
+                                                  }
+                                                );
+                                              setNewAddedMembers(newMembers);
+                                            } else {
+                                              let newMembers = newAddedMembers;
+                                              newMembers.push(item._id);
+                                              setNewAddedMembers(newMembers);
+                                            }
+                                          }}
+                                        >
+                                          {newAddedMembers?.includes(
+                                            item?._id?.toString() as string
+                                          ) ? (
+                                            <RemoveIcon className="text-red-600" />
+                                          ) : (
+                                            <AddIcon className="text-green-700" />
+                                          )}
+                                        </Button>
+                                      </div>
+                                      {/* <Separator /> */}
+                                    </div>
+                                  );
+                                })}
+                            </ScrollArea>
+                          )}
+                          <Button
+                            onClick={updateGroupMembersHandler}
+                            className="w-full"
+                            variant={"secondary"}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog>
+                      <DialogTrigger>
+                        {" "}
+                        <Button variant={"secondary"}>
+                          <InfoIcon />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader className="flex w-full  items-center flex-row gap-5 justify-between ">
+                          <DialogTitle>{currentChat?.name}</DialogTitle>
+                        </DialogHeader>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[250px]">Name</TableHead>
+                              <TableHead>Profile</TableHead>
+                              <TableHead className="text-right">Kick</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {currentChat?.members?.map((member) => {
+                              return (
+                                <TableRow>
+                                  <TableCell className="font-medium">
+                                    {member?._id === user?._id ? (
+                                      <p className="text-gray-500">
+                                        {member.name}
+                                      </p>
+                                    ) : (
+                                      <p>{member?.name}</p>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Link
+                                      className="text-blue-700"
+                                      href={
+                                        member?._id === user?._id
+                                          ? "/me"
+                                          : `/user/${member?._id}`
+                                      }
+                                    >
+                                      <OpenInNew />
+                                    </Link>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {member?._id === user?._id ? (
+                                      <DeleteIcon className="text-gray-500 cursor-pointer" />
+                                    ) : (
+                                      <DeleteIcon
+                                        onClick={() => {
+                                          removeGroupMemberHandler(member?._id);
+                                        }}
+                                        className="text-red-600 cursor-pointer"
+                                      />
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -708,7 +981,10 @@ const page = () => {
               </Label>
             </div>
           ) : (
-            <ScrollArea className="w-full h-[calc(100vh-10rem)] flex flex-col gap-3 justify-end ">
+            <ScrollArea
+              className="w-full h-[calc(100vh-10rem)] flex flex-col gap-3 justify-end "
+              id="all-messages"
+            >
               {currentChat?.messages?.map((message) => {
                 return (
                   <>
@@ -729,7 +1005,6 @@ const page = () => {
                           p-3
                           min-h-[3.5rem]
                           max-w-[25rem]
-                          // w-full h-full
                           break-words
                          dark:text-black 
                          flex flex-col gap-2

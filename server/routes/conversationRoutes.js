@@ -9,10 +9,22 @@ const {
   leaveGroup,
   getConversations,
   getKnownMembers,
+  addGroupMembers,
+  removeGroupMembers,
 } = require("../controller/conversationController");
 
 const router = express.Router();
 
+router
+  .route("/add/members")
+  .put(isAuthenticatedUser, authorizeRole("content-creator"), addGroupMembers);
+router
+  .route("/remove/members")
+  .put(
+    isAuthenticatedUser,
+    authorizeRole("content-creator"),
+    removeGroupMembers
+  );
 router
   .route("/user/create/conversation/")
   .post(
