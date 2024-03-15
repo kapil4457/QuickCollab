@@ -228,9 +228,67 @@ exports.addGroupMembers = async (req, res) => {
     }
     await conversation.save();
 
+    const currentChat = await Conversation.findById(conversationId)
+      .populate({
+        path: "members",
+        model: "User",
+        select: ["avatar", "name", "_id", "role"],
+        populate: {
+          path: "avatar",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+      })
+      .populate({
+        path: "messages",
+        model: "Message",
+        populate: {
+          path: "image",
+          model: "Cloudinary",
+        },
+      })
+      .populate({
+        path: "messages",
+        model: "Message",
+      })
+      .populate({
+        path: "groupAdmin",
+        model: "User",
+        populate: {
+          path: "avatar",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+        select: ["name", "avatar"],
+      })
+      .populate({
+        path: "messages",
+        populate: {
+          path: "senderId",
+          model: "User",
+          populate: {
+            path: "avatar",
+            model: "Cloudinary",
+            select: ["url"],
+          },
+          select: ["name", "avatar"],
+        },
+        select: ["body", "createdAt", "senderId", "image", "messageType"],
+      })
+      .populate({
+        path: "messages",
+        model: "Message",
+        populate: {
+          path: "image",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+      });
+
     return await res.status(200).send({
       success: true,
       message: "Members added successfully",
+      currentChat,
     });
   } catch (err) {
     return await res.status(400).send({
@@ -267,12 +325,70 @@ exports.removeGroupMembers = async (req, res) => {
     newMembers = newMembers.filter((item) => {
       if (item._id.toString() !== memberId.toString()) return item;
     });
-
     conversation.members = newMembers;
     await conversation.save();
+
+    const currentChat = await Conversation.findById(conversationId)
+      .populate({
+        path: "members",
+        model: "User",
+        select: ["avatar", "name", "_id", "role"],
+        populate: {
+          path: "avatar",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+      })
+      .populate({
+        path: "messages",
+        model: "Message",
+        populate: {
+          path: "image",
+          model: "Cloudinary",
+        },
+      })
+      .populate({
+        path: "messages",
+        model: "Message",
+      })
+      .populate({
+        path: "groupAdmin",
+        model: "User",
+        populate: {
+          path: "avatar",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+        select: ["name", "avatar"],
+      })
+      .populate({
+        path: "messages",
+        populate: {
+          path: "senderId",
+          model: "User",
+          populate: {
+            path: "avatar",
+            model: "Cloudinary",
+            select: ["url"],
+          },
+          select: ["name", "avatar"],
+        },
+        select: ["body", "createdAt", "senderId", "image", "messageType"],
+      })
+      .populate({
+        path: "messages",
+        model: "Message",
+        populate: {
+          path: "image",
+          model: "Cloudinary",
+          select: ["url"],
+        },
+      });
+
     return await res.status(200).send({
       success: true,
       message: "Members removed successfully",
+      currentChat: currentChat,
     });
   } catch (err) {
     return await res.status(400).send({

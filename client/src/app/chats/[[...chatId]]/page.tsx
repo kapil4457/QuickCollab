@@ -262,10 +262,8 @@ const page = () => {
 
     if (data.success) {
       toast.success(data.message);
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      console.log(data.currentChat);
+      dispatch(setCurrentChat({ conversation: data.currentChat }));
     } else {
       toast.error(data.message);
     }
@@ -285,14 +283,15 @@ const page = () => {
 
     if (data.success) {
       toast.success(data.message);
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      dispatch(setCurrentChat({ conversation: data.currentChat }));
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1500);
     } else {
       toast.error(data.message);
     }
   };
+
   // Set  up socket.io
   useLayoutEffect(() => {
     if (conversations && user) {
