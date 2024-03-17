@@ -193,6 +193,11 @@ const page = () => {
       });
     }
 
+    if (!image && newMessage === "") {
+      toast.error("Enter some text or attach some image.");
+      return;
+    }
+
     const data = {
       conversationId: currentChat?._id,
       userName: user?.name,
@@ -1372,10 +1377,7 @@ const page = () => {
           {/* )} */}
         </div>
         <Separator />
-        <ScrollArea
-          className="h-[calc(100vh-16rem)] w-full  p-4 "
-          id="chat-box"
-        >
+        <div className="h-[calc(100vh-16rem)] w-full  p-4 " id="chat-box">
           {currentChat === null ? (
             <div className="h-[calc(100vh-20rem)] w-full flex justify-center items-center">
               <Label className="h-full w-full flex justify-center items-center text-2xl">
@@ -1384,7 +1386,7 @@ const page = () => {
             </div>
           ) : (
             <ScrollArea
-              className="w-full h-[calc(100vh-10rem)] flex flex-col gap-3 justify-end "
+              className="w-full h-[calc(100vh-17rem)] flex flex-col gap-3 justify-end "
               id="all-messages"
             >
               {currentChat?.messages?.map((message) => {
@@ -1552,7 +1554,7 @@ const page = () => {
                 ))}
             </ScrollArea>
           )}
-        </ScrollArea>
+        </div>
         {currentChat !== null ? (
           <div className="relative">
             {isFileSelected && (

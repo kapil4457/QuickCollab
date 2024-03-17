@@ -29,6 +29,7 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@reduxjs/toolkit": "^2.0.1",
     "6pp": "^1.1.15",
+    "agora-react-uikit": "^1.2.0",
     "axios": "^1.6.5",
     "class-variance-authority": "^0.7.0",
     "cloudinary": "^1.41.2",

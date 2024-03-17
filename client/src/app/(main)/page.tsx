@@ -206,7 +206,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-evenly flex-col  mt-12 gap-16 lg:gap-24 ">
+        <div className="hidden md:flex w-full items-center justify-evenly flex-col  mt-12 gap-16 lg:gap-24 ">
           <h1
             className=" flex w-full text-center justify-center items-center text-4xl lg:text-5xl"
             style={{ fontWeight: 600 }}
