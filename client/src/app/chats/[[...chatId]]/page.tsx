@@ -846,9 +846,11 @@ const page = () => {
             <div className="about-and-call flex items-center gap-5">
               {currentChat?.isGroup === true && (
                 <>
-                  <Button variant={"secondary"} className="hidden md:block">
-                    <CallIcon />
-                  </Button>
+                  <Link href="https://quick-video.netlify.app/" target="_blank">
+                    <Button variant={"secondary"} className="hidden md:block">
+                      <CallIcon />
+                    </Button>
+                  </Link>
                   <Dialog>
                     <DialogTrigger>
                       {" "}
