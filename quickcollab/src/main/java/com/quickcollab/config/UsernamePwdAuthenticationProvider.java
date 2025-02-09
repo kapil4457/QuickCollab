@@ -3,6 +3,7 @@ package com.quickcollab.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -23,7 +24,11 @@ public class UsernamePwdAuthenticationProvider implements AuthenticationProvider
         String username = authentication.getName();
         String pwd = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        boolean isPasswordMatching = passwordEncoder.matches(userDetails.getPassword(), pwd);
+        if (isPasswordMatching) {
         return new UsernamePasswordAuthenticationToken(username,pwd,userDetails.getAuthorities());
+        }
+        throw new AuthenticationServiceException("Username or password is incorrect");
     }
 
     @Override

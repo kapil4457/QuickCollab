@@ -1,6 +1,7 @@
 package com.quickcollab.service;
 
 import com.quickcollab.dtos.request.UserRegisterDTO;
+import com.quickcollab.dtos.response.ResponseDTO;
 import com.quickcollab.dtos.response.UserResponseDTO;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.User;
@@ -18,7 +19,7 @@ public class UserService {
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
 
-    public String registerUser(UserRegisterDTO userRegisterDTO){
+    public ResponseDTO registerUser(UserRegisterDTO userRegisterDTO){
         // check if the user already exists
         String emailId = userRegisterDTO.getEmailId();
         Optional<User> existingUser = userRepository.findByEmailId(emailId);
@@ -29,7 +30,7 @@ public class UserService {
         // convert UserRegisterDTO to User
         User user = modelMapper.map(userRegisterDTO, User.class);
         userRepository.save(user);
-        return "User Saved successfully";
+        return new ResponseDTO("User Saved successfully",true);
     }
 
     public Optional<UserResponseDTO> findByEmail(String emailId) {

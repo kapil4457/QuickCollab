@@ -33,9 +33,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String userId;
 
-    @NotNull
-    @Length(min = 3, max = 20)
-    private String username;
 
     @NotNull
     @Length(min = 2)

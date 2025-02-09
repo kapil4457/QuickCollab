@@ -18,10 +18,6 @@ import org.hibernate.validator.constraints.URL;
 public class UserRegisterDTO {
 
     @NotNull
-    @Length(min = 3, max = 20)
-    private String username;
-
-    @NotNull
     @URL
     private String profilePicture;
 
