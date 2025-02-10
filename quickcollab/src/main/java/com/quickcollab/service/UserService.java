@@ -2,7 +2,7 @@ package com.quickcollab.service;
 
 import com.quickcollab.dtos.request.UserRegisterDTO;
 import com.quickcollab.dtos.response.ResponseDTO;
-import com.quickcollab.dtos.response.UserResponseDTO;
+import com.quickcollab.pojo.JobSeekerUserDetails;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.User;
 import com.quickcollab.repository.UserRepository;
@@ -33,12 +33,11 @@ public class UserService {
         return new ResponseDTO("User Saved successfully",true);
     }
 
-    public Optional<UserResponseDTO> findByEmail(String emailId) {
+    public Optional<User> findByEmail(String emailId) {
         Optional<User> optionalUser = userRepository.findByEmailId(emailId);
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
-            UserResponseDTO userResponseDTO = modelMapper.map(user,UserResponseDTO.class);
-            return Optional.ofNullable(userResponseDTO);
+            return Optional.of(user);
         }
         return Optional.empty();
     }

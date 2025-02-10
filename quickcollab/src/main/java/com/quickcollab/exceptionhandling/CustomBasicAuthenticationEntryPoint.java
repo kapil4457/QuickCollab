@@ -1,16 +1,27 @@
 package com.quickcollab.exceptionhandling;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quickcollab.dtos.response.LoginResponseDTO;
+import com.quickcollab.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+@Component
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    @Autowired
+    private  ObjectMapper objectMapper;
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
@@ -26,6 +37,10 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
                 String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"path\": \"%s\"}",
                         currentTimeStamp, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(),
                         message, path);
-        response.getWriter().write(jsonResponse);
+        LoginResponseDTO<User> loginResponseDTO = new LoginResponseDTO<>();
+        loginResponseDTO.setMessage(jsonResponse);
+        loginResponseDTO.setUser(null);
+        loginResponseDTO.setSuccess(false);
+        response.getWriter().write(objectMapper.writeValueAsString(loginResponseDTO));
     }
 }

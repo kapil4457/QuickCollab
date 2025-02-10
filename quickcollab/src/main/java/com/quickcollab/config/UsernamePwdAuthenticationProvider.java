@@ -24,7 +24,8 @@ public class UsernamePwdAuthenticationProvider implements AuthenticationProvider
         String username = authentication.getName();
         String pwd = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        boolean isPasswordMatching = passwordEncoder.matches(userDetails.getPassword(), pwd);
+        String storedPassword = userDetails.getPassword();
+        boolean isPasswordMatching = passwordEncoder.matches(pwd, storedPassword);
         if (isPasswordMatching) {
         return new UsernamePasswordAuthenticationToken(username,pwd,userDetails.getAuthorities());
         }

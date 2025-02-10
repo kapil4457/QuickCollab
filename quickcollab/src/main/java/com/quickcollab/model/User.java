@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.quickcollab.converter.WorkHistoryAttributeConverter;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
+import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.pojo.WorkHistory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -15,9 +16,6 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.security.core.GrantedAuthority;
-
-import java.util.List;
-
 
 import java.util.List;
 
@@ -77,6 +75,9 @@ public class User {
 
     @OneToMany
     private List<Job> jobsPosted;
+
+    @Convert(converter = WorkHistoryAttributeConverter.class)
+    private List<SocialMediaHandle> socialMediaHandles;
 
 
     public User(@NotNull @Email String emailId, String password, List<GrantedAuthority> userRoles) {
