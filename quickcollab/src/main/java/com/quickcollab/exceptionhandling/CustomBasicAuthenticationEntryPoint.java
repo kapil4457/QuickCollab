@@ -19,9 +19,7 @@ import java.time.LocalDateTime;
 @Component
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    @Autowired
-    private  ObjectMapper objectMapper;
-
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
@@ -33,12 +31,8 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
         response.setHeader("quickcollab-error-reason", "Authentication failed");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
-        String jsonResponse =
-                String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"path\": \"%s\"}",
-                        currentTimeStamp, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                        message, path);
         LoginResponseDTO<User> loginResponseDTO = new LoginResponseDTO<>();
-        loginResponseDTO.setMessage(jsonResponse);
+        loginResponseDTO.setMessage(message);
         loginResponseDTO.setUser(null);
         loginResponseDTO.setSuccess(false);
         response.getWriter().write(objectMapper.writeValueAsString(loginResponseDTO));

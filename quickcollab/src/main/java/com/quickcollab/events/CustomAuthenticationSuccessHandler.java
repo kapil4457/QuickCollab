@@ -11,7 +11,6 @@ import com.quickcollab.service.UserService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
@@ -19,15 +18,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ModelMapper modelMapper;
     private final UserService userService;
+    CustomAuthenticationSuccessHandler(ModelMapper modelMapper, UserService userService) {
+        this.modelMapper = modelMapper;
+        this.userService = userService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -36,9 +37,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String userRole = authentication.getAuthorities().stream().toList().getFirst().getAuthority();
         Optional<User> optionalUser = userService.findByEmail(emailId);
        if(optionalUser.isPresent()){
-
+        User user = optionalUser.get();
         if(userRole.equals(UserRole.CONTENT_CREATOR.toString())){
-            ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(optionalUser.get(), ContentCreatorUserDetails.class);
+
+            ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(user, ContentCreatorUserDetails.class);
             LoginResponseDTO<ContentCreatorUserDetails> loginResponseDTO = new LoginResponseDTO<>();
             loginResponseDTO.setUser(contentCreatorUserDetails);
             loginResponseDTO.setSuccess(true);

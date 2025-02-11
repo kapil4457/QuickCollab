@@ -61,19 +61,19 @@ public class User {
     @URL
     private String profilePicture;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<User> employees;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Conversation> conversations;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Work> works;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Job> appliedJobs;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Job> jobsPosted;
 
     @Convert(converter = WorkHistoryAttributeConverter.class)
