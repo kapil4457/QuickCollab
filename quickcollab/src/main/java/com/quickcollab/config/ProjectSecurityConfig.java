@@ -3,22 +3,21 @@ package com.quickcollab.config;
 import com.quickcollab.events.CustomAuthenticationSuccessHandler;
 import com.quickcollab.exceptionhandling.CustomAccessDeniedHandler;
 import com.quickcollab.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.quickcollab.filter.CsrfCookieFilter;
+import com.quickcollab.filter.JWTTokenGeneratorFilter;
+import com.quickcollab.filter.JWTTokenValidatorFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -47,9 +46,11 @@ public class ProjectSecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/dashboard","/me").authenticated()
-                        .requestMatchers( "/error", "/register","/").permitAll());
+                        .requestMatchers( "/error", "/register","/apiLogin").permitAll());
 
         http.formLogin(fl -> fl
                 .loginPage("/login")

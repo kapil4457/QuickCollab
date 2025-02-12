@@ -13,5 +13,5 @@ import lombok.Setter;
 public class LoginResponseDTO<T> {
         private T user;
         private String message;
-        private boolean success;
+        private Boolean success;
 }

@@ -6,6 +6,6 @@ export const registerUserController = async (body) => {
 };
 
 export const loginUserController = async (body) => {
-  const response = await axios.post("/api/login", body);
+  const response = await axios.post("/api/apiLogin", body);
   return response;
 };

@@ -68,7 +68,13 @@ export function AuthenticationForm(props) {
       password: form.values.password,
     };
     const response = await loginUserController(body);
-    console.log("response", response);
+    const { success, user, message } = response.data;
+    if (success) {
+      toast.success(message);
+      navigate("/");
+    } else {
+      toast.error(message);
+    }
   };
   useEffect(() => {
     if (formType != type) {

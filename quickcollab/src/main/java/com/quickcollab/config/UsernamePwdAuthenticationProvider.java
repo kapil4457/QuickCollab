@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Profile("!prod")
-@RequiredArgsConstructor
+   @RequiredArgsConstructor
 public class UsernamePwdAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
