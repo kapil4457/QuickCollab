@@ -3,6 +3,9 @@ import "./App.css";
 import { AuthenticationForm } from "./pages/AuthenticationForm/AuthenticationForm";
 import { Header } from "./components/Header/Header";
 import { Bounce, ToastContainer } from "react-toastify";
+import ProtectedRoute from "./utils/ProtectedRoute";
+import JobsBoard from "./pages/JobsBoard/JobsBoard";
+import Logout from "./pages/Logout/Logout";
 
 function App() {
   return (
@@ -11,6 +14,12 @@ function App() {
         <Header />
         <Routes>
           <Route path="/login" element={<AuthenticationForm />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route
+            path="/jobs"
+            element={<ProtectedRoute children={<JobsBoard />} />}
+          />
+
           {/* <Route path="/" element={<Home />} /> */}
           {/* <Route path="dashboard" element={<Dashboard />}> */}
           {/* <Route index element={<RecentActivity />} /> */}

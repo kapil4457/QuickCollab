@@ -10,8 +10,12 @@ import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.User;
 import com.quickcollab.pojo.TeamMemberUserDetails;
 import com.quickcollab.repository.UserRepository;
+import com.quickcollab.utils.JwtBlacklistService;
+import com.quickcollab.utils.JwtTokenGenerator;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,8 +26,12 @@ public class UserService {
 
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
+    private final JwtTokenGenerator jwtTokenGenerator;
+    private final JwtBlacklistService jwtBlacklistService;
 
-    public ResponseDTO registerUser(UserRegisterDTO userRegisterDTO){
+
+    public LoginResponseDTO<?> registerUser(UserRegisterDTO userRegisterDTO){
+
         // check if the user already exists
         String emailId = userRegisterDTO.getEmailId();
         Optional<User> existingUser = userRepository.findByEmailId(emailId);
@@ -34,7 +42,10 @@ public class UserService {
         // convert UserRegisterDTO to User
         User user = modelMapper.map(userRegisterDTO, User.class);
         userRepository.save(user);
-        return new ResponseDTO("User Saved successfully",true);
+        LoginResponseDTO<?> loginResponseDTO = getUserByEmail(userRegisterDTO.getEmailId());
+        loginResponseDTO.setMessage("User registered successfully");
+        loginResponseDTO.setSuccess(true);
+        return loginResponseDTO;
     }
 
     public Optional<User> findByEmail(String emailId) {
@@ -45,6 +56,7 @@ public class UserService {
         }
         return Optional.empty();
     }
+
     public  LoginResponseDTO<?> getUserByEmail(String emailId){
         Optional<User> optionalUser = findByEmail(emailId);
         if(optionalUser.isPresent()){
@@ -81,4 +93,17 @@ public class UserService {
         loginResponseDTO.setMessage("Please login in to access this resource");
         return loginResponseDTO;
     }
+
+    public ResponseDTO logoutUser(HttpServletRequest request){
+        String jwtToken = request.getHeader("Authorization");
+        if (jwtToken != null && !jwtToken.isEmpty()) {
+            long tokenExpiration = jwtTokenGenerator.getRemainingTime(jwtToken);
+            jwtBlacklistService.blacklistToken(jwtToken, tokenExpiration);
+           return new ResponseDTO("Logged out successfully" , true);
+        } else {
+
+           return new ResponseDTO("Invalid token" , false);
+        }
+    }
+
 }

@@ -25,13 +25,22 @@ import {
 import { UserRolePicker } from "./components/UserRolePicker";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
+import { useSelector, useDispatch } from "react-redux";
+import { updateCurrentUserState } from "../../store/slices/userSlice";
+
+// import { useCentralStore } from "../../store/store";
 
 export function AuthenticationForm(props) {
-  const navigate = useNavigate();
+  // Redux Section
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const dispatch = useDispatch();
+
+  // Use State section
   const [type, toggle] = useToggle(["login", "register"]);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { type: formType } = useParams();
 
+  const navigate = useNavigate();
+  const { type: formType } = useParams();
   const form = useForm({
     initialValues: {
       emailId: "",
@@ -45,8 +54,8 @@ export function AuthenticationForm(props) {
   });
   const registerUserHandler = async () => {
     const body = {
-      profilePicture:
-        "https://cdn.prod.website-files.com/62d84e447b4f9e7263d31e94/6399a4d27711a5ad2c9bf5cd_ben-sweet-2LowviVHZ-E-unsplash-1.jpeg",
+      profilePicture: "",
+      // "https://cdn.prod.website-files.com/62d84e447b4f9e7263d31e94/6399a4d27711a5ad2c9bf5cd_ben-sweet-2LowviVHZ-E-unsplash-1.jpeg",
       firstName: form.values.firstName,
       lastName: form.values.lastName,
       emailId: form.values.emailId,
@@ -54,11 +63,29 @@ export function AuthenticationForm(props) {
       userRole: form.values.userRole,
       registerationMethod: "CREDENTIALS_LOGIN",
     };
-    const { success, message } = await registerUserController(body);
+    const response = await registerUserController(body);
+    const { success, user, message } = response.data;
+    const { authorization } = response.headers;
     if (success) {
+      dispatch(
+        updateCurrentUserState({
+          user: user,
+          isAuthenticated: true,
+          jwtToken: authorization,
+        })
+      );
       toast.success(message);
       navigate("/");
     } else {
+      if (!isAuthenticated) {
+        dispatch(
+          updateCurrentUserState({
+            user: null,
+            isAuthenticated: false,
+            jwtToken: "",
+          })
+        );
+      }
       toast.error(message);
     }
   };
@@ -69,10 +96,27 @@ export function AuthenticationForm(props) {
     };
     const response = await loginUserController(body);
     const { success, user, message } = response.data;
+    const { authorization } = response.headers;
     if (success) {
+      dispatch(
+        updateCurrentUserState({
+          user: user,
+          isAuthenticated: true,
+          jwtToken: authorization,
+        })
+      );
       toast.success(message);
       navigate("/");
     } else {
+      if (!isAuthenticated) {
+        dispatch(
+          updateCurrentUserState({
+            user: null,
+            isAuthenticated: false,
+            jwtToken: "",
+          })
+        );
+      }
       toast.error(message);
     }
   };
@@ -215,7 +259,17 @@ export function AuthenticationForm(props) {
                 ? "Already have an account? Login"
                 : "Don't have an account? Register"}
             </Anchor>
-            <Button type="submit" radius="xl">
+            <Button
+              type="submit"
+              radius="xl"
+              disabled={
+                type === "register"
+                  ? form.values.terms === false
+                    ? true
+                    : false
+                  : false
+              }
+            >
               {upperFirst(type)}
             </Button>
           </Group>

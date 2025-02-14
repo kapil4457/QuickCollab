@@ -3,8 +3,9 @@ package com.quickcollab.config;
 import com.quickcollab.events.CustomAuthenticationSuccessHandler;
 import com.quickcollab.exceptionhandling.CustomAccessDeniedHandler;
 import com.quickcollab.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.quickcollab.filter.JWTTokenGeneratorFilter;
-import com.quickcollab.filter.JWTTokenValidatorFilter;
+import com.quickcollab.filters.JWTTokenValidatorFilter;
+import com.quickcollab.utils.JwtBlacklistService;
+import com.quickcollab.utils.JwtTokenGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,8 +17,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -29,6 +30,9 @@ import java.util.Collections;
 public class ProjectSecurityConfig {
 
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final JwtBlacklistService jwtBlacklistService;
+    private final JwtTokenGenerator jwtTokenGenerator;
+
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,11 +50,10 @@ public class ProjectSecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
-                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService,jwtTokenGenerator), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/dashboard","/me").authenticated()
-                        .requestMatchers( "/error", "/register","/apiLogin").permitAll());
+                        .requestMatchers( "/error", "/register","/apiLogin","/apiLogout").permitAll());
 
         http.formLogin(fl -> fl
                 .loginPage("/login")
