@@ -16,7 +16,7 @@ import java.util.List;
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer conversationId;
+    private Long conversationId;
 
     @OneToMany
     private List<User> members;

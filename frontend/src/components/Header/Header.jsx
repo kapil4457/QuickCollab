@@ -22,52 +22,52 @@ const userLinks = [{ link: "/jobs", label: "Jobs" }];
 export function Header() {
   const [opened, { toggle }] = useDisclosure(false);
   const [active, setActive] = useState(commonLinks[0].link);
-  const [isAdmin, setIsAdmin] = useState(false);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const user = useSelector((state) => state.user.user);
+
+  const [isContentCreator, setIsContentCreator] = useState(
+    isAuthenticated && user?.userRole === "CONTENT_CREATOR"
+  );
   const commonItems = commonLinks.map((link) => (
-    <a
+    <NavLink
       key={link.label}
-      href={link.link}
+      to={link.link}
       className={classes.link}
       data-active={active === link.link || undefined}
       onClick={(event) => {
-        event.preventDefault();
         setActive(link.link);
       }}
     >
       {link.label}
-    </a>
+    </NavLink>
   ));
 
   const adminItems = adminLinks.map((link) => (
-    <a
+    <NavLink
+      to={link.link}
       key={link.label}
-      href={link.link}
       className={classes.link}
       data-active={active === link.link || undefined}
       onClick={(event) => {
-        event.preventDefault();
         setActive(link.link);
       }}
     >
       {link.label}
-    </a>
+    </NavLink>
   ));
 
   const userItems = userLinks.map((link) => (
-    <a
+    <NavLink
       key={link.label}
-      href={link.link}
+      to={link.link}
       className={classes.link}
       data-active={active === link.link || undefined}
       onClick={(event) => {
-        event.preventDefault();
         setActive(link.link);
       }}
     >
       {link.label}
-    </a>
+    </NavLink>
   ));
 
   return (
@@ -76,7 +76,7 @@ export function Header() {
         <Logo />
         <Group gap={5} visibleFrom="xs">
           {commonItems}
-          {isAdmin ? adminItems : userItems}
+          {isContentCreator ? adminItems : userItems}
         </Group>
         <Group>
           {isAuthenticated ? (

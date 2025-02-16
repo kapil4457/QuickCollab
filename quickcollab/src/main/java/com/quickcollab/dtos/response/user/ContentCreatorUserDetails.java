@@ -1,13 +1,15 @@
-package com.quickcollab.pojo;
+package com.quickcollab.dtos.response.user;
 
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Job;
-import com.quickcollab.model.Work;
+import com.quickcollab.model.User;
+import com.quickcollab.pojo.SocialMediaHandle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 
 import java.util.List;
 
@@ -16,7 +18,8 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TeamMemberUserDetails {
+public class ContentCreatorUserDetails  {
+    private String userId;
     private String firstName;
     private String lastName;
     private String emailId;
@@ -24,9 +27,9 @@ public class TeamMemberUserDetails {
     private String selfDescription;
     private List<Conversation> conversations;
     private List<SocialMediaHandle> socialMediaHandles;
-    private List<Job> appliedJobs;
-    private List<Work> works;
-    private List<WorkHistory> workHistory;
+    private List<User> employees;
+    private List<Job> jobsPosted;
     private UserRole userRole;
+
 
 }

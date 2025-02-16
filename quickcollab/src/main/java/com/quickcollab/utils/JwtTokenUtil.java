@@ -9,7 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import io.jsonwebtoken.Jwts;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -20,16 +20,17 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Component
-public class JwtTokenGenerator {
+public class JwtTokenUtil {
     private final Environment env;
 
-    public String generateToken(String username , List<? extends GrantedAuthority> authorities) {
+    public String generateToken(String username , List<? extends GrantedAuthority> authorities,String userId) {
         String jwt = "";
         String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY,
                 ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
         SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         jwt = Jwts.builder().issuer("Quick Collab").subject("JWT Token")
                 .claim("username", username)
+                .claim("userId", userId)
                 .claim("authorities", authorities.stream().map(
                         GrantedAuthority::getAuthority).collect(Collectors.joining(",")))
                 .issuedAt(new java.util.Date())
@@ -73,7 +74,7 @@ public class JwtTokenGenerator {
                 .parseSignedClaims(token)
                 .getPayload();
         String authorities = claims.get("authorities",String.class);
-        List<String> authorityList = Arrays.asList(authorities.split(","));
+        List<String> authorityList = Arrays.asList(authorities.split(",")).stream().map(authority -> "ROLE_"+authority).toList();
         return authorityList.stream().map(SimpleGrantedAuthority::new).toList();
     }
 

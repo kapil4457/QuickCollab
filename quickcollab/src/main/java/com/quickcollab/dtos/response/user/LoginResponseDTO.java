@@ -1,4 +1,4 @@
-package com.quickcollab.dtos.response;
+package com.quickcollab.dtos.response.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

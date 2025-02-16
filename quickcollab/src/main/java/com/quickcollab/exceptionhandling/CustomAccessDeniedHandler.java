@@ -1,13 +1,11 @@
 package com.quickcollab.exceptionhandling;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quickcollab.dtos.response.LoginResponseDTO;
+import com.quickcollab.dtos.response.user.LoginResponseDTO;
 import com.quickcollab.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -19,8 +17,7 @@ import java.time.LocalDateTime;
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
-    @Autowired
-    private  ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
@@ -34,12 +31,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType("application/json;charset=UTF-8");
         // Construct the JSON response
-        String jsonResponse =
-                String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"path\": \"%s\"}",
-                        currentTimeStamp, HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase(),
-                        message, path);
         LoginResponseDTO<User> loginResponseDTO = new LoginResponseDTO<>();
-        loginResponseDTO.setMessage(jsonResponse);
+        loginResponseDTO.setMessage(message);
         loginResponseDTO.setUser(null);
         loginResponseDTO.setSuccess(false);
         response.getWriter().write(objectMapper.writeValueAsString(loginResponseDTO));

@@ -17,5 +17,5 @@ import lombok.Setter;
 public class Work {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer workId;
+    private Long workId;
 }

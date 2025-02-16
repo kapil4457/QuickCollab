@@ -1,21 +1,20 @@
 package com.quickcollab.service;
 
 import com.quickcollab.dtos.request.UserRegisterDTO;
-import com.quickcollab.dtos.response.LoginResponseDTO;
-import com.quickcollab.dtos.response.ResponseDTO;
+import com.quickcollab.dtos.response.user.LoginResponseDTO;
+import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.UserRole;
-import com.quickcollab.pojo.ContentCreatorUserDetails;
-import com.quickcollab.pojo.JobSeekerUserDetails;
+import com.quickcollab.dtos.response.user.ContentCreatorUserDetails;
+import com.quickcollab.dtos.response.user.JobSeekerUserDetails;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.User;
-import com.quickcollab.pojo.TeamMemberUserDetails;
+import com.quickcollab.dtos.response.user.TeamMemberUserDetails;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.utils.JwtBlacklistService;
-import com.quickcollab.utils.JwtTokenGenerator;
+import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -26,7 +25,7 @@ public class UserService {
 
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
-    private final JwtTokenGenerator jwtTokenGenerator;
+    private final JwtTokenUtil jwtTokenUtil;
     private final JwtBlacklistService jwtBlacklistService;
 
 
@@ -41,7 +40,7 @@ public class UserService {
 
         // convert UserRegisterDTO to User
         User user = modelMapper.map(userRegisterDTO, User.class);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
         LoginResponseDTO<?> loginResponseDTO = getUserByEmail(userRegisterDTO.getEmailId());
         loginResponseDTO.setMessage("User registered successfully");
         loginResponseDTO.setSuccess(true);
@@ -97,7 +96,7 @@ public class UserService {
     public ResponseDTO logoutUser(HttpServletRequest request){
         String jwtToken = request.getHeader("Authorization");
         if (jwtToken != null && !jwtToken.isEmpty()) {
-            long tokenExpiration = jwtTokenGenerator.getRemainingTime(jwtToken);
+            long tokenExpiration = jwtTokenUtil.getRemainingTime(jwtToken);
             jwtBlacklistService.blacklistToken(jwtToken, tokenExpiration);
            return new ResponseDTO("Logged out successfully" , true);
         } else {
@@ -105,5 +104,4 @@ public class UserService {
            return new ResponseDTO("Invalid token" , false);
         }
     }
-
 }

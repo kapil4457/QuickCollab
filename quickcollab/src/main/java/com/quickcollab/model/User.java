@@ -1,9 +1,11 @@
 package com.quickcollab.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.quickcollab.converter.ReportsToAttributeConverter;
 import com.quickcollab.converter.WorkHistoryAttributeConverter;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
+import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.pojo.WorkHistory;
 import jakarta.persistence.*;
@@ -52,9 +54,11 @@ public class User {
     private List<WorkHistory> workHistory;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private RegisterationMethod registerationMethod;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
     @NotNull
@@ -63,6 +67,7 @@ public class User {
 
     @OneToMany(fetch = FetchType.EAGER)
     private List<User> employees;
+
 
     @OneToMany(fetch = FetchType.EAGER)
     private List<Conversation> conversations;
@@ -78,6 +83,9 @@ public class User {
 
     @Convert(converter = WorkHistoryAttributeConverter.class)
     private List<SocialMediaHandle> socialMediaHandles;
+
+    @Convert(converter = ReportsToAttributeConverter.class)
+    private ReportingUser reportsTo;
 
 
     public User(@NotNull @Email String emailId, String password, List<GrantedAuthority> userRoles) {

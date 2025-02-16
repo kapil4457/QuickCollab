@@ -3,16 +3,16 @@ package com.quickcollab.controller;
 import com.quickcollab.constants.ApplicationConstants;
 import com.quickcollab.dtos.request.LoginRequestDTO;
 import com.quickcollab.dtos.request.UserRegisterDTO;
-import com.quickcollab.dtos.response.LoginResponseDTO;
-import com.quickcollab.dtos.response.ResponseDTO;
-import com.quickcollab.model.User;
+import com.quickcollab.dtos.response.user.LoginResponseDTO;
+import com.quickcollab.dtos.response.general.ResponseDTO;
+import com.quickcollab.dtos.response.user.ContentCreatorUserDetails;
+import com.quickcollab.dtos.response.user.JobSeekerUserDetails;
+import com.quickcollab.dtos.response.user.TeamMemberUserDetails;
 import com.quickcollab.service.UserService;
-import com.quickcollab.utils.JwtTokenGenerator;
-import io.jsonwebtoken.security.Request;
+import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.apache.coyote.Response;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +42,7 @@ public class UserController {
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
     private final Environment env;
-    private final JwtTokenGenerator jwtTokenGenerator;
+    private final JwtTokenUtil jwtTokenUtil;
 
 
     @PostMapping("/register")
@@ -56,8 +56,17 @@ public class UserController {
             List<GrantedAuthority> authorities  = new ArrayList<>();
             GrantedAuthority authority = new SimpleGrantedAuthority(userRegisterDTO.getUserRole().toString());
             authorities.add(authority);
-            jwt = jwtTokenGenerator.generateToken(userRegisterDTO.getEmailId() ,authorities );
             LoginResponseDTO<?> loginResponseDTO  = userService.registerUser(userRegisterDTO);
+            Object user = loginResponseDTO.getUser();
+            String userId = "";
+            if(user instanceof ContentCreatorUserDetails){
+                userId = ((ContentCreatorUserDetails) user).getUserId();
+            }else if(user instanceof JobSeekerUserDetails){
+                userId = ((JobSeekerUserDetails)user).getUserId();
+            }else if(user instanceof TeamMemberUserDetails){
+                userId = ((TeamMemberUserDetails)user).getUserId();
+            }
+            jwt = jwtTokenUtil.generateToken(userRegisterDTO.getEmailId() ,authorities,userId );
             return ResponseEntity.status(HttpStatus.CREATED).header(ApplicationConstants.JWT_HEADER,jwt).body(loginResponseDTO);
         }catch (Exception e){
             LoginResponseDTO<?> loginResponseDTO = new LoginResponseDTO<>();
@@ -81,12 +90,21 @@ public class UserController {
         Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getEmailId(),
                 loginRequest.getPassword());
         Authentication authenticationResponse = authenticationManager.authenticate(authentication);
+        LoginResponseDTO<?> loginResponseDTO = userService.getUserByEmail(loginRequest.getEmailId());
         if(null != authenticationResponse && authenticationResponse.isAuthenticated()) {
             if (null != env) {
-            jwt = jwtTokenGenerator.generateToken(authenticationResponse.getName() , (List<? extends GrantedAuthority>) authenticationResponse.getAuthorities());
+                Object user = loginResponseDTO.getUser();
+                String userId = "";
+                if(user instanceof ContentCreatorUserDetails){
+                    userId = ((ContentCreatorUserDetails) user).getUserId();
+                }else if(user instanceof JobSeekerUserDetails){
+                    userId = ((JobSeekerUserDetails)user).getUserId();
+                }else if(user instanceof TeamMemberUserDetails){
+                    userId = ((TeamMemberUserDetails)user).getUserId();
+                }
+            jwt = jwtTokenUtil.generateToken(authenticationResponse.getName() , (List<? extends GrantedAuthority>) authenticationResponse.getAuthorities(), userId);
             }
         }
-        LoginResponseDTO<?> loginResponseDTO = userService.getUserByEmail(loginRequest.getEmailId());
         if(!loginResponseDTO.getSuccess()){
         loginResponseDTO.setMessage("Wrong email id or password");
         }else{

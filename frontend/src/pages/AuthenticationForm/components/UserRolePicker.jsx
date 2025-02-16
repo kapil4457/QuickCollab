@@ -2,12 +2,7 @@ import { useEffect, useState } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
 import { Group, Menu, UnstyledButton } from "@mantine/core";
 import classes from "./css/UserRolePicker.module.css";
-
-const userRoles = [
-  { label: "Content Creator", value: "CONTENT_CREATOR" },
-  { label: "Job Seeker", value: "JOB_SEEKER" },
-];
-
+import { userRoles } from "../../../constants/UserRole";
 export function UserRolePicker({ form }) {
   const [opened, setOpened] = useState(false);
   const [selected, setSelected] = useState(userRoles[0]);
