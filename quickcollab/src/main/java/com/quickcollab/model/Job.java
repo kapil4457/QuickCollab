@@ -1,5 +1,6 @@
 package com.quickcollab.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.quickcollab.enums.JobLocationType;
 import com.quickcollab.enums.JobStatus;
 import jakarta.persistence.*;
@@ -42,6 +43,7 @@ public class Job {
     private JobLocationType jobLocationType;
 
     @OneToMany
+    @JsonManagedReference
     private List<User> applicants;
 
     @NotNull

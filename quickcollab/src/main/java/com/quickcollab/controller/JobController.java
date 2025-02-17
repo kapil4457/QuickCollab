@@ -4,6 +4,7 @@ import com.quickcollab.dtos.request.JobRequestDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobResponseDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobResponseDTO;
+import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.service.JobService;
 import com.quickcollab.service.UserService;
@@ -79,10 +80,15 @@ public class JobController {
     }
 
     @PostMapping("/applyForJob")
-    public ResponseEntity<ResponseDTO>applyToJob(Authentication authentication,@RequestParam String jobId) {
+    public ResponseEntity<ResponseDTO>applyToJob(Authentication authentication,@RequestParam Long jobId) {
+        try{
+
         String userId = authentication.getDetails().toString();
         ResponseDTO responseDTO = jobService.applyToJob(userId , jobId);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }
 
     }
 

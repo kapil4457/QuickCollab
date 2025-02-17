@@ -61,7 +61,7 @@ public class ProjectSecurityConfig {
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/getAllJobs","/me").authenticated()
                         .requestMatchers("/getUserListedJobs","/createJob","/updateJob").hasAnyRole("CONTENT_CREATOR","MANAGER")
-                        .requestMatchers("/applyForJob").hasAnyRole("JOB_SEEKER","MANAGER","MANAGER","JOB_SEEKER","VIDEO_EDITOR","PHOTO_EDITOR"
+                        .requestMatchers("/applyForJob").hasAnyRole("JOB_SEEKER","MANAGER","VIDEO_EDITOR","PHOTO_EDITOR"
                                 ,"THUMBNAIL_EDITOR","SCRIPT_WRITER","APPROVER","UPLOADER")
                         .requestMatchers( "/error", "/register","/apiLogin","/apiLogout").permitAll());
 

@@ -1,5 +1,7 @@
 package com.quickcollab.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.quickcollab.converter.ReportsToAttributeConverter;
 import com.quickcollab.converter.WorkHistoryAttributeConverter;
@@ -46,6 +48,7 @@ public class User {
     @Email
     private String emailId;
 
+    @JsonIgnore
     private String password;
 
     private String selfDescription;
@@ -55,10 +58,12 @@ public class User {
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private RegisterationMethod registerationMethod;
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private UserRole userRole;
 
     @NotNull
@@ -66,19 +71,24 @@ public class User {
     private String profilePicture;
 
     @OneToMany(fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<User> employees;
 
 
     @OneToMany(fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<Conversation> conversations;
 
     @OneToMany(fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<Work> works;
 
     @OneToMany(fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<Job> appliedJobs;
 
     @OneToMany(fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<Job> jobsPosted;
 
     @Convert(converter = WorkHistoryAttributeConverter.class)

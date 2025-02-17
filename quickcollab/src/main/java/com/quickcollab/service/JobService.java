@@ -91,7 +91,18 @@ public class JobService {
 
     }
 
-//    public ResponseDTO applyToJob(String userId, String jobId) {
-//    
-//    }
+    public ResponseDTO applyToJob(String userId, Long jobId) {
+        User user = userRepository.getReferenceById(userId);
+        Job job = jobRepository.getReferenceById(jobId);
+        if(job.getApplicants().contains(user)) {
+            throw new GenericError("You have already applied for this Job");
+        }
+        job.getApplicants().add(user);
+        user.getAppliedJobs().add(job);
+        jobRepository.save(job);
+        userRepository.save(user);
+        return  new ResponseDTO("Application sent successfully!!",true);
+    }
+
+
 }
