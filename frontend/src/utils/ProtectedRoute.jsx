@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
-  console.log("isAuthenticated", isAuthenticated);
   let location = useLocation();
 
   if (!isAuthenticated) {

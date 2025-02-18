@@ -19,7 +19,5 @@ export const logoutUserController = async (jwtToken) => {
       },
     }
   );
-
-  console.log("response : ", response);
   return response;
 };

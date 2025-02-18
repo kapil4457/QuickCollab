@@ -90,34 +90,38 @@ export function AuthenticationForm(props) {
     }
   };
   const loginUserHandler = async () => {
-    const body = {
-      emailId: form.values.emailId,
-      password: form.values.password,
-    };
-    const response = await loginUserController(body);
-    const { success, user, message } = response.data;
-    const { authorization } = response.headers;
-    if (success) {
-      dispatch(
-        updateCurrentUserState({
-          user: user,
-          isAuthenticated: true,
-          jwtToken: authorization,
-        })
-      );
-      toast.success(message);
-      navigate("/");
-    } else {
-      if (!isAuthenticated) {
+    try {
+      const body = {
+        emailId: form.values.emailId,
+        password: form.values.password,
+      };
+      const response = await loginUserController(body);
+      const { success, user, message } = response.data;
+      const { authorization } = response.headers;
+      if (success) {
         dispatch(
           updateCurrentUserState({
-            user: null,
-            isAuthenticated: false,
-            jwtToken: "",
+            user: user,
+            isAuthenticated: true,
+            jwtToken: authorization,
           })
         );
+        toast.success(message);
+        navigate("/");
+      } else {
+        if (!isAuthenticated) {
+          dispatch(
+            updateCurrentUserState({
+              user: null,
+              isAuthenticated: false,
+              jwtToken: "",
+            })
+          );
+        }
+        toast.error(message);
       }
-      toast.error(message);
+    } catch (e) {
+      toast.error(e.response.data.message);
     }
   };
   useEffect(() => {

@@ -1,25 +1,31 @@
 import { useEffect, useState } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
 import { Group, Menu, UnstyledButton } from "@mantine/core";
-import classes from "./css/UserRolePicker.module.css";
-import { userRoles } from "../../../constants/UserConstants";
-export function UserRolePicker({ form }) {
+import classes from "./css/Picker.module.css";
+import {
+  jobLocationTypes,
+  jobStatuses,
+} from "../../../../constants/JobConstants";
+export function JobLocationPicker({ jobDetails, setJobDetails, isDisabled }) {
   const [opened, setOpened] = useState(false);
-  const [selected, setSelected] = useState(userRoles[0]);
-  const items = userRoles.map((role) => (
-    <Menu.Item
-      onClick={() => {
-        setSelected(role);
-        form.setFieldValue("userRole", role.value);
-      }}
-      key={role.value}
-    >
-      {role.label}
-    </Menu.Item>
-  ));
+  const [selected, setSelected] = useState(jobStatuses[0]);
+  const items = jobLocationTypes.map((locationType) => {
+    return (
+      <Menu.Item
+        onClick={() => {
+          setSelected(locationType);
+          setJobDetails({ ...jobDetails, jobLocationType: locationType });
+        }}
+        key={locationType}
+        className="w-full z-[3]"
+      >
+        {locationType}
+      </Menu.Item>
+    );
+  });
 
   useEffect(() => {
-    form.setFieldValue("userRole", userRoles[0].value);
+    setJobDetails({ ...jobDetails, jobLocationType: jobLocationTypes[0] });
   }, []);
 
   return (
@@ -30,6 +36,7 @@ export function UserRolePicker({ form }) {
         radius="md"
         withinPortal
         width={"target"}
+        disabled={isDisabled}
       >
         <Menu.Target>
           <UnstyledButton
@@ -41,7 +48,7 @@ export function UserRolePicker({ form }) {
             }}
             data-expanded={opened || undefined}
           >
-            <span className={classes.label}>{selected.label}</span>
+            <span className={classes.label}>{selected}</span>
             <IconChevronDown size={16} className={classes.icon} stroke={1.5} />
           </UnstyledButton>
         </Menu.Target>

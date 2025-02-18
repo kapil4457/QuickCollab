@@ -1,6 +1,8 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
+import userReducer from "./slices/userSlice";
+import jobReducer from "./slices/jobSlice";
 
 const persistConfig = {
   key: "root",
@@ -8,12 +10,12 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({
+  job: jobReducer,
   user: userReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-import userReducer from "./slices/userSlice";
 const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>

@@ -7,6 +7,7 @@ import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobRespons
 import com.quickcollab.dtos.response.job.jobSeeker.JobDetailPostedByUserDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobDetailDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobResponseDTO;
+import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.enums.JobStatus;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.exception.GenericError;
@@ -27,7 +28,6 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class JobService {
-    private final UserService userService;
     private final JobRepository jobRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
@@ -48,7 +48,9 @@ public class JobService {
             job.setPostedOn(new Date());
             job.setUpdatedBy(user);
             job.setUpdatedOn(new Date());
-            jobRepository.save(job);
+            Job savedJob = jobRepository.save(job);
+            user.getJobsPosted().add(savedJob);
+            userRepository.save(user);
             List<Job> userListedJobs= jobRepository.getJobByPostedByUserId(user.getUserId());
             List<ContentCreatorJobDetailDTO> contentCreatorJobDetailDTOList = userListedJobs.stream().map(userListedJob -> modelMapper.map(userListedJob , ContentCreatorJobDetailDTO.class)).toList();
             return new ContentCreatorJobResponseDTO(contentCreatorJobDetailDTOList,"Job created successfully !!",true);
@@ -87,7 +89,7 @@ public class JobService {
             jobSeekerJobDetailDTO.setPostedBy(jobDetailPostedByUserDTO);
             return jobSeekerJobDetailDTO;
         }).toList();
-        return new JobSeekerJobResponseDTO(jobSeekerJobDetailDTOs,"Job updated successfully !!",true);
+        return new JobSeekerJobResponseDTO(jobSeekerJobDetailDTOs,"Job fetched successfully !",true);
 
     }
 
@@ -104,5 +106,40 @@ public class JobService {
         return  new ResponseDTO("Application sent successfully!!",true);
     }
 
+
+    // It can be send offer instead of directly hiring
+    public ResponseDTO hireCandidate(String authUserId , String applicantUserId, Long jobId , String userRole) {
+        String contentCreatorId = Objects.equals(userRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
+        User applicant = userRepository.getReferenceById(applicantUserId);
+        Job job = jobRepository.getReferenceById(jobId);
+        User contentCreator = userRepository.getReferenceById(contentCreatorId);
+
+        if(!job.getApplicants().contains(applicant)) {
+                throw new GenericError("You have not applied for this Job");
+        }
+        if(applicant.getReportsTo().getUserId().equals(contentCreator.getUserId())) {
+            throw new GenericError("You already report to "+contentCreator.getFirstName()+" "+contentCreator.getLastName());
+        }
+        ReportingUser reportingUser = new ReportingUser();
+        reportingUser.setUserId(contentCreatorId);
+        reportingUser.setFirstName(contentCreator.getFirstName());
+        reportingUser.setLastName(contentCreator.getLastName());
+        applicant.setReportsTo(reportingUser);
+        applicant.setUserRole(UserRole.valueOf(userRole));
+
+        Long openingCount = job.getOpeningsCount();
+        openingCount--;
+        job.setOpeningsCount(openingCount);
+        job.getApplicants().remove(applicant);
+
+        contentCreator.getEmployees().add(applicant);
+
+        userRepository.save(contentCreator);
+        userRepository.save(applicant);
+        jobRepository.save(job);
+
+        return new ResponseDTO("Applicant hired successfully",true);
+
+    }
 
 }

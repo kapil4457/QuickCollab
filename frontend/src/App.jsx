@@ -6,6 +6,7 @@ import { Bounce, ToastContainer } from "react-toastify";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import JobsBoard from "./pages/JobsBoard/JobsBoard";
 import Logout from "./pages/Logout/Logout";
+import Hire from "./pages/Hire/Hire";
 
 function App() {
   return (
@@ -18,6 +19,10 @@ function App() {
           <Route
             path="/jobs"
             element={<ProtectedRoute children={<JobsBoard />} />}
+          />
+          <Route
+            path="/hire"
+            element={<ProtectedRoute children={<Hire />} />}
           />
 
           {/* <Route path="/" element={<Home />} /> */}

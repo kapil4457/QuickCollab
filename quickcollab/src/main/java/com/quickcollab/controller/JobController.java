@@ -23,7 +23,7 @@ public class JobController {
     private final JobService jobService;
     private final UserService userService;
 
-
+    //     [Done]
     @GetMapping("/getUserListedJobs")
     public ResponseEntity<ContentCreatorJobResponseDTO> getUserListedJobs(Authentication authentication) {
         try{
@@ -39,6 +39,7 @@ public class JobController {
 
     }
 
+    //     [Done]
     @PostMapping("/createJob")
     public ResponseEntity<ContentCreatorJobResponseDTO>createJob(Authentication authentication, @RequestBody JobRequestDTO jobRequestDTO) {
         try{
@@ -55,6 +56,7 @@ public class JobController {
         }
     }
 
+    
     @PutMapping("/updateJob")
     public ResponseEntity<ContentCreatorJobResponseDTO>updateJobByJobId(Authentication authentication,
                                                                         @RequestBody JobRequestDTO jobRequestDTO,
@@ -92,4 +94,15 @@ public class JobController {
 
     }
 
+    @PutMapping("/hireCandidate")
+    public ResponseEntity<ResponseDTO>hireCandidate(Authentication authentication,@RequestParam Long jobId , @RequestParam String applicantUserId) {
+        try{
+            String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = jobService.hireCandidate(authUserId,"applicantUserId", jobId , userRole);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+    }
 }

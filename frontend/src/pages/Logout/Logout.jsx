@@ -6,24 +6,34 @@ import { logoutUserController } from "../../controller/UserController";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { useSelector } from "react-redux";
+import { updateUserListedJobs } from "../../store/slices/jobSlice";
 
 const Logout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const jwtToken = useSelector((state) => state.user.jwtToken);
   const logoutHandler = async () => {
-    const response = await logoutUserController(jwtToken);
-    const { success, message } = response.data;
-    if (success) {
-      toast.success(message);
-    } else {
-      toast.error(message);
+    try {
+      const response = await logoutUserController(jwtToken);
+      const { success, message } = response.data;
+      if (success) {
+        toast.success(message);
+      } else {
+        toast.error(message);
+      }
+    } catch (err) {
+      toast.error(err.response.data.message);
     }
     dispatch(
       updateCurrentUserState({
         user: null,
         isAuthenticated: false,
         jwtToken: null,
+      })
+    );
+    dispatch(
+      updateUserListedJobs({
+        userListedJobs: [],
       })
     );
     navigate("/");
