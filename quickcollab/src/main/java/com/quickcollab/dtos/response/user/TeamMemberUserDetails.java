@@ -4,6 +4,7 @@ import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Job;
 import com.quickcollab.model.Work;
+import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.pojo.WorkHistory;
 import lombok.AllArgsConstructor;
@@ -32,4 +33,6 @@ public class TeamMemberUserDetails {
     private List<WorkHistory> workHistory;
     private UserRole userRole;
     private ReportingUser reportsTo;
+    private List<OfferDetail> offersReceived;
+
 }

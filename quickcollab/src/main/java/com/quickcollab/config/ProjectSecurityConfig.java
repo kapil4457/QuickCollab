@@ -59,9 +59,9 @@ public class ProjectSecurityConfig {
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService, jwtTokenUtil,env), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/getAllJobs","/me").authenticated()
-                        .requestMatchers("/getUserListedJobs","/createJob","/updateJob").hasAnyRole("CONTENT_CREATOR","MANAGER")
-                        .requestMatchers("/applyForJob").hasAnyRole("JOB_SEEKER","MANAGER","VIDEO_EDITOR","PHOTO_EDITOR"
+                        .requestMatchers("/me").authenticated()
+                        .requestMatchers("/getUserListedJobs","/createJob","/updateJob","/sendOffer","/reviseOffer").hasAnyRole("CONTENT_CREATOR","MANAGER")
+                        .requestMatchers("/applyForJob","/applyForJob","/getAllJobs","/updateOfferStatus").hasAnyRole("JOB_SEEKER","MANAGER","VIDEO_EDITOR","PHOTO_EDITOR"
                                 ,"THUMBNAIL_EDITOR","SCRIPT_WRITER","APPROVER","UPLOADER")
                         .requestMatchers( "/error", "/register","/apiLogin","/apiLogout").permitAll());
 

@@ -1,8 +1,11 @@
 package com.quickcollab.dtos.response.job.contentCreator;
 
+import com.quickcollab.dtos.response.user.UpdatedByUser;
 import com.quickcollab.enums.JobLocationType;
 import com.quickcollab.enums.JobStatus;
 import com.quickcollab.model.User;
+import com.quickcollab.pojo.OfferDetail;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +26,9 @@ public class ContentCreatorJobDetailDTO {
     private Long openingsCount;
     private JobLocationType jobLocationType;
     private List<User> applicants;
+    private List<OfferDetail> offeredTo;
     private String jobLocation;
     private Date postedOn;
+    private UpdatedByUser updatedBy;
+    private Date updatedOn;
 }

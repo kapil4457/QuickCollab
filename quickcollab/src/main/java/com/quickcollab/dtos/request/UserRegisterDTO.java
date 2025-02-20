@@ -3,6 +3,7 @@ package com.quickcollab.dtos.request;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.dtos.response.user.ReportingUser;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

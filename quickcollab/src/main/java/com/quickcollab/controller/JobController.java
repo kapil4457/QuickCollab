@@ -6,8 +6,10 @@ import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobRespons
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobResponseDTO;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
+import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.service.JobService;
 import com.quickcollab.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +43,7 @@ public class JobController {
 
     //     [Done]
     @PostMapping("/createJob")
-    public ResponseEntity<ContentCreatorJobResponseDTO>createJob(Authentication authentication, @RequestBody JobRequestDTO jobRequestDTO) {
+    public ResponseEntity<ContentCreatorJobResponseDTO>createJob(Authentication authentication, @RequestBody @Valid JobRequestDTO jobRequestDTO) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
             String userId = (String) authentication.getDetails();
@@ -56,7 +58,7 @@ public class JobController {
         }
     }
 
-    
+    //  [Done]
     @PutMapping("/updateJob")
     public ResponseEntity<ContentCreatorJobResponseDTO>updateJobByJobId(Authentication authentication,
                                                                         @RequestBody JobRequestDTO jobRequestDTO,
@@ -79,6 +81,7 @@ public class JobController {
     public ResponseEntity<JobSeekerJobResponseDTO>getAllListedJobs(){
         JobSeekerJobResponseDTO jobSeekerJobResponseDTO = jobService.getAllJobs();
         return ResponseEntity.status(HttpStatus.OK).body(jobSeekerJobResponseDTO);
+
     }
 
     @PostMapping("/applyForJob")
@@ -90,19 +93,54 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(GenericError genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }catch (ResourceNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(e.getMessage(),false));
         }
 
     }
 
-    @PutMapping("/hireCandidate")
-    public ResponseEntity<ResponseDTO>hireCandidate(Authentication authentication,@RequestParam Long jobId , @RequestParam String applicantUserId) {
+
+    // this is for the content creator or manager
+    @PutMapping("/sendOffer")
+    public ResponseEntity<ResponseDTO>sendOffer(Authentication authentication, @Valid @RequestBody OfferDetail offerDetails) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
             String authUserId = (String) authentication.getDetails();
-            ResponseDTO responseDTO = jobService.hireCandidate(authUserId,"applicantUserId", jobId , userRole);
+            ResponseDTO responseDTO = jobService.sendOffer(authUserId,offerDetails.getUserId(), offerDetails.getJobId(), userRole,offerDetails);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }catch (ResourceNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(e.getMessage(),false));
+        }
+    }
+
+    // This is for the job seeker
+    @PutMapping("/updateOfferStatus")
+    public ResponseEntity<ResponseDTO>updateOfferStatus(Authentication authentication , @RequestParam Long jobId , @RequestParam String offerStatus ) {
+        try{
+            String applicantId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = jobService.updateOfferStatus(applicantId,jobId , offerStatus);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch (GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+
+        }
+    }
+
+    // this is for content creator or manager
+    @PutMapping("/reviseOffer")
+    public ResponseEntity<ResponseDTO> reviseOffer(Authentication authentication   , @RequestBody OfferDetail offerDetails) {
+        try{
+            String authUserId = (String) authentication.getDetails();
+            String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
+            ResponseDTO responseDTO = jobService.reviseOffer(authUserId,userRole , offerDetails);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+
         }catch(GenericError genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
+
+
 }

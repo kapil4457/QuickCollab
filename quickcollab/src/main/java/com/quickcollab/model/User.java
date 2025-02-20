@@ -3,11 +3,14 @@ package com.quickcollab.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.quickcollab.converter.OfferDetailsConverter;
 import com.quickcollab.converter.ReportsToAttributeConverter;
+import com.quickcollab.converter.SocialMediaHandleAttributeConverter;
 import com.quickcollab.converter.WorkHistoryAttributeConverter;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.dtos.response.user.ReportingUser;
+import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.pojo.WorkHistory;
 import jakarta.persistence.*;
@@ -21,6 +24,8 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -51,10 +56,11 @@ public class User {
     @JsonIgnore
     private String password;
 
-    private String selfDescription;
+
+    private String selfDescription="";
 
     @Convert(converter = WorkHistoryAttributeConverter.class)
-    private List<WorkHistory> workHistory;
+    private List<WorkHistory> workHistory= new ArrayList<>();
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -68,35 +74,41 @@ public class User {
 
     @NotNull
     @URL
-    private String profilePicture;
+    private String profilePicture="";
 
     @OneToMany(fetch = FetchType.EAGER)
     @JsonBackReference
-    private List<User> employees;
+    private List<User> employees=new ArrayList<>();
 
 
     @OneToMany(fetch = FetchType.EAGER)
     @JsonBackReference
-    private List<Conversation> conversations;
+    private List<Conversation> conversations = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.EAGER)
     @JsonBackReference
-    private List<Work> works;
+    private List<Work> works = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.EAGER)
     @JsonBackReference
-    private List<Job> appliedJobs;
+    private List<Job> appliedJobs = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.EAGER)
     @JsonBackReference
-    private List<Job> jobsPosted;
+    private List<Job> jobsPosted =  new ArrayList<>();
 
-    @Convert(converter = WorkHistoryAttributeConverter.class)
-    private List<SocialMediaHandle> socialMediaHandles;
+    @Convert(converter = SocialMediaHandleAttributeConverter.class)
+    private List<SocialMediaHandle> socialMediaHandles = new ArrayList<>();
 
     @Convert(converter = ReportsToAttributeConverter.class)
     private ReportingUser reportsTo;
 
+    @Convert(converter = OfferDetailsConverter.class)
+    private List<OfferDetail> offersReceived =  new ArrayList<>();
+
+    private Boolean isServingNoticePeriod;
+    private Date noticePeriodEndDate;
+    private Long currentSalary;
 
     public User(@NotNull @Email String emailId, String password, List<GrantedAuthority> userRoles) {
 

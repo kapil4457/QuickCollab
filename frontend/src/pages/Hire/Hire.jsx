@@ -18,8 +18,6 @@ const Hire = () => {
 
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const listedJobs = useSelector((state) => state.job.userListedJobs);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const jwtToken = useSelector((state) => state.user.jwtToken);
@@ -29,19 +27,17 @@ const Hire = () => {
       const { jobs, message, success } = response.data;
       if (success) {
         dispatch(updateUserListedJobs({ userListedJobs: jobs }));
-        useSelector((state) => state.job.userListedJobs);
       } else {
         toast.error(message);
       }
     } catch (e) {
-      toast.error(e?.response?.data?.message);
+      console.log("error : ", e);
+      toast.error(e?.response?.data?.message || e?.message);
       navigate("/");
     }
   };
   useEffect(() => {
-    if (listedJobs.length == 0) {
-      getUserListedJobs();
-    }
+    getUserListedJobs();
   }, []);
 
   return (
@@ -67,7 +63,6 @@ const Hire = () => {
       </Button>
       {/* List of already listed job postings */}
       <JobsTable
-        data={listedJobs}
         setApplicants={setApplicants}
         setShowApplicants={setShowApplicants}
       />

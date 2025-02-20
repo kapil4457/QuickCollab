@@ -1,8 +1,10 @@
 package com.quickcollab.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.quickcollab.converter.OfferDetailsConverter;
 import com.quickcollab.enums.JobLocationType;
 import com.quickcollab.enums.JobStatus;
+import com.quickcollab.pojo.OfferDetail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -49,15 +52,16 @@ public class Job {
     @NotNull
     private String jobLocation;
 
+    @Convert(converter = OfferDetailsConverter.class)
+    private List<OfferDetail> offeredTo= new ArrayList<>();
+
     @NotNull
     @ManyToOne
     @JoinColumn(name = "posted_by")
     private User postedBy;
 
     @NotNull
-    @NotNull
     private Date postedOn;
-
 
     @NotNull
     @ManyToOne
@@ -66,6 +70,9 @@ public class Job {
 
     @NotNull
     private Date updatedOn;
+
+    @NotNull
+    private Long noticePeriodDays;
 
 
 }

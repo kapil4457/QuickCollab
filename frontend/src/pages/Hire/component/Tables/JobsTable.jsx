@@ -18,6 +18,10 @@ import {
 } from "@mantine/core";
 import classes from "./TableSort.module.css";
 import UserLogo from "../../../../assets/user.svg";
+import EditIcon from "./EditIcon";
+import UpdateJobForm from "../Forms/UpdateJobForm";
+import PopUpBase from "../../../../components/PopUpBase/PopUpBase";
+import { useSelector } from "react-redux";
 function Th({ children, reversed, sorted, onSort }) {
   const Icon = sorted
     ? reversed
@@ -69,7 +73,7 @@ function sortData(data, payload) {
   );
 }
 
-export function JobsTable({ data, setApplicants, setShowApplicants }) {
+export function JobsTable({ setApplicants, setShowApplicants }) {
   const columnNamesMappings = [
     {
       title: "Title",
@@ -103,12 +107,20 @@ export function JobsTable({ data, setApplicants, setShowApplicants }) {
       title: "Posted On",
       dataKey: "postedOn",
     },
+    {
+      title: "Actions",
+      datakey: "actions",
+    },
   ];
+  const data = useSelector((state) => state.job.userListedJobs);
   const [search, setSearch] = useState("");
   const [sortedData, setSortedData] = useState(data);
   const [sortBy, setSortBy] = useState(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
-
+  const [showUpdateJobForm, setShowUpdateJobForm] = useState(false);
+  const [updatedJobData, setUpdateJobData] = useState(null);
+  const [updatedJobId, setUpdateJobId] = useState(null);
+  const [isDisabled, setIsDisabled] = useState(false);
   const setSorting = (field) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
     setReverseSortDirection(reversed);
@@ -122,6 +134,20 @@ export function JobsTable({ data, setApplicants, setShowApplicants }) {
     setSortedData(
       sortData(data, { sortBy, reversed: reverseSortDirection, search: value })
     );
+  };
+  const updateJob = async (job) => {
+    const body = {
+      jobName: job?.jobName,
+      jobDescription: job?.jobDescription,
+      openingsCount: job?.openingsCount,
+      jobStatus: job?.jobStatus,
+      jobLocationType: job?.jobLocationType,
+      jobLocation: job?.jobLocation,
+    };
+    const jobId = job.jobId;
+    setUpdateJobData(body);
+    setUpdateJobId(jobId);
+    setShowUpdateJobForm(true);
   };
 
   const rows = sortedData.map((row) => {
@@ -151,52 +177,75 @@ export function JobsTable({ data, setApplicants, setShowApplicants }) {
           </Button>
         </Table.Td>
         <Table.Td>{row?.postedOn.toString().substr(0, 10)}</Table.Td>
+        <Table.Td>
+          {" "}
+          <Button
+            variant="white"
+            className="self-end"
+            onClick={() => updateJob(row)}
+          >
+            <EditIcon />
+          </Button>
+        </Table.Td>
       </Table.Tr>
     );
   });
 
   return (
-    <ScrollArea>
-      <TextInput
-        placeholder="Search by any field"
-        mb="md"
-        leftSection={<IconSearch size={16} stroke={1.5} />}
-        value={search}
-        onChange={handleSearchChange}
-      />
-      <Table
-        horizontalSpacing="md"
-        verticalSpacing="xs"
-        miw={700}
-        layout="fixed"
-      >
-        <Table.Tbody>
-          <Table.Tr>
-            {columnNamesMappings.map((columnName) => (
-              <Th
-                sorted={sortBy === columnName?.dataKey}
-                reversed={reverseSortDirection}
-                onSort={() => setSorting(columnName?.dataKey)}
-              >
-                {columnName?.title}
-              </Th>
-            ))}
-          </Table.Tr>
-        </Table.Tbody>
-        <Table.Tbody>
-          {rows.length > 0 ? (
-            rows
-          ) : (
+    <>
+      {showUpdateJobForm ? (
+        <PopUpBase setIsOpen={setShowUpdateJobForm} isDisabled={isDisabled}>
+          <UpdateJobForm
+            currentData={updatedJobData}
+            jobId={updatedJobId}
+            setIsOpen={setShowUpdateJobForm}
+            isDisabled={isDisabled}
+            setIsDisabled={setIsDisabled}
+          />
+        </PopUpBase>
+      ) : null}
+      <ScrollArea>
+        <TextInput
+          placeholder="Search by any field"
+          mb="md"
+          leftSection={<IconSearch size={16} stroke={1.5} />}
+          value={search}
+          onChange={handleSearchChange}
+        />
+        <Table
+          horizontalSpacing="md"
+          verticalSpacing="xs"
+          miw={700}
+          layout="fixed"
+        >
+          <Table.Tbody>
             <Table.Tr>
-              <Table.Td colSpan={columnNamesMappings?.length}>
-                <Text fw={500} ta="center">
-                  Nothing found
-                </Text>
-              </Table.Td>
+              {columnNamesMappings.map((columnName) => (
+                <Th
+                  sorted={sortBy === columnName?.dataKey}
+                  reversed={reverseSortDirection}
+                  onSort={() => setSorting(columnName?.dataKey)}
+                >
+                  {columnName?.title}
+                </Th>
+              ))}
             </Table.Tr>
-          )}
-        </Table.Tbody>
-      </Table>
-    </ScrollArea>
+          </Table.Tbody>
+          <Table.Tbody>
+            {rows.length > 0 ? (
+              rows
+            ) : (
+              <Table.Tr>
+                <Table.Td colSpan={columnNamesMappings?.length}>
+                  <Text fw={500} ta="center">
+                    Nothing found
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
+    </>
   );
 }
