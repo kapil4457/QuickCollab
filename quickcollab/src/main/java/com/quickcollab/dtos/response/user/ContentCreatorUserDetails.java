@@ -1,9 +1,8 @@
 package com.quickcollab.dtos.response.user;
 
+import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
-import com.quickcollab.model.Job;
-import com.quickcollab.model.User;
 import com.quickcollab.pojo.SocialMediaHandle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,9 +26,8 @@ public class ContentCreatorUserDetails  {
     private String selfDescription;
     private List<Conversation> conversations;
     private List<SocialMediaHandle> socialMediaHandles;
-    private List<User> employees;
-    private List<Job> jobsPosted;
+    private List<ContentCreatorEmployee> employees;
+    private List<ContentCreatorJobPost> jobsPosted;
     private UserRole userRole;
-
 
 }

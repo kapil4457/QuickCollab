@@ -4,6 +4,7 @@ import com.quickcollab.dtos.request.JobRequestDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobResponseDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobResponseDTO;
+import com.quickcollab.enums.UserRole;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.pojo.OfferDetail;
@@ -11,6 +12,7 @@ import com.quickcollab.service.JobService;
 import com.quickcollab.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -130,7 +132,7 @@ public class JobController {
 
     // this is for content creator or manager
     @PutMapping("/reviseOffer")
-    public ResponseEntity<ResponseDTO> reviseOffer(Authentication authentication   , @RequestBody OfferDetail offerDetails) {
+    public ResponseEntity<ResponseDTO> reviseOffer(Authentication authentication   , @RequestBody  OfferDetail offerDetails) {
         try{
             String authUserId = (String) authentication.getDetails();
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
@@ -139,8 +141,64 @@ public class JobController {
 
         }catch(GenericError genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }catch(ResourceNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(ex.getMessage(),false));
         }
     }
+
+    @PutMapping("/updateResignationStatus")
+    public ResponseEntity<ResponseDTO> updateResignationStatus(Authentication authentication , @RequestBody Boolean status){
+        try{
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = jobService.updateResignationStatus(authUserId , status);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+
+        }catch(ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        }
+    }
+
+    @PutMapping("/updateEmployeeSalary")
+    public ResponseEntity<ResponseDTO> updateEmployeeSalary(Authentication authentication , @RequestBody Long salary , @RequestBody String employeeId , @RequestBody String userRole){
+        try{
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = jobService.updateEmployeeSalary(salary , employeeId , authUserId , userRole);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+    }
+
+    @PutMapping("/updateEmployeeRole")
+    public ResponseEntity<ResponseDTO> updateEmployeeRole(Authentication authentication , @RequestBody String employeeId , @RequestBody String userRole){
+        try{
+            String authUserId = (String) authentication.getDetails();
+            String authUserRole = (String) authentication.getAuthorities().stream().findFirst().get().getAuthority();
+            ResponseDTO responseDTO = jobService.updateEmployeeRole(employeeId , authUserId , authUserRole ,  UserRole.valueOf(userRole));
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+    }
+
+    @PutMapping("/joinCompany")
+    public ResponseEntity<ResponseDTO> joinCompany(Authentication authentication , @RequestParam Long jobId){
+        try{
+
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = jobService.joinCompany(authUserId , jobId);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+    }
+
+
+
+
+
 
 
 }

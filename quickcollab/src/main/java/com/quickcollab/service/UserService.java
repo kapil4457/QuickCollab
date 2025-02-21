@@ -1,14 +1,12 @@
 package com.quickcollab.service;
 
 import com.quickcollab.dtos.request.UserRegisterDTO;
-import com.quickcollab.dtos.response.user.LoginResponseDTO;
+import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
+import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.UserRole;
-import com.quickcollab.dtos.response.user.ContentCreatorUserDetails;
-import com.quickcollab.dtos.response.user.JobSeekerUserDetails;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.User;
-import com.quickcollab.dtos.response.user.TeamMemberUserDetails;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.utils.JwtBlacklistService;
 import com.quickcollab.utils.JwtTokenUtil;
@@ -17,6 +15,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -61,7 +60,17 @@ public class UserService {
         if(optionalUser.isPresent()){
         String userRole = optionalUser.get().getUserRole().toString();
             if(userRole.equals(UserRole.CONTENT_CREATOR.toString())){
-                ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(optionalUser.get(), ContentCreatorUserDetails.class);
+                User user = optionalUser.get();
+                ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(user, ContentCreatorUserDetails.class);
+                List<ContentCreatorEmployee> employees = user.getEmployees().stream().map(employee -> modelMapper.map(employee , ContentCreatorEmployee.class)).toList();
+                List<ContentCreatorJobPost> jobsPosted = user.getJobsPosted().stream().map(jobPost -> modelMapper.map(jobPost, ContentCreatorJobPost.class)).toList();
+
+
+
+                contentCreatorUserDetails.setEmployees(employees);
+                contentCreatorUserDetails.setJobsPosted(jobsPosted);
+
+
                 LoginResponseDTO<ContentCreatorUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(contentCreatorUserDetails);
                 loginResponseDTO.setSuccess(true);

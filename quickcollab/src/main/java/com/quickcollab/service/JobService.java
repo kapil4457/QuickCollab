@@ -16,6 +16,7 @@ import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.Job;
 import com.quickcollab.model.User;
+import com.quickcollab.pojo.JobHistory;
 import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.repository.JobRepository;
 import com.quickcollab.repository.UserRepository;
@@ -135,6 +136,9 @@ public class JobService {
         if(!job.getPostedBy().getUserId().equals(contentCreatorId)){
             throw new GenericError("You are not allowed to perform this operation.");
         }
+        if(!applicant.getAppliedJobs().stream().filter(appliedJob -> appliedJob.getJobId().equals(jobId)).toList().isEmpty()){
+            throw new GenericError("You have already sent an offer to "+applicant.getFirstName()+" "+applicant.getLastName()+" for this job. Try updating it");
+        }
         if(!job.getApplicants().contains(applicant)) {
                 throw new GenericError("User "+applicant.getFirstName()+" "+applicant.getLastName()+" have not applied to this job.");
         }
@@ -156,23 +160,68 @@ public class JobService {
         User applicant = userRepository.getReferenceById(applicantId);
         Job job = jobRepository.getReferenceById(jobId);
 
+        if(job.getJobStatus().equals(JobStatus.FILLED)){
+            throw new GenericError("Job openings filled already.");
+        }
+        if(job.getJobStatus().equals(JobStatus.INACTIVE)){
+            throw new GenericError("Job is currently inactive.");
+        }
+        if(job.getJobStatus().equals(JobStatus.EXPIRED)){
+                throw new GenericError("Job expired already.");
+        }
         User contentCreator = job.getPostedBy();
         OfferDetail offerDetail = applicant.getOffersReceived().stream().filter(offer->offer.jobId.equals(job.getJobId())).toList().getFirst();
-        String contentCreatorId = contentCreator.getUserId();
 
         if(!job.getApplicants().contains(applicant)){
             throw new GenericError("You are not allowed to perform this operation.");
         }
 
-        if(offerDetail.getOfferStatus().equals(OfferStatus.ACCEPTED) || offerDetail.getOfferStatus().equals(OfferStatus.DECLINED) ){
-        throw new GenericError("Can not update the offer status as you have already "+offerDetail.offerStatus.toString().toLowerCase()+" this offer");
+        if(offerDetail.getOfferStatus().equals(OfferStatus.ACCEPTED)){
+            throw new GenericError("Can not update the offer status as you have already "+offerDetail.offerStatus.toString().toLowerCase()+" this offer");
         }
+
         if(offerDetail.getValidTill().before(new Date())){
             job.getOfferedTo().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(OfferStatus.EXPIRED));
             applicant.getOffersReceived().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(OfferStatus.EXPIRED));
             userRepository.save(applicant);
             jobRepository.save(job);
             throw new GenericError("Offer expired already !!");
+        }
+        if(offerStatus.equals(OfferStatus.ACCEPTED.toString())){
+            // check if the user is serving notice period
+            if(!applicant.getIsServingNoticePeriod() && applicant.getReportsTo()!=null){
+                Long noticePeriodLength = applicant.getCurrentJobNoticePeriodDays();
+                applicant.setIsServingNoticePeriod(true);
+                applicant.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 100)));
+            }
+
+            // check if the user has accepted any other offer
+
+            if(!applicant.getOffersReceived().stream().map(offer -> {
+                return offer.getOfferStatus().equals(OfferStatus.ACCEPTED);
+            }).toList().isEmpty()){
+                throw new GenericError("You have already accepted another offer. So you  can not accept this offer.");
+            }
+
+            applicant.getOffersReceived().forEach(offer -> {
+                if(!offer.getJobId().equals(job.getJobId())){
+                        offer.setOfferStatus(OfferStatus.DECLINED);
+                }
+            } );
+
+            // Update openingsCount
+
+            Long openingCount = job.getOpeningsCount()-1;
+            job.setOpeningsCount(openingCount);
+            job.getApplicants().remove(applicant);
+
+            if (openingCount == 0) {
+            job.setJobStatus(JobStatus.FILLED);
+            }
+
+        }
+        if(offerDetail.getOfferStatus().equals(OfferStatus.DECLINED)){
+            job.setOpeningsCount(job.getOpeningsCount()+1);
         }
 
         // update the offer status in job details
@@ -182,27 +231,7 @@ public class JobService {
         // Updating the offers status in applicant details
         applicant.getOffersReceived().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(OfferStatus.valueOf(offerStatus)));
 
-        if(offerStatus.equals(OfferStatus.ACCEPTED.toString())){
 
-         // Update the openings counts and remove the applicant from the applicant list of the job
-        Long openingCount = job.getOpeningsCount()-1;
-        job.setOpeningsCount(openingCount);
-        job.getApplicants().remove(applicant);
-
-        // Update the reporting user for the applicant
-        ReportingUser reportingUser = new ReportingUser();
-        reportingUser.setUserId(contentCreatorId);
-        reportingUser.setFirstName(contentCreator.getFirstName());
-        reportingUser.setLastName(contentCreator.getLastName());
-        applicant.setReportsTo(reportingUser);
-
-        // Update the userRole for the applicant
-        applicant.setUserRole(UserRole.valueOf(String.valueOf(offerDetail.getUserRole())));
-
-        // Add the applicant to the list of employees for the contentCreator
-        contentCreator.getEmployees().add(applicant);
-
-        }
 
         userRepository.save(applicant);
         jobRepository.save(job);
@@ -217,8 +246,8 @@ public class JobService {
         String contentCreatorUserId = Objects.equals(userRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
         User contentCreator = userRepository.getReferenceById(contentCreatorUserId);
         Long jobId = offerDetail.getJobId();
-        Job job = jobRepository.getReferenceById(jobId);
-        User applicant = userRepository.getReferenceById(offerDetail.getUserId());
+        Job job = jobRepository.findById(jobId).orElseThrow(()-> new ResourceNotFoundException("Job","jobId",offerDetail.getJobId().toString()));
+        User applicant = userRepository.findById(offerDetail.getUserId()).orElseThrow(()-> new ResourceNotFoundException("Applicant","applicantId",offerDetail.getUserId()));
 
 
         if(!job.getPostedBy().equals(contentCreator)) {
@@ -230,29 +259,37 @@ public class JobService {
             throw new GenericError("Applicant has already accepted the offer !");
         }
 
-        applicant.getOffersReceived().stream().filter(offer -> offer.jobId.equals(job.getJobId())).toList().forEach(offer-> {
-                    offer.setOfferedOn(new Date());
-                    offer.setJobTitle(offerDetail.getJobTitle());
-                    offer.setSalary(offerDetail.getSalary());
-                    offer.setUserRole(UserRole.valueOf(userRole));
-                    offer.setOfferStatus(offerDetail.getOfferStatus());
-                    offer.setValidTill(offerDetail.getValidTill());
-                    offer.setSalary(offerDetail.getSalary());
-                    offer.setOfferedOn(offerDetail.getOfferedOn());
+        List<OfferDetail> updatedOfferDetails = applicant.getOffersReceived().stream().peek(offer ->{
+            if (offer.jobId.equals(job.getJobId())){
+                offer.setOfferedOn(new Date());
+                offer.setJobTitle(offerDetail.getJobTitle());
+                offer.setSalary(offerDetail.getSalary());
+                offer.setUserRole(offerDetail.getUserRole());
+                offer.setOfferStatus(offerDetail.getOfferStatus());
+                offer.setValidTill(offerDetail.getValidTill());
+                offer.setSalary(offerDetail.getSalary());
+                offer.setOfferedOn(offerDetail.getOfferedOn());
+            }
                 }
-            );
+            ).toList();
 
-         job.getOfferedTo().stream().filter(offer -> offer.jobId.equals(job.getJobId())).toList().forEach(offer-> {
+
+        applicant.setOffersReceived(updatedOfferDetails);
+        List<OfferDetail> jobOfferedTo =  job.getOfferedTo().stream().peek(offer ->
+                {
+                    if(offer.jobId.equals(job.getJobId()) && offer.getUserId().equals(applicant.getUserId()) ){
                         offer.setOfferedOn(new Date());
                         offer.setJobTitle(offerDetail.getJobTitle());
                         offer.setSalary(offerDetail.getSalary());
-                        offer.setUserRole(UserRole.valueOf(userRole));
+                        offer.setUserRole(offerDetail.getUserRole());
                         offer.setOfferStatus(offerDetail.getOfferStatus());
                         offer.setValidTill(offerDetail.getValidTill());
                         offer.setSalary(offerDetail.getSalary());
                         offer.setOfferedOn(offerDetail.getOfferedOn());
                     }
-                );
+                }
+                ).toList();
+        job.setOfferedTo(jobOfferedTo);
 
 
          userRepository.save(applicant);
@@ -263,5 +300,105 @@ public class JobService {
 
     }
 
+    public ResponseDTO updateResignationStatus(String authUserId,Boolean status){
+    User employee = userRepository.findByEmailId(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","userId",authUserId));
+    employee.setIsServingNoticePeriod(status);
+    Long noticePeriodLength = employee.getCurrentJobNoticePeriodDays();
+    if(status){
+        employee.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 100)));
+    }else{
+        employee.setNoticePeriodEndDate(null);
+    }
+    userRepository.save(employee);
+    return new ResponseDTO(status ? "Resignation submitted successfully !!": "Resignation withdrawn successfull!",true);
+    }
 
+    public ResponseDTO updateEmployeeSalary(Long newSalary , String employeeId , String authUserId  , String userRole){
+        String contentCreatorId = Objects.equals(userRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
+        User employee = userRepository.findById(employeeId).orElseThrow(()-> new ResourceNotFoundException("User","employeeId",employeeId));
+        User contentCreator = userRepository.getReferenceById(contentCreatorId);
+        if(!employee.getReportsTo().getUserId().equals(contentCreatorId)){
+            throw new GenericError("You are not allowed to perform this operation");
+        }
+        employee.setCurrentSalary(newSalary);
+        userRepository.save(employee);
+        return new ResponseDTO("Employee salary updated successfully!!",true);
+    }
+
+    public ResponseDTO updateEmployeeRole( String employeeId , String authUserId  , String userRole , UserRole newUserRole){
+        String contentCreatorId = Objects.equals(userRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
+        User employee = userRepository.findById(employeeId).orElseThrow(()-> new ResourceNotFoundException("User","employeeId",employeeId));
+        User contentCreator = userRepository.getReferenceById(contentCreatorId);
+        if(!employee.getReportsTo().getUserId().equals(contentCreatorId)){
+            throw new GenericError("You are not allowed to perform this operation");
+        }
+        employee.setUserRole(newUserRole);
+        userRepository.save(employee);
+        return new ResponseDTO("Employee role updated successfully!!",true);
+    }
+
+    public ResponseDTO joinCompany(String authUserId , Long jobId){
+
+            User applicant = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("Applicant","applicantId",authUserId));
+            Job job = jobRepository.findById(jobId).orElseThrow(()-> new ResourceNotFoundException("Job","jobId",jobId.toString()));
+            String contentCreatorId = job.getPostedBy().getUserId();
+            User contentCreator = userRepository.findById(contentCreatorId).orElseThrow(()-> new ResourceNotFoundException("Content creator","userId", contentCreatorId));
+            if(job.getOfferedTo().stream().filter(offer-> offer.userId.equals(authUserId)).toList().isEmpty()){
+                throw new GenericError("You never received an offer for this job.");
+            }
+            List<OfferDetail> offeredTo = job.getOfferedTo().stream().filter(offer -> offer.userId.equals(applicant.getUserId()) && offer.offerStatus.equals(OfferStatus.ACCEPTED)).toList();
+            if(offeredTo.isEmpty()){
+                throw new GenericError("You never accepted the offer or the offer had been revoked.");
+            }
+
+            if(!applicant.getIsServingNoticePeriod()){
+                if(applicant.getReportsTo()!=null){
+                    throw new GenericError("You need to resign from the current job to join this one.");
+                }
+            }else{
+                if(applicant.getNoticePeriodEndDate().after( new Date())){
+                    throw new GenericError("You can not join this job before the notice period of the current job ends");
+
+                }
+            }
+            //  PENDING : clear older conversations from older teams.
+
+
+
+            //  Add current Job to the JobHistory of the applicant
+            OfferDetail offerDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getJobId().equals(jobId)).findFirst().get();
+                    applicant.getCurrentJobDetails().setUserRole(applicant.getUserRole());
+            JobHistory currentJobDetails = applicant.getCurrentJobDetails();
+            if(currentJobDetails!=null){
+
+                applicant.getJobHistory().add(currentJobDetails);
+            }
+            JobHistory newJobDetails = new JobHistory();
+            newJobDetails.setTitle(offerDetail.getJobTitle());
+            newJobDetails.setJobId(jobId);
+            newJobDetails.setSalary(offerDetail.getSalary());
+            newJobDetails.setLocation(job.getJobLocation());
+            newJobDetails.setDescription(job.getJobDescription());
+            newJobDetails.setLocationType(job.getJobLocationType());
+            newJobDetails.setStartDate(new Date());
+            applicant.setCurrentJobDetails(newJobDetails);
+
+
+            applicant.setUserRole(UserRole.valueOf(String.valueOf(offerDetail.getUserRole())));
+
+            // Add the applicant to the list of employees for the contentCreator
+            contentCreator.getEmployees().add(applicant);
+
+            // change the reporting user
+            ReportingUser reportingUser = new ReportingUser();
+            reportingUser.setUserId(contentCreator.getUserId());
+            reportingUser.setFirstName(contentCreator.getFirstName());
+            reportingUser.setLastName(contentCreator.getLastName());
+            applicant.setReportsTo(reportingUser);
+
+
+            userRepository.save(applicant);
+            userRepository.save(contentCreator);
+            return new ResponseDTO("Joined "+contentCreator.getFirstName()+" "+contentCreator.getLastName()+"'s team as "+ offerDetail.getUserRole(),true);
+    }
 }

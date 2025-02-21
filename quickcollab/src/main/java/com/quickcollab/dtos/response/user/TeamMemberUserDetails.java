@@ -1,12 +1,12 @@
 package com.quickcollab.dtos.response.user;
 
+import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
-import com.quickcollab.model.Job;
 import com.quickcollab.model.Work;
 import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.pojo.SocialMediaHandle;
-import com.quickcollab.pojo.WorkHistory;
+import com.quickcollab.pojo.JobHistory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,9 +28,9 @@ public class TeamMemberUserDetails {
     private String selfDescription;
     private List<Conversation> conversations;
     private List<SocialMediaHandle> socialMediaHandles;
-    private List<Job> appliedJobs;
+    private List<JobSeekerJobApplication> appliedJobs;
     private List<Work> works;
-    private List<WorkHistory> workHistory;
+    private List<JobHistory> jobHistory;
     private UserRole userRole;
     private ReportingUser reportsTo;
     private List<OfferDetail> offersReceived;

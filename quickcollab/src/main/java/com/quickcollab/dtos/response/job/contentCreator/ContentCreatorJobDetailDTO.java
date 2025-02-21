@@ -1,5 +1,6 @@
 package com.quickcollab.dtos.response.job.contentCreator;
 
+import com.quickcollab.dtos.response.user.ContentCreatorEmployee;
 import com.quickcollab.dtos.response.user.UpdatedByUser;
 import com.quickcollab.enums.JobLocationType;
 import com.quickcollab.enums.JobStatus;
@@ -25,7 +26,7 @@ public class ContentCreatorJobDetailDTO {
     private JobStatus jobStatus;
     private Long openingsCount;
     private JobLocationType jobLocationType;
-    private List<User> applicants;
+    private List<ContentCreatorEmployee> applicants;
     private List<OfferDetail> offeredTo;
     private String jobLocation;
     private Date postedOn;

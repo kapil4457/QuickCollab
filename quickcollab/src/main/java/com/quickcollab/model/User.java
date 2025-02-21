@@ -3,16 +3,13 @@ package com.quickcollab.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.quickcollab.converter.OfferDetailsConverter;
-import com.quickcollab.converter.ReportsToAttributeConverter;
-import com.quickcollab.converter.SocialMediaHandleAttributeConverter;
-import com.quickcollab.converter.WorkHistoryAttributeConverter;
+import com.quickcollab.converter.*;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.pojo.SocialMediaHandle;
-import com.quickcollab.pojo.WorkHistory;
+import com.quickcollab.pojo.JobHistory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -60,7 +57,7 @@ public class User {
     private String selfDescription="";
 
     @Convert(converter = WorkHistoryAttributeConverter.class)
-    private List<WorkHistory> workHistory= new ArrayList<>();
+    private List<JobHistory> jobHistory = new ArrayList<>();
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -106,9 +103,17 @@ public class User {
     @Convert(converter = OfferDetailsConverter.class)
     private List<OfferDetail> offersReceived =  new ArrayList<>();
 
-    private Boolean isServingNoticePeriod;
+    @NotNull
+    private Boolean isServingNoticePeriod=Boolean.FALSE;
     private Date noticePeriodEndDate;
-    private Long currentSalary;
+
+    @Convert(converter = JobHistoryConverter.class)
+    private JobHistory currentJobDetails;
+
+    private Long currentJobNoticePeriodDays;
+    private Date currentJobJoinedOn;
+    @NotNull
+    private Long currentSalary = 0L;
 
     public User(@NotNull @Email String emailId, String password, List<GrantedAuthority> userRoles) {
 
