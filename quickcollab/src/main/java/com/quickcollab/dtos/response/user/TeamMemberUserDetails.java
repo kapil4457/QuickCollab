@@ -32,6 +32,7 @@ public class TeamMemberUserDetails {
     private List<Work> works;
     private List<JobHistory> jobHistory;
     private UserRole userRole;
+    private Long currentJobNoticePeriodDays;
     private ReportingUser reportsTo;
     private List<OfferDetail> offersReceived;
 

@@ -23,4 +23,6 @@ public class JobRequestDTO {
     private JobLocationType jobLocationType;
     @NotNull
     private String jobLocation;
+    @NotNull
+    private Long noticePeriodDays;
 }

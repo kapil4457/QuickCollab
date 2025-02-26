@@ -32,6 +32,7 @@ public class JobSeekerUserDetails {
     private List<SocialMediaHandle> socialMediaHandles;
     private UserRole userRole;
     private List<OfferDetail> offersReceived;
+    private Long currentJobNoticePeriodDays;
 
 
 

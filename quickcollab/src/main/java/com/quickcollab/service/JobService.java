@@ -136,7 +136,7 @@ public class JobService {
         if(!job.getPostedBy().getUserId().equals(contentCreatorId)){
             throw new GenericError("You are not allowed to perform this operation.");
         }
-        if(!applicant.getAppliedJobs().stream().filter(appliedJob -> appliedJob.getJobId().equals(jobId)).toList().isEmpty()){
+        if(!applicant.getOffersReceived().stream().filter(offersRecieved -> offersRecieved.getJobId().equals(jobId)).toList().isEmpty()){
             throw new GenericError("You have already sent an offer to "+applicant.getFirstName()+" "+applicant.getLastName()+" for this job. Try updating it");
         }
         if(!job.getApplicants().contains(applicant)) {
@@ -197,7 +197,7 @@ public class JobService {
 
             // check if the user has accepted any other offer
 
-            if(!applicant.getOffersReceived().stream().map(offer -> {
+            if(!applicant.getOffersReceived().stream().filter(offer -> {
                 return offer.getOfferStatus().equals(OfferStatus.ACCEPTED);
             }).toList().isEmpty()){
                 throw new GenericError("You have already accepted another offer. So you  can not accept this offer.");
@@ -258,10 +258,9 @@ public class JobService {
         if(currentOfferDetail.getOfferStatus().equals(OfferStatus.ACCEPTED)){
             throw new GenericError("Applicant has already accepted the offer !");
         }
-
         List<OfferDetail> updatedOfferDetails = applicant.getOffersReceived().stream().peek(offer ->{
             if (offer.jobId.equals(job.getJobId())){
-                offer.setOfferedOn(new Date());
+                offer.setOfferedOn(offerDetail.getOfferedOn());
                 offer.setJobTitle(offerDetail.getJobTitle());
                 offer.setSalary(offerDetail.getSalary());
                 offer.setUserRole(offerDetail.getUserRole());
@@ -278,7 +277,7 @@ public class JobService {
         List<OfferDetail> jobOfferedTo =  job.getOfferedTo().stream().peek(offer ->
                 {
                     if(offer.jobId.equals(job.getJobId()) && offer.getUserId().equals(applicant.getUserId()) ){
-                        offer.setOfferedOn(new Date());
+                        offer.setOfferedOn(offerDetail.getOfferedOn());
                         offer.setJobTitle(offerDetail.getJobTitle());
                         offer.setSalary(offerDetail.getSalary());
                         offer.setUserRole(offerDetail.getUserRole());
@@ -301,11 +300,11 @@ public class JobService {
     }
 
     public ResponseDTO updateResignationStatus(String authUserId,Boolean status){
-    User employee = userRepository.findByEmailId(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","userId",authUserId));
+    User employee = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","userId",authUserId));
     employee.setIsServingNoticePeriod(status);
     Long noticePeriodLength = employee.getCurrentJobNoticePeriodDays();
     if(status){
-        employee.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 100)));
+        employee.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 1000)));
     }else{
         employee.setNoticePeriodEndDate(null);
     }
@@ -313,11 +312,10 @@ public class JobService {
     return new ResponseDTO(status ? "Resignation submitted successfully !!": "Resignation withdrawn successfull!",true);
     }
 
-    public ResponseDTO updateEmployeeSalary(Long newSalary , String employeeId , String authUserId  , String userRole){
-        String contentCreatorId = Objects.equals(userRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
+    public ResponseDTO updateEmployeeSalary(Long newSalary , String employeeId , String authUserId  , String authUserRole){
+        String contentCreatorId = Objects.equals(authUserRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
         User employee = userRepository.findById(employeeId).orElseThrow(()-> new ResourceNotFoundException("User","employeeId",employeeId));
-        User contentCreator = userRepository.getReferenceById(contentCreatorId);
-        if(!employee.getReportsTo().getUserId().equals(contentCreatorId)){
+        if(employee.getReportsTo()==null || !employee.getReportsTo().getUserId().equals(contentCreatorId)){
             throw new GenericError("You are not allowed to perform this operation");
         }
         employee.setCurrentSalary(newSalary);
@@ -328,8 +326,7 @@ public class JobService {
     public ResponseDTO updateEmployeeRole( String employeeId , String authUserId  , String userRole , UserRole newUserRole){
         String contentCreatorId = Objects.equals(userRole, "ROLE_"+UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
         User employee = userRepository.findById(employeeId).orElseThrow(()-> new ResourceNotFoundException("User","employeeId",employeeId));
-        User contentCreator = userRepository.getReferenceById(contentCreatorId);
-        if(!employee.getReportsTo().getUserId().equals(contentCreatorId)){
+        if(employee.getReportsTo()==null || !employee.getReportsTo().getUserId().equals(contentCreatorId)){
             throw new GenericError("You are not allowed to perform this operation");
         }
         employee.setUserRole(newUserRole);
@@ -367,10 +364,10 @@ public class JobService {
 
             //  Add current Job to the JobHistory of the applicant
             OfferDetail offerDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getJobId().equals(jobId)).findFirst().get();
-                    applicant.getCurrentJobDetails().setUserRole(applicant.getUserRole());
             JobHistory currentJobDetails = applicant.getCurrentJobDetails();
-            if(currentJobDetails!=null){
 
+            if(currentJobDetails!=null){
+               currentJobDetails.setUserRole(applicant.getUserRole());
                 applicant.getJobHistory().add(currentJobDetails);
             }
             JobHistory newJobDetails = new JobHistory();
@@ -385,6 +382,7 @@ public class JobService {
 
 
             applicant.setUserRole(UserRole.valueOf(String.valueOf(offerDetail.getUserRole())));
+            applicant.setCurrentJobNoticePeriodDays(job.getNoticePeriodDays());
 
             // Add the applicant to the list of employees for the contentCreator
             contentCreator.getEmployees().add(applicant);

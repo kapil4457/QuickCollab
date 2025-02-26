@@ -60,8 +60,8 @@ public class ProjectSecurityConfig {
                 .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService, jwtTokenUtil,env), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/me").authenticated()
-                        .requestMatchers("/getUserListedJobs","/createJob","/updateJob","/sendOffer","/reviseOffer").hasAnyRole("CONTENT_CREATOR","MANAGER")
-                        .requestMatchers("/applyForJob","/applyForJob","/getAllJobs","/updateOfferStatus").hasAnyRole("JOB_SEEKER","MANAGER","VIDEO_EDITOR","PHOTO_EDITOR"
+                        .requestMatchers("/getUserListedJobs","/createJob","/updateJob","/sendOffer","/reviseOffer","/updateEmployeeSalary","/updateEmployeeRole").hasAnyRole("CONTENT_CREATOR","MANAGER")
+                        .requestMatchers("/applyForJob","/applyForJob","/getAllJobs","/updateOfferStatus","/updateResignationStatus","/joinCompany").hasAnyRole("JOB_SEEKER","MANAGER","VIDEO_EDITOR","PHOTO_EDITOR"
                                 ,"THUMBNAIL_EDITOR","SCRIPT_WRITER","APPROVER","UPLOADER")
                         .requestMatchers( "/error", "/register","/apiLogin","/apiLogout").permitAll());
 

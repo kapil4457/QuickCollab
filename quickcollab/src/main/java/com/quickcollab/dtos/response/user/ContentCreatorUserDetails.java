@@ -29,5 +29,7 @@ public class ContentCreatorUserDetails  {
     private List<ContentCreatorEmployee> employees;
     private List<ContentCreatorJobPost> jobsPosted;
     private UserRole userRole;
+    private Long currentJobNoticePeriodDays;
+
 
 }

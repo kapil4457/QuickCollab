@@ -147,7 +147,7 @@ public class JobController {
     }
 
     @PutMapping("/updateResignationStatus")
-    public ResponseEntity<ResponseDTO> updateResignationStatus(Authentication authentication , @RequestBody Boolean status){
+    public ResponseEntity<ResponseDTO> updateResignationStatus(Authentication authentication , @RequestParam Boolean status){
         try{
             String authUserId = (String) authentication.getDetails();
             ResponseDTO responseDTO = jobService.updateResignationStatus(authUserId , status);
@@ -159,10 +159,11 @@ public class JobController {
     }
 
     @PutMapping("/updateEmployeeSalary")
-    public ResponseEntity<ResponseDTO> updateEmployeeSalary(Authentication authentication , @RequestBody Long salary , @RequestBody String employeeId , @RequestBody String userRole){
+    public ResponseEntity<ResponseDTO> updateEmployeeSalary(Authentication authentication , @RequestParam Long salary , @RequestParam String employeeId){
         try{
             String authUserId = (String) authentication.getDetails();
-            ResponseDTO responseDTO = jobService.updateEmployeeSalary(salary , employeeId , authUserId , userRole);
+            String authUserRole = (String) authentication.getAuthorities().stream().findFirst().get().getAuthority();
+            ResponseDTO responseDTO = jobService.updateEmployeeSalary(salary , employeeId , authUserId , authUserRole);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(GenericError genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
@@ -170,7 +171,7 @@ public class JobController {
     }
 
     @PutMapping("/updateEmployeeRole")
-    public ResponseEntity<ResponseDTO> updateEmployeeRole(Authentication authentication , @RequestBody String employeeId , @RequestBody String userRole){
+    public ResponseEntity<ResponseDTO> updateEmployeeRole(Authentication authentication , @RequestParam String employeeId , @RequestParam String userRole){
         try{
             String authUserId = (String) authentication.getDetails();
             String authUserRole = (String) authentication.getAuthorities().stream().findFirst().get().getAuthority();

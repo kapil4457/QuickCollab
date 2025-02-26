@@ -56,7 +56,7 @@ public class User {
 
     private String selfDescription="";
 
-    @Convert(converter = WorkHistoryAttributeConverter.class)
+    @Convert(converter = JobHistoryListConverter.class)
     private List<JobHistory> jobHistory = new ArrayList<>();
 
     @NotNull
