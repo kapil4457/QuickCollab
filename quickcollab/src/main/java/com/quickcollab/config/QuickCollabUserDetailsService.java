@@ -28,7 +28,7 @@ public class QuickCollabUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> optionalUser = userRepository.findByEmailId(username);
         if(optionalUser.isEmpty()) {
-            throw new GenericError("User details not found for the user: " + username);
+            throw new GenericError("You have not registered yet. Please create an account to continue.");
         }
         User user = optionalUser.get();
 

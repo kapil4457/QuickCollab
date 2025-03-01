@@ -27,6 +27,10 @@ export const siteConfig = {
   ],
   navMenuItems: [
     {
+      label: "Home",
+      href: "/",
+    },
+    {
       label: "Profile",
       href: "/profile",
     },
@@ -39,20 +43,8 @@ export const siteConfig = {
       href: "/projects",
     },
     {
-      label: "Team",
-      href: "/team",
-    },
-    {
-      label: "Calendar",
-      href: "/calendar",
-    },
-    {
-      label: "Settings",
-      href: "/settings",
-    },
-    {
-      label: "Help & Feedback",
-      href: "/help-feedback",
+      label: "Converation",
+      href: "/conversation",
     },
     {
       label: "Logout",
@@ -65,5 +57,8 @@ export const siteConfig = {
     docs: "https://heroui.com",
     discord: "https://discord.gg/9b6yyZKmH4",
     sponsor: "https://patreon.com/jrgarciadev",
+  },
+  services: {
+    backend: "http://localhost:8080/api/v1",
   },
 };

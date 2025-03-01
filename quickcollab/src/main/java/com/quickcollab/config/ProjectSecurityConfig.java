@@ -65,9 +65,12 @@ public class ProjectSecurityConfig {
                                 ,"THUMBNAIL_EDITOR","SCRIPT_WRITER","APPROVER","UPLOADER")
                         .requestMatchers( "/error", "/register","/apiLogin","/apiLogout").permitAll());
 
-        http.formLogin(fl -> fl
-                .loginPage("/login")
-                .successHandler(customAuthenticationSuccessHandler));
+//        http.formLogin(fl -> fl
+//                .loginPage("/apiLogin")
+//                .successHandler(customAuthenticationSuccessHandler));
+
+        http.formLogin(AbstractHttpConfigurer::disable);
+
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();

@@ -12,10 +12,8 @@ export const OfferStatus = Object.freeze({
   EXPIRED: "EXPIRED",
 });
 
-export const UserRole = Object.freeze({
-  CONTENT_CREATOR: "CONTENT_CREATOR",
+export const TeamMemberRole = Object.freeze({
   MANAGER: "MANAGER",
-  JOB_SEEKER: "JOB_SEEKER",
   VIDEO_EDITOR: "VIDEO_EDITOR",
   PHOTO_EDITOR: "PHOTO_EDITOR",
   THUMBNAIL_EDITOR: "THUMBNAIL_EDITOR",
@@ -24,8 +22,20 @@ export const UserRole = Object.freeze({
   UPLOADER: "UPLOADER",
 });
 
+export const RegistrationRole = Object.freeze({
+  CONTENT_CREATOR: "CONTENT_CREATOR",
+  JOB_SEEKER: "JOB_SEEKER",
+});
+
 export const JobLocationType = Object.freeze({
   REMOTE: "REMOTE",
   HYBRID: "HYBRID",
   ONSITE: "ONSITE",
+});
+
+export const RegisterationMethod = Object.freeze({
+  FACEBOOK_LOGIN: "FACEBOOK_LOGIN",
+  GOOGLE_LOGIN: "GOOGLE_LOGIN",
+  TWITTER_LOGIN: "TWITTER_LOGIN",
+  CREDENTIALS_LOGIN: "CREDENTIALS_LOGIN",
 });

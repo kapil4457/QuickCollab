@@ -10,14 +10,29 @@ import {
 } from "@heroui/navbar";
 import { link as linkStyles } from "@heroui/theme";
 import clsx from "clsx";
+import { Avatar } from "@heroui/avatar";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/dropdown";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import Logo from "@/components/logo/Logo";
 import { Button } from "@heroui/button";
 import LoginIcon from "./LoginIcon";
+import { useAppSelector } from "@/store/hooks";
+import { selectLoggedInUser } from "@/store/slices/userSlice";
+import MessageIcon from "./MessageIcon";
+import LogoutIcon from "./LogoutIcon";
+import { useLocation } from "react-router-dom";
 
 export const Navbar = () => {
+  const user = useAppSelector(selectLoggedInUser);
+  const location = useLocation();
+
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
@@ -40,7 +55,7 @@ export const Navbar = () => {
                 radius="lg"
                 as={Link}
                 variant="light"
-                color="warning"
+                color="primary"
                 className={clsx(
                   linkStyles({ color: "foreground" }),
                   "data-[active=true]:text-primary data-[active=true]:font-medium font-semibold"
@@ -59,18 +74,74 @@ export const Navbar = () => {
         justify="end"
       >
         <NavbarItem className="hidden sm:flex gap-2">
-          <ThemeSwitch />
-          <Button variant="flat" color="warning">
-            <span
-              className={clsx(
-                linkStyles({ color: "foreground" }),
-                "data-[active=true]:text-primary data-[active=true]:font-medium font-semibold"
-              )}
-            >
-              Login
-            </span>
-            <LoginIcon />
+          <Button isIconOnly color="primary" variant="light">
+            <ThemeSwitch />
           </Button>
+          {user && (
+            <>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Avatar
+                    isBordered
+                    name={`${user?.firstName[0]} ${user?.lastName[0]}`}
+                    src={`${user?.profilePicture}`}
+                  />
+                </DropdownTrigger>
+                <DropdownMenu aria-label="My Conversations">
+                  <DropdownItem
+                    key="conversation"
+                    as={Link}
+                    href="/conversations"
+                  >
+                    <div className="flex gap-3 items-center">
+                      <MessageIcon />
+                      <span
+                        className={clsx(
+                          linkStyles({ color: "foreground" }),
+                          "data-[active=true]:text-primary text-sm data-[active=true]:font-medium font-semibold"
+                        )}
+                      >
+                        My Conversations
+                      </span>
+                    </div>
+                  </DropdownItem>
+
+                  <DropdownItem key="logout" as={Link} href="/logout">
+                    <div className="flex gap-3 items-center">
+                      <LogoutIcon />
+                      <span
+                        className={clsx(
+                          linkStyles({ color: "foreground" }),
+                          "data-[active=true]:text-primary text-sm data-[active=true]:font-medium font-semibold"
+                        )}
+                      >
+                        Logout
+                      </span>
+                    </div>
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </>
+          )}
+
+          {!user && (
+            <Button
+              as={Link}
+              href="/login?type=login"
+              variant="flat"
+              color="primary"
+            >
+              <span
+                className={clsx(
+                  linkStyles({ color: "foreground" }),
+                  "data-[active=true]:text-primary data-[active=true]:font-medium font-semibold"
+                )}
+              >
+                Login
+              </span>
+              <LoginIcon />
+            </Button>
+          )}
         </NavbarItem>
       </NavbarContent>
 
@@ -81,23 +152,21 @@ export const Navbar = () => {
 
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <Link
-                color={
-                  index === 2
-                    ? "primary"
-                    : index === siteConfig.navMenuItems.length - 1
-                      ? "danger"
-                      : "foreground"
-                }
-                href="#"
-                size="lg"
-              >
-                {item.label}
-              </Link>
-            </NavbarMenuItem>
-          ))}
+          {siteConfig.navMenuItems.map((item, index) => {
+            return (
+              <NavbarMenuItem key={`${item}-${index}`}>
+                <Link
+                  color={
+                    item.href === location.pathname ? "primary" : "foreground"
+                  }
+                  href={item.href}
+                  size="lg"
+                >
+                  {item.label}
+                </Link>
+              </NavbarMenuItem>
+            );
+          })}
         </div>
       </NavbarMenu>
     </HeroUINavbar>
