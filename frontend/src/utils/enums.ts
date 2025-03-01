@@ -11,6 +11,17 @@ export const OfferStatus = Object.freeze({
   REVISION: "REVISION",
   EXPIRED: "EXPIRED",
 });
+export const AllRoles = Object.freeze({
+  CONTENT_CREATOR: "CONTENT_CREATOR",
+  JOB_SEEKER: "JOB_SEEKER",
+  MANAGER: "MANAGER",
+  VIDEO_EDITOR: "VIDEO_EDITOR",
+  PHOTO_EDITOR: "PHOTO_EDITOR",
+  THUMBNAIL_EDITOR: "THUMBNAIL_EDITOR",
+  SCRIPT_WRITER: "SCRIPT_WRITER",
+  APPROVER: "APPROVER",
+  UPLOADER: "UPLOADER",
+});
 
 export const TeamMemberRole = Object.freeze({
   MANAGER: "MANAGER",

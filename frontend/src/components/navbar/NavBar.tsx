@@ -28,6 +28,7 @@ import { selectLoggedInUser } from "@/store/slices/userSlice";
 import MessageIcon from "./MessageIcon";
 import LogoutIcon from "./LogoutIcon";
 import { useLocation } from "react-router-dom";
+import { AllRoles } from "@/utils/enums";
 
 export const Navbar = () => {
   const user = useAppSelector(selectLoggedInUser);
@@ -49,23 +50,33 @@ export const Navbar = () => {
 
       <NavbarContent className="basis-1/5 sm:basis-full" justify="center">
         <div className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
-            <NavbarItem key={item.href}>
-              <Button
-                radius="lg"
-                as={Link}
-                variant="light"
-                color="primary"
-                className={clsx(
-                  linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium font-semibold"
-                )}
-                href={item.href}
-              >
-                {item.label}
-              </Button>
-            </NavbarItem>
-          ))}
+          {siteConfig.navItems.map((item) => {
+            if (item.isAuthenticationRequired) {
+              if (user == null) return null;
+              if (item.type == 1) {
+                if (user.userRole === AllRoles.CONTENT_CREATOR) return null;
+              } else {
+                if (user.userRole !== AllRoles.CONTENT_CREATOR) return null;
+              }
+            }
+            return (
+              <NavbarItem key={item.href}>
+                <Button
+                  radius="lg"
+                  as={Link}
+                  variant="light"
+                  color="primary"
+                  className={clsx(
+                    linkStyles({ color: "foreground" }),
+                    "data-[active=true]:text-primary data-[active=true]:font-medium font-semibold"
+                  )}
+                  href={item.href}
+                >
+                  {item.label}
+                </Button>
+              </NavbarItem>
+            );
+          })}
         </div>
       </NavbarContent>
 
@@ -88,25 +99,34 @@ export const Navbar = () => {
                   />
                 </DropdownTrigger>
                 <DropdownMenu aria-label="My Conversations">
-                  <DropdownItem
-                    key="conversation"
-                    as={Link}
-                    href="/conversations"
-                  >
-                    <div className="flex gap-3 items-center">
-                      <MessageIcon />
-                      <span
-                        className={clsx(
-                          linkStyles({ color: "foreground" }),
-                          "data-[active=true]:text-primary text-sm data-[active=true]:font-medium font-semibold"
-                        )}
-                      >
-                        My Conversations
-                      </span>
-                    </div>
-                  </DropdownItem>
+                  {siteConfig.dropDownMenuItems.map((item, key) => {
+                    if (user == null) return null;
+                    if (item.type == 1) {
+                      if (user.userRole === AllRoles.CONTENT_CREATOR)
+                        return null;
+                    } else {
+                      if (user.userRole !== AllRoles.CONTENT_CREATOR)
+                        return null;
+                    }
 
-                  <DropdownItem key="logout" as={Link} href="/logout">
+                    return (
+                      <DropdownItem key={key} as={Link} href={item.href}>
+                        <div className="flex gap-3 items-center">
+                          <item.logo />
+                          <span
+                            className={clsx(
+                              linkStyles({ color: "foreground" }),
+                              "data-[active=true]:text-primary text-sm data-[active=true]:font-medium font-semibold"
+                            )}
+                          >
+                            {item.label}
+                          </span>
+                        </div>
+                      </DropdownItem>
+                    );
+                  })}
+
+                  {/* <DropdownItem key="logout" as={Link} href="/logout">
                     <div className="flex gap-3 items-center">
                       <LogoutIcon />
                       <span
@@ -118,7 +138,7 @@ export const Navbar = () => {
                         Logout
                       </span>
                     </div>
-                  </DropdownItem>
+                  </DropdownItem> */}
                 </DropdownMenu>
               </Dropdown>
             </>
@@ -153,6 +173,14 @@ export const Navbar = () => {
       <NavbarMenu>
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => {
+            if (item.isAuthenticationRequired) {
+              if (user == null) return null;
+              if (item.type == 1) {
+                if (user.userRole === AllRoles.CONTENT_CREATOR) return null;
+              } else {
+                if (user.userRole !== AllRoles.CONTENT_CREATOR) return null;
+              }
+            }
             return (
               <NavbarMenuItem key={`${item}-${index}`}>
                 <Link
