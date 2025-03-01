@@ -1,6 +1,13 @@
 import LogoutIcon from "@/components/navbar/LogoutIcon";
 import MessageIcon from "@/components/navbar/MessageIcon";
 import UserIcon from "@/components/navbar/UserIcon";
+import {
+  Home,
+  Briefcase,
+  User,
+  MessageSquareText,
+  LayoutDashboard,
+} from "lucide-react";
 
 export type SiteConfig = typeof siteConfig;
 
@@ -22,15 +29,9 @@ export const siteConfig = {
       isAuthenticationRequired: false,
     },
     {
-      label: "All Jobs",
-      href: "/jobs",
-      type: 1,
-      isAuthenticationRequired: true,
-    },
-    {
       label: "Dashboard",
       href: "/dashboard",
-      type: 2,
+      type: 0,
       isAuthenticationRequired: true,
     },
   ],
@@ -42,22 +43,9 @@ export const siteConfig = {
       isAuthenticationRequired: false,
     },
     {
-      label: "All Jobs",
-      href: "/jobs",
-      type: 1,
-      isAuthenticationRequired: true,
-    },
-    {
       label: "Dashboard",
       href: "/dashboard",
-      type: 2,
-      isAuthenticationRequired: true,
-    },
-
-    {
-      label: "Conversations",
-      href: "/conversation",
-      type: 1,
+      type: 0,
       isAuthenticationRequired: true,
     },
     {
@@ -81,16 +69,37 @@ export const siteConfig = {
       type: 0,
     },
     {
-      label: "My Conversations",
-      logo: MessageIcon,
-      href: "/conversation",
-      type: 1,
-    },
-    {
       label: "Logout",
       logo: LogoutIcon,
       href: "/logout",
       type: 0,
+    },
+  ],
+  sideBarMenuItems: [
+    {
+      label: "Home",
+      href: "/",
+      logo: Home,
+    },
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      logo: LayoutDashboard,
+    },
+    {
+      label: "Posted Jobs",
+      href: "/my-posted-jobs",
+      logo: Briefcase,
+    },
+    {
+      label: "My Employees",
+      href: "/my-employees",
+      logo: User,
+    },
+    {
+      label: "My Conversations",
+      href: "/my-conversations",
+      logo: MessageSquareText,
     },
   ],
   links: {

@@ -25,8 +25,6 @@ import { Button } from "@heroui/button";
 import LoginIcon from "./LoginIcon";
 import { useAppSelector } from "@/store/hooks";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
-import MessageIcon from "./MessageIcon";
-import LogoutIcon from "./LogoutIcon";
 import { useLocation } from "react-router-dom";
 import { AllRoles } from "@/utils/enums";
 
@@ -125,20 +123,6 @@ export const Navbar = () => {
                       </DropdownItem>
                     );
                   })}
-
-                  {/* <DropdownItem key="logout" as={Link} href="/logout">
-                    <div className="flex gap-3 items-center">
-                      <LogoutIcon />
-                      <span
-                        className={clsx(
-                          linkStyles({ color: "foreground" }),
-                          "data-[active=true]:text-primary text-sm data-[active=true]:font-medium font-semibold"
-                        )}
-                      >
-                        Logout
-                      </span>
-                    </div>
-                  </DropdownItem> */}
                 </DropdownMenu>
               </Dropdown>
             </>

@@ -131,6 +131,7 @@ export const logoutUserHandler = async (dispatch: typeof dispatchType) => {
     localStorage.removeItem(AUTHORIZATION_TOKEN);
   } catch (err) {
   } finally {
+    localStorage.removeItem(AUTHORIZATION_TOKEN);
     dispatch(
       updateUser({
         user: null,
