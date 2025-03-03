@@ -89,10 +89,11 @@ export const registerUserHandler = async (
   }
 };
 
-export const selfDetails = async (dispatch: typeof dispatchType) => {
+export const selfDetails = async (
+  dispatch: typeof dispatchType,
+  authorizationToken: string
+) => {
   try {
-    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
-    if (authorizationToken == null) return;
     dispatch(updateUserLoadingState(true));
     const headers = {
       Authorization: authorizationToken,
@@ -103,15 +104,18 @@ export const selfDetails = async (dispatch: typeof dispatchType) => {
     const { success, user } = data;
     if (!success) {
       localStorage.removeItem(AUTHORIZATION_TOKEN);
+      return { success: false };
     }
     dispatch(
       updateUser({
         user: user,
-        jwtToken: success ? authorizationToken : "",
+        jwtToken: authorizationToken,
         loading: false,
       })
     );
+    return { success: true };
   } catch (err) {
+    return { success: false };
   } finally {
     dispatch(updateUserLoadingState(false));
   }
@@ -130,6 +134,24 @@ export const logoutUserHandler = async (dispatch: typeof dispatchType) => {
     });
     localStorage.removeItem(AUTHORIZATION_TOKEN);
   } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
   } finally {
     localStorage.removeItem(AUTHORIZATION_TOKEN);
     dispatch(

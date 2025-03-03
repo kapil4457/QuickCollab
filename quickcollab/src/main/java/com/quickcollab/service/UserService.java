@@ -6,7 +6,9 @@ import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
+import com.quickcollab.model.Job;
 import com.quickcollab.model.User;
+import com.quickcollab.repository.JobRepository;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.utils.JwtBlacklistService;
 import com.quickcollab.utils.JwtTokenUtil;
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
     private final JwtBlacklistService jwtBlacklistService;
+    private final JobRepository jobRepository;
 
 
     public LoginResponseDTO<?> registerUser(UserRegisterDTO userRegisterDTO){
@@ -63,13 +66,10 @@ public class UserService {
                 User user = optionalUser.get();
                 ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(user, ContentCreatorUserDetails.class);
                 List<ContentCreatorEmployee> employees = user.getEmployees().stream().map(employee -> modelMapper.map(employee , ContentCreatorEmployee.class)).toList();
-                List<ContentCreatorJobPost> jobsPosted = user.getJobsPosted().stream().map(jobPost -> modelMapper.map(jobPost, ContentCreatorJobPost.class)).toList();
-
-
-
+                List<Job> postedJobs = user.getJobsPosted();
+                List<ContentCreatorJobPost> jobsPosted = postedJobs.stream().map(jobPost -> modelMapper.map(jobPost, ContentCreatorJobPost.class)).toList();
                 contentCreatorUserDetails.setEmployees(employees);
                 contentCreatorUserDetails.setJobsPosted(jobsPosted);
-
 
                 LoginResponseDTO<ContentCreatorUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(contentCreatorUserDetails);

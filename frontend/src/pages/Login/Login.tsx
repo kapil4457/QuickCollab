@@ -1,4 +1,4 @@
-import DefaultLayout from "@/layouts/default";
+import DefaultLayout from "@/layouts/DefaultLayout";
 import { Form } from "@heroui/form";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";

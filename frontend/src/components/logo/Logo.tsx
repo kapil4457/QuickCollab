@@ -1,5 +1,6 @@
 import "./Logo.css";
 import { APPLICATION_NAME } from "@/constants/AppConstants";
+import { Link } from "react-router-dom";
 
 const Logo = ({
   externalTitleClass = "",
@@ -7,7 +8,8 @@ const Logo = ({
   isTitleRequired = true,
 }) => {
   return (
-    <div
+    <Link
+      to={"/"}
       className={`flex flex-col justify-center items-center ${externalTitleClass}`}
     >
       <span className="logo-title text-xl md:text-2xl">{APPLICATION_NAME}</span>
@@ -18,7 +20,7 @@ const Logo = ({
           Team Up, Dream Big
         </span>
       )}
-    </div>
+    </Link>
   );
 };
 

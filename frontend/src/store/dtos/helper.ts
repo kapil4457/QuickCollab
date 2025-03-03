@@ -38,7 +38,10 @@ export interface ContentCreatorJobPost {
   jobStatus: string;
   openingsCount: number;
   jobLocationType: string;
+  jobLocation: string;
   applicants: Array<ContentCreatorEmployee>;
+  postedOn: Date;
+  noticePeriodDays: number;
 }
 
 export interface MessageDetail {

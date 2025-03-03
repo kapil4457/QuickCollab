@@ -7,6 +7,7 @@ import type {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { loggedInUser } from "../dtos/response/LoginResponseDTO";
+import { ContentCreatorJobPost } from "../dtos/helper";
 
 // Define a type for the slice state
 export interface UserState {
@@ -43,14 +44,28 @@ export const userSlice = createSlice({
     updateUserLoadingState: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
+    updatePostedJobs: (
+      state,
+      action: PayloadAction<ContentCreatorJobPost[]>
+    ) => {
+      if (state.user && "jobsPosted" in state.user) {
+        state.user.jobsPosted = action.payload;
+      }
+    },
   },
 });
 
-export const { updateUser, updateUserLoadingState } = userSlice.actions;
+export const { updateUser, updateUserLoadingState, updatePostedJobs } =
+  userSlice.actions;
 
-// Other code such as selectors can use the imported `RootState` type
 export const selectJwtToken = (state: RootState) => state.user.jwtToken;
 export const selectUserLoadingState = (state: RootState) => state.user.loading;
 export const selectLoggedInUser = (state: RootState) => state.user.user;
+export const selectPostedJobs = (state: RootState) => {
+  if (state.user.user && "jobsPosted" in state.user.user) {
+    return state.user.user.jobsPosted;
+  }
+  return null;
+};
 
 export default userSlice.reducer;

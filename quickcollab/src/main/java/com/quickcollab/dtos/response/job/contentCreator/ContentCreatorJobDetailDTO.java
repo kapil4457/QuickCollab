@@ -25,6 +25,7 @@ public class ContentCreatorJobDetailDTO {
     private String jobDescription;
     private JobStatus jobStatus;
     private Long openingsCount;
+    private Long noticePeriodDays;
     private JobLocationType jobLocationType;
     private List<ContentCreatorEmployee> applicants;
     private List<OfferDetail> offeredTo;

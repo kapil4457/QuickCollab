@@ -1,5 +1,4 @@
 import LogoutIcon from "@/components/navbar/LogoutIcon";
-import MessageIcon from "@/components/navbar/MessageIcon";
 import UserIcon from "@/components/navbar/UserIcon";
 import {
   Home,
@@ -22,12 +21,6 @@ export const siteConfig = {
   name: "Quick Collab",
   description: "Team Up, Dream Big",
   navItems: [
-    {
-      label: "Home",
-      href: "/",
-      type: 0,
-      isAuthenticationRequired: false,
-    },
     {
       label: "Dashboard",
       href: "/dashboard",

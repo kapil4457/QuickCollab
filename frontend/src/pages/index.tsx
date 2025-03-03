@@ -5,7 +5,7 @@ import { button as buttonStyles } from "@heroui/theme";
 
 import { siteConfig } from "@/config/site";
 import { title, subtitle } from "@/components/primitives";
-import DefaultLayout from "@/layouts/default";
+import DefaultLayout from "@/layouts/DefaultLayout";
 
 export default function IndexPage() {
   return (

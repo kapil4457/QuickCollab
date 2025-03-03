@@ -6,18 +6,11 @@ import PricingPage from "@/pages/pricing";
 import BlogPage from "@/pages/blog";
 import AboutPage from "@/pages/about";
 import Login from "./pages/Login/Login";
-import { useEffect } from "react";
-import { useAppDispatch } from "./store/hooks";
-import { selfDetails } from "./store/controllers/UserController";
 import Logout from "./pages/Logout/Logout";
 import PostedJobs from "./pages/Dashboard/PostedJobs/PostedJobs";
 import Dashboard from "./pages/Dashboard/Dashboard/Dashboard";
 
 function App() {
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    selfDetails(dispatch);
-  }, []);
   return (
     <Routes>
       <Route element={<IndexPage />} path="/" />
@@ -25,6 +18,7 @@ function App() {
       <Route element={<Logout />} path="/logout" />
       <Route element={<PostedJobs />} path="/my-posted-jobs" />
       <Route element={<Dashboard />} path="/dashboard" />
+      <Route element={<PostedJobs />} path="/my-posted-jobs" />
 
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />

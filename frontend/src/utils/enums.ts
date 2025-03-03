@@ -43,6 +43,16 @@ export const JobLocationType = Object.freeze({
   HYBRID: "HYBRID",
   ONSITE: "ONSITE",
 });
+export const JobStatus = Object.freeze({
+  ACTIVE: "ACTIVE",
+  EXPIRED: "EXPIRED",
+  INACTIVE: "INACTIVE",
+  FILLED: "FILLED",
+});
+export const CreateJobStatus = Object.freeze({
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+});
 
 export const RegisterationMethod = Object.freeze({
   FACEBOOK_LOGIN: "FACEBOOK_LOGIN",

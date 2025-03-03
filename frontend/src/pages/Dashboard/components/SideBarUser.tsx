@@ -1,6 +1,5 @@
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
@@ -41,12 +40,12 @@ export function SideBarUser({ user }: { user: loggedInUser }) {
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           className="flex justify-between p-4 pb-6 pt-6 items-center"
         >
-          <span>{theme === "light" ? "Light mode" : "Dark Mode"}</span>
           {theme === "light" ? (
             <MoonFilledIcon size={22} />
           ) : (
             <SunFilledIcon size={22} />
           )}
+          <span>{theme === "light" ? "Light mode" : "Dark Mode"}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
       <SidebarMenuItem>
