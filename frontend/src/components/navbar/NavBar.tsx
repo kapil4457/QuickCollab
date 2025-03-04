@@ -53,7 +53,7 @@ export const Navbar = () => {
               if (user == null) return null;
               if (item.type == 1) {
                 if (user.userRole === AllRoles.CONTENT_CREATOR) return null;
-              } else {
+              } else if (item.type == 2) {
                 if (user.userRole !== AllRoles.CONTENT_CREATOR) return null;
               }
             }

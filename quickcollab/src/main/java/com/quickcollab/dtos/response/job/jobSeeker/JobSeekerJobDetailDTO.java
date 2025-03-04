@@ -1,6 +1,7 @@
 package com.quickcollab.dtos.response.job.jobSeeker;
 
 import com.quickcollab.enums.JobLocationType;
+import com.quickcollab.enums.JobStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,4 +23,5 @@ public class JobSeekerJobDetailDTO {
     private String jobLocation;
     private JobDetailPostedByUserDTO postedBy;
     private Date postedOn;
+    private JobStatus jobStatus;
 }

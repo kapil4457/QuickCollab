@@ -99,7 +99,7 @@ public class JobService {
         }
 
     public JobSeekerJobResponseDTO getAllJobs(){
-        List<Job> allJobs = jobRepository.getJobByJobStatus(JobStatus.ACTIVE);
+        List<Job> allJobs = jobRepository.findAll();
         List<JobSeekerJobDetailDTO> jobSeekerJobDetailDTOs = allJobs.stream().map(job -> {
             JobSeekerJobDetailDTO jobSeekerJobDetailDTO =  modelMapper.map(job , JobSeekerJobDetailDTO.class);
             JobDetailPostedByUserDTO jobDetailPostedByUserDTO = modelMapper.map(job.getPostedBy() , JobDetailPostedByUserDTO.class);

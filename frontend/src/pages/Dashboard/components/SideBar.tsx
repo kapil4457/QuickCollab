@@ -20,6 +20,7 @@ import { Link } from "@heroui/link";
 import { useLocation } from "react-router-dom";
 import { SideBarUser } from "./SideBarUser";
 import LogoInitials from "@/components/logo/LogoInitials";
+import { AllRoles } from "@/utils/enums";
 
 export function SideBar({ ...props }) {
   const { open, isMobile } = useSidebar();
@@ -35,6 +36,11 @@ export function SideBar({ ...props }) {
           <SidebarGroupContent>
             <SidebarMenu>
               {siteConfig.sideBarMenuItems.map((item) => {
+                if (item.type == 1) {
+                  if (user?.userRole === AllRoles.CONTENT_CREATOR) return null;
+                } else if (item.type == 2) {
+                  if (user?.userRole !== AllRoles.CONTENT_CREATOR) return null;
+                }
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton

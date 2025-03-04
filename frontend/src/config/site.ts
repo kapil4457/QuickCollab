@@ -73,26 +73,43 @@ export const siteConfig = {
       label: "Home",
       href: "/",
       logo: Home,
+      type: 0,
     },
     {
       label: "Dashboard",
       href: "/dashboard",
       logo: LayoutDashboard,
+      type: 0,
     },
     {
       label: "Posted Jobs",
       href: "/my-posted-jobs",
       logo: Briefcase,
+      type: 2,
     },
     {
       label: "My Employees",
       href: "/my-employees",
       logo: User,
+      type: 2,
+    },
+    {
+      label: "Job market",
+      href: "/all-jobs",
+      logo: Briefcase,
+      type: 1,
+    },
+    {
+      label: "Applied jobs",
+      href: "/applied-jobs",
+      logo: Briefcase,
+      type: 1,
     },
     {
       label: "My Conversations",
       href: "/my-conversations",
       logo: MessageSquareText,
+      type: 0,
     },
   ],
   links: {

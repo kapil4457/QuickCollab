@@ -9,6 +9,7 @@ import Login from "./pages/Login/Login";
 import Logout from "./pages/Logout/Logout";
 import PostedJobs from "./pages/Dashboard/PostedJobs/PostedJobs";
 import Dashboard from "./pages/Dashboard/Dashboard/Dashboard";
+import JobMarket from "./pages/Dashboard/JobMarket/JobMarket";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route element={<PostedJobs />} path="/my-posted-jobs" />
       <Route element={<Dashboard />} path="/dashboard" />
       <Route element={<PostedJobs />} path="/my-posted-jobs" />
+      <Route element={<JobMarket />} path="/all-jobs" />
 
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />
