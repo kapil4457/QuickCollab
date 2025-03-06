@@ -24,11 +24,10 @@ import java.util.List;
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private Long conversationId;
 
     @NotNull
-    @OneToMany
+    @ManyToMany
     private List<User> members;
 
     private String groupName;

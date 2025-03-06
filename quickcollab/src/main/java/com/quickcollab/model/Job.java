@@ -45,7 +45,12 @@ public class Job {
     @Enumerated(EnumType.STRING)
     private JobLocationType jobLocationType;
 
-    @OneToMany
+    @ManyToMany
+    @JoinTable(
+            name = "job_applicants",
+            joinColumns = @JoinColumn(name = "job_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     @JsonManagedReference
     private List<User> applicants;
 

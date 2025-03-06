@@ -78,7 +78,7 @@ public class User {
     private List<User> employees=new ArrayList<>();
 
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonBackReference
     private List<Conversation> conversations = new ArrayList<>();
 
@@ -86,7 +86,7 @@ public class User {
     @JsonBackReference
     private List<Work> works = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER,mappedBy = "applicants")
     @JsonBackReference
     private List<Job> appliedJobs = new ArrayList<>();
 

@@ -67,5 +67,17 @@ export const selectPostedJobs = (state: RootState) => {
   }
   return null;
 };
+export const selectAppliedJobs = (state: RootState) => {
+  if (state.user.user && "appliedJobs" in state.user.user) {
+    return state.user.user.appliedJobs;
+  }
+  return null;
+};
+
+export const selectAllConversations = (state: RootState) => {
+  if (state.user.user && "conversations" in state.user.user) {
+    return state.user.user.conversations;
+  }
+};
 
 export default userSlice.reducer;

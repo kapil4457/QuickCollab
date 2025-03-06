@@ -21,6 +21,7 @@ import { useLocation } from "react-router-dom";
 import { SideBarUser } from "./SideBarUser";
 import LogoInitials from "@/components/logo/LogoInitials";
 import { AllRoles } from "@/utils/enums";
+import { DatePicker } from "./DatePicker";
 
 export function SideBar({ ...props }) {
   const { open, isMobile } = useSidebar();
@@ -60,6 +61,7 @@ export function SideBar({ ...props }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        {open ? !isMobile ? <DatePicker /> : null : null}
         <SideBarUser user={user} />
       </SidebarFooter>
     </Sidebar>

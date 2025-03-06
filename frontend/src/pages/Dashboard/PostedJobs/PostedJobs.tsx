@@ -224,6 +224,7 @@ const PostedJobs = () => {
   }, []);
 
   const openApplicantsList = async (applicants: ContentCreatorEmployee[]) => {
+    // console.log("currentApplicants : ", applicants);
     setCurrentJobApplicants(applicants);
     if (
       showApplicantsModalRef.current &&

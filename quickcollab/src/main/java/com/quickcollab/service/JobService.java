@@ -98,8 +98,9 @@ public class JobService {
 
         }
 
-    public JobSeekerJobResponseDTO getAllJobs(){
-        List<Job> allJobs = jobRepository.findAll();
+    public JobSeekerJobResponseDTO getAllJobs(String userId){
+        User user = userRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User","id",userId));
+        List<Job> allJobs = jobRepository.findAll().stream().filter(job->!user.getAppliedJobs().contains(job)).toList();
         List<JobSeekerJobDetailDTO> jobSeekerJobDetailDTOs = allJobs.stream().map(job -> {
             JobSeekerJobDetailDTO jobSeekerJobDetailDTO =  modelMapper.map(job , JobSeekerJobDetailDTO.class);
             JobDetailPostedByUserDTO jobDetailPostedByUserDTO = modelMapper.map(job.getPostedBy() , JobDetailPostedByUserDTO.class);
@@ -111,7 +112,7 @@ public class JobService {
     }
 
     public ResponseDTO applyToJob(String userId, Long jobId) {
-        User user = userRepository.getReferenceById(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job", "jobId", jobId.toString()));
         if(job.getApplicants().contains(user) ){

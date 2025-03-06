@@ -3,6 +3,7 @@ package com.quickcollab.service;
 import com.quickcollab.dtos.request.ConversationCreateDTO;
 import com.quickcollab.dtos.request.MeetingCreateDTO;
 import com.quickcollab.dtos.request.MessageDTO;
+import com.quickcollab.dtos.response.conversation.ConversationResponseDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.enums.UserRole;
@@ -32,28 +33,31 @@ public class ConversationService {
     private final MeetingRepository meetingRepository;
     private final ModelMapper modelMapper;
 
-    public ResponseDTO createConversation(ConversationCreateDTO conversationCreateDTO, String userRole, String authUserId) {
-        List<User> members = conversationCreateDTO.getMembersIds().stream().map(memberId -> userRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", memberId))).toList();
-        User admin = userRepository.findById(conversationCreateDTO.getAdminId()).orElseThrow(() -> new ResourceNotFoundException("User", "userId", conversationCreateDTO.getAdminId()));
+    public ConversationResponseDTO createConversation(ConversationCreateDTO conversationCreateDTO, String userRole, String authUserId) {
+        List<User> members = new ArrayList<>(conversationCreateDTO.getMembersIds().stream().map(memberId -> userRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", memberId))).toList());
+        User admin = userRepository.findById(authUserId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", authUserId));
+        members.add(admin);
+        List<Conversation> conversations = conversationRepository.findAll().stream().filter(conversation-> conversation.getMembers().equals(members)).toList();
+        if(!conversations.isEmpty()){
+            throw new GenericError("There already exists a conversation between the chosen members.");
+        }
         String contentCreatorId = Objects.equals(userRole, "ROLE_" + UserRole.CONTENT_CREATOR.toString()) ? authUserId : userRepository.getReportingUserByUserId(authUserId);
         if (!Objects.equals(contentCreatorId, admin.getUserId()) && (admin.getReportsTo() != null && !Objects.equals(contentCreatorId, admin.getReportsTo().getUserId()))) {
             throw new GenericError("You are not allowed to perform this operation");
         }
+        if(members.size()>2){
+            conversationCreateDTO.setIsGroupChat(true);
+        }else{
+            conversationCreateDTO.setIsGroupChat(false);
+        }
 
-        if (conversationCreateDTO.getIsTeamMemberConversation()) {
+
             members.forEach(member -> {
                 if ((member.getReportsTo() != null && !member.getReportsTo().getUserId().equals(contentCreatorId)) && member.getUserId().equals(contentCreatorId)) {
                     throw new GenericError("Can not create a group with " + member.getFirstName() + " " + member.getLastName() + " as he does not reports to the user as you do.");
                 }
             });
-        } else {
-            if (members.size() <= 2) {
-                throw new GenericError("Can not create a group with users who does not work with you.");
-            }
-        }
-        if (members.size() <= 2) {
-            throw new GenericError("Can not create a group with just 2 members.");
-        }
+
 
         Conversation conversation = new Conversation();
         conversation.setMembers(members);
@@ -61,12 +65,18 @@ public class ConversationService {
         if (conversationCreateDTO.getIsGroupChat()) {
             conversation.setGroupName(conversationCreateDTO.getGroupName());
         }
+
         conversation.setIsGroupChat(conversationCreateDTO.getIsGroupChat());
+        conversation.setLastMessage(new Date());
+       Conversation newConversation =  conversationRepository.save(conversation);
 
+        newConversation.getMembers()
+                .forEach(member -> {
+            member.getConversations().add(conversation);
+            userRepository.save(member);
+        });
 
-        conversationRepository.save(conversation);
-
-        return new ResponseDTO(conversationCreateDTO.getIsGroupChat() ? "Group" : "Conversation" + " created successfully !", true);
+        return new ConversationResponseDTO(conversationCreateDTO.getIsGroupChat() ? "Group" : "Conversation" + " created successfully !", true,newConversation.getConversationId());
 
     }
 

@@ -47,11 +47,5 @@ export const { updateAllJobs, updateJobLoadingState } = jobSlice.actions;
 
 export const selectAllJobs = (state: RootState) => state.job.allJobs;
 export const selectAllJobsLoading = (state: RootState) => state.job.loading;
-// export const selectPostedJobs = (state: RootState) => {
-//   if (state.user.user && "jobsPosted" in state.user.user) {
-//     return state.user.user.jobsPosted;
-//   }
-//   return null;
-// };
 
 export default jobSlice.reducer;

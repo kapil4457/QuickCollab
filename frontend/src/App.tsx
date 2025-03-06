@@ -10,6 +10,8 @@ import Logout from "./pages/Logout/Logout";
 import PostedJobs from "./pages/Dashboard/PostedJobs/PostedJobs";
 import Dashboard from "./pages/Dashboard/Dashboard/Dashboard";
 import JobMarket from "./pages/Dashboard/JobMarket/JobMarket";
+import AppliedJobs from "./pages/Dashboard/AppliedJobs/AppliedJobs";
+import Conversations from "./pages/Dashboard/Conversations/Conversations";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
       <Route element={<Dashboard />} path="/dashboard" />
       <Route element={<PostedJobs />} path="/my-posted-jobs" />
       <Route element={<JobMarket />} path="/all-jobs" />
+      <Route element={<AppliedJobs />} path="/applied-jobs" />
+      <Route element={<Conversations />} path="/my-conversations" />
 
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />

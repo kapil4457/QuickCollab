@@ -1,10 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { createJobDTO } from "../dtos/request/createJobDTO";
-import {
-  dispatchType,
-  updatePostedJobs,
-  updateUserLoadingState,
-} from "../slices/userSlice";
+import { dispatchType, updatePostedJobs } from "../slices/userSlice";
 import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
 import { updateAllJobs, updateJobLoadingState } from "../slices/jobSlice";
 import { selfDetails } from "./UserController";
@@ -24,7 +20,7 @@ export const createJobPostingHandler = async (
     const headers = {
       Authorization: authorizationToken,
     };
-    dispatch(updateUserLoadingState(true));
+    dispatch(updateJobLoadingState(true));
     const { data } = await axios.post("/api/createJob", body, {
       headers,
     });
@@ -54,7 +50,7 @@ export const createJobPostingHandler = async (
       success: false,
     };
   } finally {
-    dispatch(updateUserLoadingState(false));
+    dispatch(updateJobLoadingState(true));
   }
 };
 export const updateJobPostingHandler = async (
@@ -73,7 +69,7 @@ export const updateJobPostingHandler = async (
     const headers = {
       Authorization: authorizationToken,
     };
-    dispatch(updateUserLoadingState(true));
+    dispatch(updateJobLoadingState(true));
     const { data } = await axios.put(`/api/updateJob?jobId=${jobId}`, body, {
       headers,
     });
@@ -103,7 +99,7 @@ export const updateJobPostingHandler = async (
       success: false,
     };
   } finally {
-    dispatch(updateUserLoadingState(false));
+    dispatch(updateJobLoadingState(true));
   }
 };
 
@@ -151,7 +147,7 @@ export const getAllJobPostingsHandler = async (
       success: false,
     };
   } finally {
-    dispatch(updateUserLoadingState(false));
+    dispatch(updateJobLoadingState(true));
   }
 };
 
@@ -181,6 +177,7 @@ export const applyToJobHandler = async (
     );
     const { success, message } = data;
     selfDetails(dispatch, authorizationToken);
+    getAllJobPostingsHandler(dispatch);
     return {
       message,
       success,
@@ -205,6 +202,6 @@ export const applyToJobHandler = async (
       success: false,
     };
   } finally {
-    dispatch(updateUserLoadingState(false));
+    dispatch(updateJobLoadingState(true));
   }
 };

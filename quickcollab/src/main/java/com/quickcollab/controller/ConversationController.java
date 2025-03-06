@@ -3,6 +3,7 @@ package com.quickcollab.controller;
 import com.quickcollab.dtos.request.ConversationCreateDTO;
 import com.quickcollab.dtos.request.MeetingCreateDTO;
 import com.quickcollab.dtos.request.MessageDTO;
+import com.quickcollab.dtos.response.conversation.ConversationResponseDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
@@ -24,16 +25,16 @@ public class ConversationController {
     private final ConversationService conversationService;
 
     @PostMapping("/createConversation")
-    public ResponseEntity<ResponseDTO> createConversation(Authentication authentication , @RequestBody @Valid ConversationCreateDTO conversationCreateDTO) {
+    public ResponseEntity<ConversationResponseDTO> createConversation(Authentication authentication , @RequestBody @Valid ConversationCreateDTO conversationCreateDTO) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
             String authUserId = authentication.getDetails().toString();
-            ResponseDTO responseDTO = conversationService.createConversation(conversationCreateDTO , userRole,authUserId);
+            ConversationResponseDTO responseDTO = conversationService.createConversation(conversationCreateDTO , userRole,authUserId);
             return  ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ConversationResponseDTO(resourceNotFoundException.getMessage() , false,-1L));
         }catch(GenericError genericError){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ConversationResponseDTO(genericError.getMessage() , false,-1L));
         }
     }
 

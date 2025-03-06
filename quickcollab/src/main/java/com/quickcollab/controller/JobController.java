@@ -80,8 +80,9 @@ public class JobController {
     }
 
     @GetMapping("/getAllJobs")
-    public ResponseEntity<JobSeekerJobResponseDTO>getAllListedJobs(){
-        JobSeekerJobResponseDTO jobSeekerJobResponseDTO = jobService.getAllJobs();
+    public ResponseEntity<JobSeekerJobResponseDTO>getAllListedJobs(Authentication authentication){
+        String userId = (String) authentication.getDetails();
+        JobSeekerJobResponseDTO jobSeekerJobResponseDTO = jobService.getAllJobs(userId);
         return ResponseEntity.status(HttpStatus.OK).body(jobSeekerJobResponseDTO);
 
     }

@@ -28,8 +28,8 @@ import {
   getAllJobPostingsHandler,
 } from "@/store/controllers/JobController";
 import showToast from "@/utils/showToast";
-import { selectAllJobs } from "@/store/slices/jobSlice";
 import { JobStatus } from "@/utils/enums";
+import { selectAppliedJobs } from "@/store/slices/userSlice";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -89,12 +89,12 @@ export const VerticalDotsIcon = ({
     </svg>
   );
 };
-const JobMarket = () => {
+const AppliedJobs = () => {
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const [filterValue, setFilterValue] = useState("");
 
-  const allListedJobs = useAppSelector(selectAllJobs);
+  const allListedJobs = useAppSelector(selectAppliedJobs);
   const rowsCount = [5, 10, 15];
   const [rowsPerPage, setRowsPerPage] = useState(rowsCount[0]);
   const pages = Math.ceil((allListedJobs?.length || 0) / rowsPerPage);
@@ -216,9 +216,8 @@ const JobMarket = () => {
               <TableColumn key="openingsCount">Openings</TableColumn>
               <TableColumn key="jobLocationType">Location Type</TableColumn>
               <TableColumn key="jobLocation">Location</TableColumn>
-              <TableColumn key="postedOn">Posted On</TableColumn>
-              <TableColumn key="actions">Actions</TableColumn>
             </TableHeader>
+
             <TableBody
               emptyContent={"You have not posted any jobs yet."}
               items={items}
@@ -231,14 +230,14 @@ const JobMarket = () => {
                         {columnKey === "actions" ? (
                           <div className="relative flex justify-end items-center gap-2">
                             <Dropdown
-                              isDisabled={item.jobStatus !== JobStatus.ACTIVE}
+                              isDisabled={item?.jobStatus !== JobStatus.ACTIVE}
                               className="bg-background border-1 border-default-200"
                             >
                               <DropdownTrigger>
                                 <Button
                                   isIconOnly
                                   radius="full"
-                                  size="lg"
+                                  size="sm"
                                   variant="light"
                                 >
                                   <VerticalDotsIcon className="text-default-400" />
@@ -284,4 +283,4 @@ const JobMarket = () => {
   );
 };
 
-export default JobMarket;
+export default AppliedJobs;

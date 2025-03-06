@@ -93,7 +93,6 @@ export interface JobSeekerJobApplication {
   openingsCount: number;
   jobLocationType: string;
   jobLocation: string;
-  noticePeriodDays: number;
 }
 
 export interface OfferDetail {
