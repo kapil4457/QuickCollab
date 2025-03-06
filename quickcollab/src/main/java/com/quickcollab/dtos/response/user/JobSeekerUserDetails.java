@@ -1,5 +1,6 @@
 package com.quickcollab.dtos.response.user;
 
+import com.quickcollab.dtos.response.conversation.UserConversationDetail;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
@@ -26,7 +27,7 @@ public class JobSeekerUserDetails {
     private String profilePicture;
     private String selfDescription;
     private List<JobHistory> jobHistory;
-    private List<Conversation> conversations;
+    private List<UserConversationDetail> conversations;
     private List<Work> works;
     private List<JobSeekerJobApplication> appliedJobs;
     private List<SocialMediaHandle> socialMediaHandles;

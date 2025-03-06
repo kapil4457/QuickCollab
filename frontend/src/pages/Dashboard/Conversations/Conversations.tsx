@@ -8,6 +8,8 @@ import { Tabs, Tab } from "@heroui/tabs";
 import { Briefcase, User } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ConversationSideBar } from "../components/ConversationSideBar";
+import { Conversation } from "@/store/dtos/helper";
+import ConversationDisplay from "./ConversationDisplay";
 
 const Conversations = () => {
   const user = useAppSelector(selectLoggedInUser);
@@ -15,30 +17,54 @@ const Conversations = () => {
   const [conversationMode, setConversationMode] = useState<
     "team" | "candidates"
   >("team");
+  const [filterVal, setFilterVal] = useState<string>("");
+
+  const [currentConversation, setCurrentConversation] =
+    useState<Conversation | null>(null);
 
   const conversations = useMemo(() => {
+    setCurrentConversation(null);
+    let currConversations = userConversations;
+    if (filterVal !== "") {
+      let currFilterVal = filterVal.toLowerCase().trim();
+      currConversations = currConversations?.filter((conversation) => {
+        let members = conversation.members.filter(
+          (member) =>
+            member.firstName.toLowerCase().includes(currFilterVal) ||
+            currFilterVal.includes(member.firstName.toLowerCase()) ||
+            member.lastName.toLowerCase().includes(currFilterVal) ||
+            currFilterVal.includes(member.lastName.toLowerCase())
+        );
+        if (
+          members.length > 0 ||
+          conversation.groupName.toLowerCase().includes(currFilterVal) ||
+          currFilterVal.includes(conversation.groupName.toLowerCase())
+        ) {
+          return true;
+        }
+      });
+    }
     if (user?.userRole === AllRoles.CONTENT_CREATOR) {
       let filteredConversations;
       if (conversationMode === "team") {
-        filteredConversations = userConversations?.filter((conversation) => {
+        filteredConversations = currConversations?.filter((conversation) => {
           return conversation.isTeamMemberConversation;
         });
       } else {
-        filteredConversations = userConversations?.filter((conversation) => {
+        filteredConversations = currConversations?.filter((conversation) => {
           return !conversation.isTeamMemberConversation;
         });
       }
 
-      return filteredConversations;
+      return filteredConversations || [];
     }
-
-    return userConversations;
-  }, [userConversations, conversationMode, user]);
+    return currConversations || [];
+  }, [userConversations, conversationMode, user, filterVal]);
   return (
     <DashboardLayout extendedClassName="!p-0">
       <div className="flex gap-2 overflow-hidden">
-        {user?.userRole === AllRoles.CONTENT_CREATOR ? (
-          <div className="w-full flex justify-center items-center">
+        <div className="w-full flex items-center p-4 gap-4 flex-col h-[100vh]">
+          {user?.userRole === AllRoles.CONTENT_CREATOR ? (
             <Tabs
               aria-label="Options"
               color="primary"
@@ -68,9 +94,24 @@ const Conversations = () => {
                 }
               />
             </Tabs>
+          ) : null}
+          <div className="h-full w-full">
+            {currentConversation === null ? (
+              <div className="flex h-full justify-center items-center text-gray-500 font-semibold text-2xl font-sans">
+                Please select a conversation
+              </div>
+            ) : (
+              <ConversationDisplay />
+            )}
           </div>
-        ) : null}
-        <ConversationSideBar />
+        </div>
+        <ConversationSideBar
+          currentConversation={currentConversation}
+          setCurrentConversation={setCurrentConversation}
+          conversations={conversations}
+          filterVal={filterVal}
+          setFilterVal={setFilterVal}
+        />
       </div>
     </DashboardLayout>
   );

@@ -1,18 +1,24 @@
 export interface Conversation {
   conversationId: number;
-  members: Array<User>;
+  members: Array<ConversationUser>;
   groupName: string;
   messages: Array<MessageDetail>;
   callLogs: Array<CallLog>;
   lastMessage: Date;
   isGroupChat: boolean;
   isTeamMemberConversation: boolean;
-  admin: User;
+  admin: ConversationUser;
 }
 
 export interface SocialMediaHandle {
   socialMediaPlatformName: string;
   socialMediaHandleUrl: string;
+}
+
+export interface ConversationUser {
+  userId: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface ContentCreatorEmployee {
