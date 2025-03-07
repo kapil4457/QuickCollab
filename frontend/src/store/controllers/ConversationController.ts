@@ -4,6 +4,7 @@ import { updateUserLoadingState } from "../slices/userSlice";
 import axios, { AxiosError } from "axios";
 import { selfDetails } from "./UserController";
 import { createConversationDTO } from "../dtos/request/conversationCreateDTO";
+import { MessageRequestDTO } from "../dtos/request/MessageRequestDTO";
 
 export const createConversation = async (
   dispatch: typeof dispatchType,
@@ -58,3 +59,5 @@ export const createConversation = async (
     dispatch(updateUserLoadingState(false));
   }
 };
+
+export const insertMessage = async (body: MessageRequestDTO) => {};

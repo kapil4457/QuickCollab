@@ -14,6 +14,7 @@ import { Conversation } from "@/store/dtos/helper";
 import { useAppSelector } from "@/store/hooks";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
 import { Avatar, AvatarGroup } from "@heroui/avatar";
+import CustomAvatar from "@/components/CustomAvatar";
 
 export function ConversationSideBar({
   conversations,
@@ -76,11 +77,13 @@ export function ConversationSideBar({
                         {isGroupChat ? (
                           <AvatarGroup isBordered max={3}>
                             {initials?.map((initial) => {
-                              return <Avatar size="sm" name={initial} />;
+                              return (
+                                <CustomAvatar size="sm" initials={initial} />
+                              );
                             })}
                           </AvatarGroup>
                         ) : (
-                          <Avatar size="sm" isBordered name={initials[0]} />
+                          <CustomAvatar size="sm" initials={initials[0]} />
                         )}
                       </div>
                       <div className="h-full">

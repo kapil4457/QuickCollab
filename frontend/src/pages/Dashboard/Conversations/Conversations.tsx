@@ -3,7 +3,6 @@ import { useAppSelector } from "@/store/hooks";
 import { selectAllConversations } from "@/store/slices/userSlice";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
 import { AllRoles } from "@/utils/enums";
-import { Table } from "@heroui/table";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Briefcase, User } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -95,13 +94,13 @@ const Conversations = () => {
               />
             </Tabs>
           ) : null}
-          <div className="h-full w-full">
+          <div className="h-full w-full flex items-center justify-center">
             {currentConversation === null ? (
               <div className="flex h-full justify-center items-center text-gray-500 font-semibold text-2xl font-sans">
                 Please select a conversation
               </div>
             ) : (
-              <ConversationDisplay />
+              <ConversationDisplay conversation={currentConversation} />
             )}
           </div>
         </div>

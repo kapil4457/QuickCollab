@@ -60,3 +60,16 @@ export const RegisterationMethod = Object.freeze({
   TWITTER_LOGIN: "TWITTER_LOGIN",
   CREDENTIALS_LOGIN: "CREDENTIALS_LOGIN",
 });
+
+export const ContentType = Object.freeze({
+  REEL: "REEL",
+  VIDEO: "VIDEO",
+  MESSAGE_POST: "MESSAGE_POST",
+});
+
+export const PlatformType = Object.freeze({
+  INSTAGRAM: "INSTAGRAM",
+  FACEBOOK: "FACEBOOK",
+  YOUTUBE: "YOUTUBE",
+  TWITTER: "TWITTER",
+});
