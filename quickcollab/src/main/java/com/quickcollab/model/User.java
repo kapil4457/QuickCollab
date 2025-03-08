@@ -3,6 +3,7 @@ package com.quickcollab.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.quickcollab.converter.*;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
@@ -37,7 +38,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String userId;
 
-
     @NotNull
     @Length(min = 2)
     private String firstName;
@@ -53,8 +53,7 @@ public class User {
     @JsonIgnore
     private String password;
 
-
-    private String selfDescription="";
+    private String selfDescription = "";
 
     @Convert(converter = JobHistoryListConverter.class)
     private List<JobHistory> jobHistory = new ArrayList<>();
@@ -71,28 +70,16 @@ public class User {
 
     @NotNull
     @URL
-    private String profilePicture="";
+    private String profilePicture = "";
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @JsonBackReference
-    private List<User> employees=new ArrayList<>();
+    @OneToMany(mappedBy = "postedBy", fetch = FetchType.LAZY)
+    private List<Job> jobsPosted = new ArrayList<>();
 
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<User> employees = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JsonBackReference
-    private List<Conversation> conversations = new ArrayList<>();
-
-    @OneToMany(fetch = FetchType.EAGER)
-    @JsonBackReference
-    private List<Work> works = new ArrayList<>();
-
-    @ManyToMany(fetch = FetchType.EAGER,mappedBy = "applicants")
-    @JsonBackReference
+    @ManyToMany(mappedBy = "applicants", fetch = FetchType.LAZY)
     private List<Job> appliedJobs = new ArrayList<>();
-
-    @OneToMany(fetch = FetchType.EAGER)
-    @JsonBackReference
-    private List<Job> jobsPosted =  new ArrayList<>();
 
     @Convert(converter = SocialMediaHandleAttributeConverter.class)
     private List<SocialMediaHandle> socialMediaHandles = new ArrayList<>();
@@ -101,10 +88,10 @@ public class User {
     private ReportingUser reportsTo;
 
     @Convert(converter = OfferDetailsConverter.class)
-    private List<OfferDetail> offersReceived =  new ArrayList<>();
+    private List<OfferDetail> offersReceived = new ArrayList<>();
 
     @NotNull
-    private Boolean isServingNoticePeriod=Boolean.FALSE;
+    private Boolean isServingNoticePeriod = Boolean.FALSE;
     private Date noticePeriodEndDate;
 
     @Convert(converter = JobHistoryConverter.class)
@@ -112,9 +99,12 @@ public class User {
 
     private Long currentJobNoticePeriodDays;
     private Date currentJobJoinedOn;
+
     @NotNull
     private Long currentSalary = 0L;
 
+    @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
+    private List<Conversation> conversations = new ArrayList<>();
     public User(@NotNull @Email String emailId, String password, List<GrantedAuthority> userRoles) {
 
     }

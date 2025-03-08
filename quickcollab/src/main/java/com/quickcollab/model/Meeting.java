@@ -24,10 +24,16 @@ public class Meeting {
     private String title;
     private String description;
 
-    @OneToMany
-    private List<User> members = new ArrayList<User>();
+    @ManyToMany
+    @JoinTable(
+            name = "meeting_members",
+            joinColumns = @JoinColumn(name = "meeting_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> members = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
     private User admin;
 
     private Boolean isCancelled;
@@ -35,7 +41,13 @@ public class Meeting {
 
     private Date scheduledFor;
     private Date endsOn;
-    @OneToMany
-    private List<User> activeMembers;
+
+    @ManyToMany
+    @JoinTable(
+            name = "meeting_active_members",
+            joinColumns = @JoinColumn(name = "meeting_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> activeMembers = new ArrayList<>();
 
 }

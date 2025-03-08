@@ -28,22 +28,30 @@ public class Conversation {
 
     @NotNull
     @ManyToMany
-    private List<User> members;
+    @JoinTable(
+            name = "user_conversation",
+            joinColumns = @JoinColumn(name = "conversation_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> members = new ArrayList<>();
 
     private String groupName;
 
-    @Convert(converter = MessageDetailConverter.class)
-    private List<MessageDetail> messages = new ArrayList<>();
+//    @Convert(converter = MessageDetailConverter.class)
+//    private List<MessageDetail> messages = new ArrayList<>();
+    @OneToMany
+    private List<Message> messages = new ArrayList<>();
+
 
     @Convert(converter = CallLogConverter.class)
     private List<CallLog> callLogs = new ArrayList<>();
+
     private Date lastMessage;
+    private Boolean isGroupChat = false;
+    private Boolean isTeamMemberConversation = false;
 
-    private Boolean isGroupChat=false;
-    private Boolean isTeamMemberConversation=false;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
     private User admin;
-
 
 }

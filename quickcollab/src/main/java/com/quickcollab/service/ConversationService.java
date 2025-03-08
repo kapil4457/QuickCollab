@@ -3,7 +3,7 @@ package com.quickcollab.service;
 import com.quickcollab.dtos.request.ConversationCreateDTO;
 import com.quickcollab.dtos.request.MeetingCreateDTO;
 import com.quickcollab.dtos.request.MessageDTO;
-import com.quickcollab.dtos.response.conversation.ConversationResponseDTO;
+import com.quickcollab.dtos.response.conversation.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.enums.UserRole;
@@ -11,12 +11,14 @@ import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Meeting;
+import com.quickcollab.model.Message;
 import com.quickcollab.model.User;
 import com.quickcollab.pojo.CallLog;
 import com.quickcollab.pojo.MessageDetail;
 import com.quickcollab.pojo.Pair;
 import com.quickcollab.repository.ConversationRepository;
 import com.quickcollab.repository.MeetingRepository;
+import com.quickcollab.repository.MessageRepository;
 import com.quickcollab.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -32,6 +34,7 @@ public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final MeetingRepository meetingRepository;
     private final ModelMapper modelMapper;
+    private final MessageRepository messageRepository;
 
     public ConversationResponseDTO createConversation(ConversationCreateDTO conversationCreateDTO, String userRole, String authUserId) {
         List<User> members = new ArrayList<>(conversationCreateDTO.getMembersIds().stream().map(memberId -> userRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", memberId))).toList());
@@ -80,19 +83,47 @@ public class ConversationService {
 
     }
 
-    public ResponseDTO insertMessage(MessageDTO messageDTO, String userId) {
+    public MessageResponseDTO insertMessage(MessageDTO messageDTO, String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        UserRole userRole = user.getUserRole();
         Long conversationId = messageDTO.getConversationId();
         Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(() -> new ResourceNotFoundException("Conversation", "id", conversationId.toString()));
+        if(messageDTO.getIsUploadRequest()){
+            if(userRole.equals(UserRole.JOB_SEEKER)){
+                throw new GenericError("You are not allowed to perform this operation");
+            }
+            if(!conversation.getMembers().contains(user)){
+                throw new GenericError("You are not allowed to perform this operation");
+            }
+        }
+        String fileUrl="";
+        if(messageDTO.getIsUploadRequest()){
+            // upload to cloud storage
+            // take that link and save it as message
+        }
         if (!conversation.getMembers().contains(user)) {
             throw new GenericError("Can not send message as you are not a part of this conversation.");
         }
         Date currDate = new Date();
-        MessageDetail messageDetail = new MessageDetail(messageDTO.getMessage(), messageDTO.getMessageType(), user, currDate);
-        conversation.getMessages().add(messageDetail);
+        Message message = new Message(conversation,messageDTO.getMessage(),
+                fileUrl,
+                messageDTO.getDescription(),
+                messageDTO.getMessageType(),
+                user,
+                currDate,
+                messageDTO.getIsUploadRequest(),
+                messageDTO.getUploadTo(),
+                messageDTO.getUploadTypeMapping());
+       Message savedMessage =  messageRepository.save(message);
+        conversation.getMessages().add(savedMessage);
         conversation.setLastMessage(currDate);
+        MessageDetail messageDetail = new MessageDetail(message.getMessage(),message.getFileUrl(),message.getDescription(),message.getMessageType(),message.getAuthor(),message.getSentOn(),message.getIsUploadRequest(),message.getUploadTo(),message.getUploadTypeMapping());
+
         conversationRepository.save(conversation);
-        return new ResponseDTO("Message added successfully !", true);
+        MessageDetailResponse messageDetailResponse = modelMapper.map(messageDetail, MessageDetailResponse.class);
+        ConversationUser conversationUser = new ConversationUser(userId , user.getFirstName(), user.getLastName());
+        messageDetailResponse.setAuthor(conversationUser);
+        return new MessageResponseDTO("Message added successfully !", true,messageDetailResponse,currDate);
     }
 
     public ResponseDTO addMember(String authUserId, String memberId, Long conversationId) {
@@ -279,5 +310,50 @@ public class ConversationService {
 
 
 
+    }
+
+    public LoggedInUserConversationsDTO getAllConversations(String authUserId) {
+        User user = userRepository.findById(authUserId).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
+        List<Conversation> conversations = conversationRepository.findAll().stream().filter(conversation -> {
+            return conversation.getMembers().contains(user);
+        }).toList();
+        List<UserConversationDetail> userConversationDetails = conversations.stream().map((conversation)->{
+            UserConversationDetail userConversationsDTO = new UserConversationDetail();
+            userConversationsDTO.setConversationId(conversation.getConversationId());
+            userConversationsDTO.setIsTeamMemberConversation(conversation.getIsTeamMemberConversation());
+            userConversationsDTO.setGroupName(conversation.getGroupName());
+            userConversationsDTO.setCallLogs(conversation.getCallLogs());
+            List<MessageDetailResponse> messages = conversation.getMessages().stream().map((message)->{
+                MessageDetailResponse messageDetailResponse = new MessageDetailResponse();
+                messageDetailResponse.setMessage(message.getMessage());
+                messageDetailResponse.setDescription(message.getDescription());
+                messageDetailResponse.setFileUrl(message.getFileUrl());
+                messageDetailResponse.setSentOn(message.getSentOn());
+                messageDetailResponse.setUploadTo(message.getUploadTo());
+                messageDetailResponse.setIsUploadRequest(message.getIsUploadRequest());
+                messageDetailResponse.setMessageType(message.getMessageType());
+                messageDetailResponse.setUploadTypeMapping(message.getUploadTypeMapping());
+                ConversationUser author = new ConversationUser();
+                author.setUserId(message.getAuthor().getUserId());
+                author.setFirstName(message.getAuthor().getFirstName());
+                author.setLastName(message.getAuthor().getLastName());
+                messageDetailResponse.setAuthor(author);
+                return messageDetailResponse;
+//                 MessageDetail messageDetail =  new MessageDetail(message.getMessage(),message.getFileUrl(),message.getDescription(),message.getMessageType(),message.getSentOn(),message.getIsUploadRequest(),message.getUploadTo(),message.getUploadTypeMapping());
+            }).toList();
+            userConversationsDTO.setMessages(messages);
+            userConversationsDTO.setIsGroupChat(conversation.getIsGroupChat());
+            userConversationsDTO.setLastMessage(conversation.getLastMessage());
+            userConversationsDTO.setAdmin(new ConversationUser(conversation.getAdmin().getUserId() , conversation.getAdmin().getFirstName() , conversation.getAdmin().getLastName()));
+            userConversationsDTO.setMembers(conversation.getMembers().stream().map((member)->{
+                return new ConversationUser(member.getUserId() , member.getFirstName() , member.getLastName());
+            }).toList());
+            return userConversationsDTO;
+        }).toList();
+        LoggedInUserConversationsDTO loggedInUserConversationsDTO = new LoggedInUserConversationsDTO();
+        loggedInUserConversationsDTO.setMessage("Conversations fetched successfully !");
+        loggedInUserConversationsDTO.setSuccess(true);
+        loggedInUserConversationsDTO. setConversations(userConversationDetails);
+        return loggedInUserConversationsDTO;
     }
 }

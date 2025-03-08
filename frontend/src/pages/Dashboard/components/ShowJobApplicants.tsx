@@ -202,10 +202,7 @@ const ShowJobApplicants = forwardRef((props: propsType, ref) => {
                   <TableColumn key="profile">Profile</TableColumn>
                   <TableColumn key="message">Message</TableColumn>
                 </TableHeader>
-                <TableBody
-                  emptyContent={"You have not posted any jobs yet."}
-                  items={items}
-                >
+                <TableBody emptyContent={"No applicants yet"} items={items}>
                   {(item) => {
                     return (
                       <TableRow key={item?.userId}>

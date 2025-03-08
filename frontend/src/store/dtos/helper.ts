@@ -52,9 +52,14 @@ export interface ContentCreatorJobPost {
 
 export interface MessageDetail {
   message: string;
+  fileUrl: string;
+  description: string;
   messageType: string;
-  author: User;
+  author: ConversationUser;
   sentOn: Date;
+  isUploadRequest: boolean;
+  uploadTo: Array<string>;
+  uploadTypeMapping: Map<string, string>;
 }
 
 export interface DateRange {

@@ -27,7 +27,6 @@ public class JobSeekerUserDetails {
     private String profilePicture;
     private String selfDescription;
     private List<JobHistory> jobHistory;
-    private List<UserConversationDetail> conversations;
     private List<Work> works;
     private List<JobSeekerJobApplication> appliedJobs;
     private List<SocialMediaHandle> socialMediaHandles;

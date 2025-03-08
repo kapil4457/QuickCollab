@@ -1,10 +1,17 @@
 import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
-import { dispatchType } from "../slices/userSlice";
+import {
+  dispatchType,
+  // updateLocalConversationByConversationId,
+} from "../slices/userSlice";
 import { updateUserLoadingState } from "../slices/userSlice";
 import axios, { AxiosError } from "axios";
 import { selfDetails } from "./UserController";
 import { createConversationDTO } from "../dtos/request/conversationCreateDTO";
 import { MessageRequestDTO } from "../dtos/request/MessageRequestDTO";
+import {
+  updateConversations,
+  updateLocalConversationByConversationId,
+} from "../slices/conversationSlice";
 
 export const createConversation = async (
   dispatch: typeof dispatchType,
@@ -60,4 +67,115 @@ export const createConversation = async (
   }
 };
 
-export const insertMessage = async (body: MessageRequestDTO) => {};
+export const insertMessage = async (
+  dispatch: typeof dispatchType,
+  body: MessageRequestDTO
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    let conversationId = body.conversationId;
+    const headers = {
+      Authorization: authorizationToken,
+    };
+    const { data } = await axios.put("/api/insertMessage", body, {
+      headers: headers,
+    });
+    const { success, message, messageDetail, lastMessage } = data;
+    if (!success) {
+      return {
+        message: message,
+        success: false,
+      };
+    }
+
+    dispatch(
+      updateLocalConversationByConversationId({
+        conversationId,
+        messageDetail,
+        lastMessage,
+      })
+    );
+
+    // selfDetails(dispatch, authorizationToken);
+    return {
+      message: message,
+      success: success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  }
+};
+
+export const getAllConversations = async (dispatch: typeof dispatchType) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    const headers = {
+      Authorization: authorizationToken,
+    };
+    const { data } = await axios.get("/api/all/conversations", {
+      headers: headers,
+    });
+    const { success, message, conversations } = data;
+    if (!success) {
+      return {
+        message: message,
+        success: false,
+      };
+    }
+
+    dispatch(updateConversations(conversations));
+
+    return {
+      message: message,
+      success: success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  }
+};

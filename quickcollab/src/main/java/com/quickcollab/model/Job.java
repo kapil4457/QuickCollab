@@ -38,7 +38,7 @@ public class Job {
     private JobStatus jobStatus;
 
     @NotNull
-    @Min(value = 1)
+    @Min(1)
     private Long openingsCount;
 
     @NotNull
@@ -51,17 +51,16 @@ public class Job {
             joinColumns = @JoinColumn(name = "job_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    @JsonManagedReference
-    private List<User> applicants;
+    private List<User> applicants = new ArrayList<>();
 
     @NotNull
     private String jobLocation;
 
     @Convert(converter = OfferDetailsConverter.class)
-    private List<OfferDetail> offeredTo= new ArrayList<>();
+    private List<OfferDetail> offeredTo = new ArrayList<>();
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posted_by")
     private User postedBy;
 
@@ -69,8 +68,8 @@ public class Job {
     private Date postedOn;
 
     @NotNull
-    @ManyToOne
-    @JoinColumn(name="updated_by")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
     private User updatedBy;
 
     @NotNull
@@ -78,6 +77,5 @@ public class Job {
 
     @NotNull
     private Long noticePeriodDays;
-
 
 }

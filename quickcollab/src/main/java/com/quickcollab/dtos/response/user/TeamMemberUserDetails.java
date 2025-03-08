@@ -27,7 +27,6 @@ public class TeamMemberUserDetails {
     private String emailId;
     private String profilePicture;
     private String selfDescription;
-    private List<UserConversationDetail> conversations;
     private List<SocialMediaHandle> socialMediaHandles;
     private List<JobSeekerJobApplication> appliedJobs;
     private List<Work> works;

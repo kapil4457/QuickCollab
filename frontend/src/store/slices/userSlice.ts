@@ -7,13 +7,18 @@ import type {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { loggedInUser } from "../dtos/response/LoginResponseDTO";
-import { ContentCreatorJobPost } from "../dtos/helper";
+import { ContentCreatorJobPost, MessageDetail } from "../dtos/helper";
 
 // Define a type for the slice state
 export interface UserState {
   user: loggedInUser | null;
   jwtToken: string;
   loading: boolean;
+}
+interface ConversationUpdatePayload {
+  conversationId: number;
+  messageDetail: MessageDetail;
+  lastMessage: Date;
 }
 
 export let dispatchType: ThunkDispatch<
@@ -52,11 +57,27 @@ export const userSlice = createSlice({
         state.user.jobsPosted = action.payload;
       }
     },
+    // updateLocalConversationByConversationId: (
+    //   state,
+    //   action: PayloadAction<ConversationUpdatePayload>
+    // ) => {
+    //   let conversations = state.user?.conversations;
+    //   conversations?.forEach((conversation) => {
+    //     if (conversation.conversationId === action.payload.conversationId) {
+    //       conversation.messages.push(action.payload.messageDetail);
+    //       conversation.lastMessage = action.payload.lastMessage;
+    //     }
+    //   });
+    // },
   },
 });
 
-export const { updateUser, updateUserLoadingState, updatePostedJobs } =
-  userSlice.actions;
+export const {
+  updateUser,
+  updateUserLoadingState,
+  updatePostedJobs,
+  // updateLocalConversationByConversationId,
+} = userSlice.actions;
 
 export const selectJwtToken = (state: RootState) => state.user.jwtToken;
 export const selectUserLoadingState = (state: RootState) => state.user.loading;
@@ -74,10 +95,10 @@ export const selectAppliedJobs = (state: RootState) => {
   return null;
 };
 
-export const selectAllConversations = (state: RootState) => {
-  if (state.user.user && "conversations" in state.user.user) {
-    return state.user.user.conversations;
-  }
-};
+// export const selectAllConversations = (state: RootState) => {
+//   if (state.user.user && "conversations" in state.user.user) {
+//     return state.user.user.conversations;
+//   }
+// };
 
 export default userSlice.reducer;

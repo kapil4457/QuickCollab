@@ -310,7 +310,7 @@ const PostedJobs = () => {
               <TableColumn key="jobDescription">Description</TableColumn>
               <TableColumn key="jobStatus">Status</TableColumn>
               <TableColumn key="openingsCount">Openings</TableColumn>
-              <TableColumn key="openingsCount">Notice Poeriod</TableColumn>
+              <TableColumn key="noticePeriodDays">Notice Period</TableColumn>
               <TableColumn key="jobLocationType">Location Type</TableColumn>
               <TableColumn key="jobLocation">Location</TableColumn>
               <TableColumn key="applicants">Applicants</TableColumn>
@@ -359,7 +359,7 @@ const PostedJobs = () => {
                                 >
                                   Edit
                                 </DropdownItem>
-                                <DropdownItem key="delete">Delete</DropdownItem>
+                                {/* <DropdownItem key="delete">Delete</DropdownItem> */}
                               </DropdownMenu>
                             </Dropdown>
                           </div>

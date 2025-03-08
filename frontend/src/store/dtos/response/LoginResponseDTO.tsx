@@ -17,7 +17,7 @@ export interface ContentCreatorUserDetails {
   emailId: string;
   profilePicture: string;
   selfDescription: string;
-  conversations: Array<Conversation>;
+  // conversations: Array<Conversation>;
   socialMediaHandles: Array<SocialMediaHandle>;
   employees: Array<ContentCreatorEmployee>;
   jobsPosted: Array<ContentCreatorJobPost>;
@@ -33,7 +33,7 @@ export interface JobSeekerUserDetails {
   profilePicture: string;
   selfDescription: string;
   jobHistory: Array<JobHistory>;
-  conversations: Array<Conversation>;
+  // conversations: Array<Conversation>;
   works: Array<Work>;
   appliedJobs: Array<JobSeekerJobApplication>;
   socialMediaHandles: Array<SocialMediaHandle>;
@@ -48,7 +48,7 @@ export interface TeamMemberUserDetails {
   emailId: string;
   profilePicture: string;
   selfDescription: string;
-  conversations: Array<Conversation>;
+  // conversations: Array<Conversation>;
   socialMediaHandles: Array<SocialMediaHandle>;
   appliedJobs: Array<JobSeekerJobApplication>;
   works: Array<Work>;

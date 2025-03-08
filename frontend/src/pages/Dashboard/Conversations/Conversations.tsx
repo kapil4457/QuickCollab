@@ -1,6 +1,6 @@
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { useAppSelector } from "@/store/hooks";
-import { selectAllConversations } from "@/store/slices/userSlice";
+// import { selectAllConversations } from "@/store/slices/userSlice";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
 import { AllRoles } from "@/utils/enums";
 import { Tabs, Tab } from "@heroui/tabs";
@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { ConversationSideBar } from "../components/ConversationSideBar";
 import { Conversation } from "@/store/dtos/helper";
 import ConversationDisplay from "./ConversationDisplay";
+import { selectAllConversations } from "@/store/slices/conversationSlice";
 
 const Conversations = () => {
   const user = useAppSelector(selectLoggedInUser);
@@ -22,7 +23,6 @@ const Conversations = () => {
     useState<Conversation | null>(null);
 
   const conversations = useMemo(() => {
-    setCurrentConversation(null);
     let currConversations = userConversations;
     if (filterVal !== "") {
       let currFilterVal = filterVal.toLowerCase().trim();
@@ -61,8 +61,8 @@ const Conversations = () => {
   }, [userConversations, conversationMode, user, filterVal]);
   return (
     <DashboardLayout extendedClassName="!p-0">
-      <div className="flex gap-2 overflow-hidden">
-        <div className="w-full flex items-center p-4 gap-4 flex-col h-[100vh]">
+      <div className="flex gap-2 overflow-hidden w-full">
+        <div className="w-full flex items-center p-4 gap-2 md:gap-4 flex-col h-[100vh]  overflow-hidden">
           {user?.userRole === AllRoles.CONTENT_CREATOR ? (
             <Tabs
               aria-label="Options"
@@ -94,13 +94,15 @@ const Conversations = () => {
               />
             </Tabs>
           ) : null}
-          <div className="h-full w-full flex items-center justify-center">
+          <div className="h-full  w-full flex items-center justify-center">
             {currentConversation === null ? (
               <div className="flex h-full justify-center items-center text-gray-500 font-semibold text-2xl font-sans">
                 Please select a conversation
               </div>
             ) : (
-              <ConversationDisplay conversation={currentConversation} />
+              <ConversationDisplay
+                conversationId={currentConversation?.conversationId}
+              />
             )}
           </div>
         </div>

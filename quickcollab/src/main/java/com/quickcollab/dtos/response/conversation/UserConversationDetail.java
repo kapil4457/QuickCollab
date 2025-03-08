@@ -25,7 +25,7 @@ public class UserConversationDetail {
     private Long conversationId;
     private List<ConversationUser> members;
     private String groupName;
-    private List<MessageDetail> messages = new ArrayList<>();
+    private List<MessageDetailResponse> messages = new ArrayList<>();
     private List<CallLog> callLogs = new ArrayList<>();
     private Date lastMessage;
     private Boolean isGroupChat=false;

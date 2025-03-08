@@ -4,6 +4,7 @@ import com.quickcollab.dtos.request.UserRegisterDTO;
 import com.quickcollab.dtos.response.conversation.ConversationUser;
 import com.quickcollab.dtos.response.conversation.UserConversationDetail;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
+import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.UserRole;
@@ -63,30 +64,38 @@ public class UserService {
         return Optional.empty();
     }
 
-    @Transactional
+//    @Transactional
     public  LoginResponseDTO<?> getUserByEmail(String emailId){
         Optional<User> optionalUser = findByEmail(emailId);
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
-            List<Conversation> conversations = new ArrayList<>(user.getConversations());
-            List<UserConversationDetail> userConversationDetails =conversations.stream().map((conversation)-> {
-                UserConversationDetail userConversationDetail = modelMapper.map(conversation, UserConversationDetail.class);
-                List<ConversationUser> conversationUsers = conversation.getMembers().stream().map((member)-> modelMapper.map(member, ConversationUser.class)).toList();
-                ConversationUser admin = modelMapper.map(conversation.getAdmin(), ConversationUser.class);
-                modelMapper.map(user.getConversations(),UserConversationDetail.class);
-                userConversationDetail.setAdmin(admin);
-                userConversationDetail.setMembers(conversationUsers);
-                return userConversationDetail;
-            }).toList();
             String userRole = optionalUser.get().getUserRole().toString();
             if(userRole.equals(UserRole.CONTENT_CREATOR.toString())){
                 ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(user, ContentCreatorUserDetails.class);
                 List<ContentCreatorEmployee> employees = user.getEmployees().stream().map(employee -> modelMapper.map(employee , ContentCreatorEmployee.class)).toList();
                 List<Job> postedJobs = user.getJobsPosted();
-                List<ContentCreatorJobPost> jobsPosted = postedJobs.stream().map(jobPost -> modelMapper.map(jobPost, ContentCreatorJobPost.class)).toList();
+                List<ContentCreatorJobPost> jobsPosted = postedJobs.stream().map(jobPost -> {
+                    ContentCreatorJobPost contentCreatorJobPost = new ContentCreatorJobPost();
+                    contentCreatorJobPost.setJobLocation(jobPost.getJobLocation());
+                    contentCreatorJobPost.setJobName(jobPost.getJobName());
+                    contentCreatorJobPost.setJobDescription(jobPost.getJobDescription());
+                    contentCreatorJobPost.setJobStatus(jobPost.getJobStatus().toString());
+                    contentCreatorJobPost.setJobId(jobPost.getJobId());
+                    contentCreatorJobPost.setPostedOn(jobPost.getPostedOn());
+                    contentCreatorJobPost.setJobLocationType(jobPost.getJobLocationType().toString());
+                    contentCreatorJobPost.setOpeningsCount(jobPost.getOpeningsCount());
+                    contentCreatorJobPost.setNoticePeriodDays(jobPost.getNoticePeriodDays());
+                    List<ContentCreatorEmployee> applicants =jobPost.getApplicants().stream().map((applicant)->{
+                                    return modelMapper.map(applicant, ContentCreatorEmployee.class);
+                    }).toList();
+                    contentCreatorJobPost.setApplicants(applicants);
+                    return contentCreatorJobPost;
+                }
+                ).toList();
+
+
                 contentCreatorUserDetails.setEmployees(employees);
                 contentCreatorUserDetails.setJobsPosted(jobsPosted);
-                contentCreatorUserDetails.setConversations(userConversationDetails);
                 LoginResponseDTO<ContentCreatorUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(contentCreatorUserDetails);
                 loginResponseDTO.setSuccess(true);
@@ -95,7 +104,18 @@ public class UserService {
 
             }else if(userRole.equals(UserRole.JOB_SEEKER.toString())){
                 JobSeekerUserDetails jobSeekerUserDetails = modelMapper.map(user, JobSeekerUserDetails.class);
-                jobSeekerUserDetails.setConversations(userConversationDetails);
+                List<JobSeekerJobApplication> appliedJobs = user.getAppliedJobs().stream().map(job->{
+                    JobSeekerJobApplication appliedJob = new JobSeekerJobApplication();
+                    appliedJob.setJobDescription(job.getJobDescription());
+                    appliedJob.setJobName(job.getJobName());
+                    appliedJob.setJobId(job.getJobId());
+                    appliedJob.setJobStatus(job.getJobStatus().toString());
+                    appliedJob.setJobLocation(job.getJobLocation());
+                    appliedJob.setJobLocationType(job.getJobLocationType().toString());
+                    appliedJob.setOpeningsCount(job.getOpeningsCount());
+                    return appliedJob;
+                }).toList();
+                jobSeekerUserDetails.setAppliedJobs(appliedJobs);
                 LoginResponseDTO<JobSeekerUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(jobSeekerUserDetails);
                 loginResponseDTO.setSuccess(true);
@@ -104,7 +124,18 @@ public class UserService {
 
             }else{
                 TeamMemberUserDetails teamMemberUserDetails = modelMapper.map(user, TeamMemberUserDetails.class);
-                teamMemberUserDetails.setConversations(userConversationDetails);
+                List<JobSeekerJobApplication> appliedJobs = user.getAppliedJobs().stream().map(job->{
+                    JobSeekerJobApplication appliedJob = new JobSeekerJobApplication();
+                    appliedJob.setJobDescription(job.getJobDescription());
+                    appliedJob.setJobName(job.getJobName());
+                    appliedJob.setJobId(job.getJobId());
+                    appliedJob.setJobStatus(job.getJobStatus().toString());
+                    appliedJob.setJobLocation(job.getJobLocation());
+                    appliedJob.setJobLocationType(job.getJobLocationType().toString());
+                    appliedJob.setOpeningsCount(job.getOpeningsCount());
+                    return appliedJob;
+                }).toList();
+                teamMemberUserDetails.setAppliedJobs(appliedJobs);
                 LoginResponseDTO<TeamMemberUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(teamMemberUserDetails);
                 loginResponseDTO.setSuccess(true);

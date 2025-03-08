@@ -5,6 +5,9 @@ import {
 } from "@/components/ui/sidebar";
 import { SideBar } from "../pages/Dashboard/components/SideBar";
 import RootLayout from "./RootLayout";
+import { useEffect } from "react";
+import { getAllConversations } from "@/store/controllers/ConversationController";
+import { useAppDispatch } from "@/store/hooks";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +16,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
   extendedClassName?: string;
 }) {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    getAllConversations(dispatch);
+  }, []);
   return (
     <RootLayout>
       <SidebarProvider>

@@ -25,7 +25,6 @@ public class ContentCreatorUserDetails  {
     private String emailId;
     private String profilePicture;
     private String selfDescription;
-    private List<UserConversationDetail> conversations;
     private List<SocialMediaHandle> socialMediaHandles;
     private List<ContentCreatorEmployee> employees;
     private List<ContentCreatorJobPost> jobsPosted;

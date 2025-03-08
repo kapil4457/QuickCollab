@@ -4,6 +4,8 @@ import com.quickcollab.dtos.request.ConversationCreateDTO;
 import com.quickcollab.dtos.request.MeetingCreateDTO;
 import com.quickcollab.dtos.request.MessageDTO;
 import com.quickcollab.dtos.response.conversation.ConversationResponseDTO;
+import com.quickcollab.dtos.response.conversation.LoggedInUserConversationsDTO;
+import com.quickcollab.dtos.response.conversation.MessageResponseDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
@@ -24,6 +26,19 @@ public class ConversationController {
 
     private final ConversationService conversationService;
 
+    @GetMapping("/all/conversations")
+    public ResponseEntity<LoggedInUserConversationsDTO> getAllConversations(Authentication authentication){
+        try{
+            String authUserId = authentication.getDetails().toString();
+            LoggedInUserConversationsDTO responseDTO = conversationService.getAllConversations(authUserId);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        }catch(ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new LoggedInUserConversationsDTO(resourceNotFoundException.getMessage() , false,null));
+        }catch(GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoggedInUserConversationsDTO(genericError.getMessage() , false,null));
+        }
+    }
+
     @PostMapping("/createConversation")
     public ResponseEntity<ConversationResponseDTO> createConversation(Authentication authentication , @RequestBody @Valid ConversationCreateDTO conversationCreateDTO) {
         try{
@@ -39,14 +54,14 @@ public class ConversationController {
     }
 
     @PutMapping("/insertMessage")
-    public ResponseEntity<ResponseDTO> insertMessage(Authentication authentication, @RequestBody MessageDTO messageDetail) {
+    public ResponseEntity<MessageResponseDTO> insertMessage(Authentication authentication, @RequestBody MessageDTO messageDetail) {
         try{
 
         String userId = authentication.getDetails().toString();
-        ResponseDTO responseDTO = conversationService.insertMessage(messageDetail,userId);
+            MessageResponseDTO responseDTO = conversationService.insertMessage(messageDetail,userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponseDTO(resourceNotFoundException.getMessage() , false,null,null));
         }
     }
 
