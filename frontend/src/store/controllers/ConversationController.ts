@@ -86,7 +86,7 @@ export const insertMessage = async (
     const { data } = await axios.put("/api/insertMessage", body, {
       headers: headers,
     });
-    const { success, message, messageDetail, lastMessage } = data;
+    const { success, message } = data;
     if (!success) {
       return {
         message: message,
@@ -94,13 +94,13 @@ export const insertMessage = async (
       };
     }
 
-    dispatch(
-      updateLocalConversationByConversationId({
-        conversationId,
-        messageDetail,
-        lastMessage,
-      })
-    );
+    // dispatch(
+    //   updateLocalConversationByConversationId({
+    //     conversationId,
+    //     messageDetail,
+    //     lastMessage,
+    //   })
+    // );
 
     // selfDetails(dispatch, authorizationToken);
     return {
@@ -136,6 +136,7 @@ export const getAllConversations = async (dispatch: typeof dispatchType) => {
       return {
         success: false,
         message: "Please login in to access this functionality",
+        conversations: null,
       };
     }
     const headers = {
@@ -149,6 +150,7 @@ export const getAllConversations = async (dispatch: typeof dispatchType) => {
       return {
         message: message,
         success: false,
+        conversations: null,
       };
     }
 
@@ -157,12 +159,14 @@ export const getAllConversations = async (dispatch: typeof dispatchType) => {
     return {
       message: message,
       success: success,
+      conversations: conversations,
     };
   } catch (err) {
     if (err instanceof AxiosError) {
       return {
         message: err.response?.data?.message || "Something went wrong",
         success: false,
+        conversations: null,
       };
     }
 
@@ -170,12 +174,14 @@ export const getAllConversations = async (dispatch: typeof dispatchType) => {
       return {
         message: err.message,
         success: false,
+        conversations: null,
       };
     }
 
     return {
       message: "Unknown error occurred",
       success: false,
+      conversations: null,
     };
   }
 };

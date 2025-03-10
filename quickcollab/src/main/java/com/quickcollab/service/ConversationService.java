@@ -7,6 +7,7 @@ import com.quickcollab.dtos.response.conversation.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.enums.UserRole;
+import com.quickcollab.events.MessageSentEvent;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.Conversation;
@@ -22,6 +23,8 @@ import com.quickcollab.repository.MessageRepository;
 import com.quickcollab.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -35,6 +38,8 @@ public class ConversationService {
     private final MeetingRepository meetingRepository;
     private final ModelMapper modelMapper;
     private final MessageRepository messageRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     public ConversationResponseDTO createConversation(ConversationCreateDTO conversationCreateDTO, String userRole, String authUserId) {
         List<User> members = new ArrayList<>(conversationCreateDTO.getMembersIds().stream().map(memberId -> userRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", memberId))).toList());
@@ -123,6 +128,9 @@ public class ConversationService {
         MessageDetailResponse messageDetailResponse = modelMapper.map(messageDetail, MessageDetailResponse.class);
         ConversationUser conversationUser = new ConversationUser(userId , user.getFirstName(), user.getLastName());
         messageDetailResponse.setAuthor(conversationUser);
+
+        eventPublisher.publishEvent(new MessageSentEvent(this, conversationId, messageDetailResponse));
+
         return new MessageResponseDTO("Message added successfully !", true,messageDetailResponse,currDate);
     }
 
@@ -340,7 +348,8 @@ public class ConversationService {
                 messageDetailResponse.setAuthor(author);
                 return messageDetailResponse;
 //                 MessageDetail messageDetail =  new MessageDetail(message.getMessage(),message.getFileUrl(),message.getDescription(),message.getMessageType(),message.getSentOn(),message.getIsUploadRequest(),message.getUploadTo(),message.getUploadTypeMapping());
-            }).toList();
+            }).toList().reversed();
+
             userConversationsDTO.setMessages(messages);
             userConversationsDTO.setIsGroupChat(conversation.getIsGroupChat());
             userConversationsDTO.setLastMessage(conversation.getLastMessage());

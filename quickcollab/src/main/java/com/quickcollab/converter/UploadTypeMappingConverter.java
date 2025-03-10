@@ -19,7 +19,6 @@ public class UploadTypeMappingConverter implements AttributeConverter<Map<Platfo
     @Override
     public String convertToDatabaseColumn(Map<Platform, ContentType> uploadTypeMapping) {
         try {
-            System.out.println("Converting uploadTypeMapping to JSON: " + uploadTypeMapping);
             return objectMapper.writeValueAsString(uploadTypeMapping);
         } catch (JsonProcessingException jpe) {
             return "{}";
@@ -29,8 +28,8 @@ public class UploadTypeMappingConverter implements AttributeConverter<Map<Platfo
     @Override
     public Map<Platform, ContentType> convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to uploadTypeMapping: " + value);
-            return objectMapper.readValue(value, new TypeReference<Map<Platform, ContentType>>() {});        } catch (JsonProcessingException e) {
+            return objectMapper.readValue(value, new TypeReference<Map<Platform, ContentType>>() {});
+        } catch (JsonProcessingException e) {
             return new HashMap<>();
         }
     }

@@ -26,7 +26,7 @@ public class ConversationController {
 
     private final ConversationService conversationService;
 
-    @GetMapping("/all/conversations")
+    @GetMapping("/api/all/conversations")
     public ResponseEntity<LoggedInUserConversationsDTO> getAllConversations(Authentication authentication){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -39,7 +39,7 @@ public class ConversationController {
         }
     }
 
-    @PostMapping("/createConversation")
+    @PostMapping("/api/createConversation")
     public ResponseEntity<ConversationResponseDTO> createConversation(Authentication authentication , @RequestBody @Valid ConversationCreateDTO conversationCreateDTO) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
@@ -53,19 +53,19 @@ public class ConversationController {
         }
     }
 
-    @PutMapping("/insertMessage")
+    @PutMapping("/api/insertMessage")
     public ResponseEntity<MessageResponseDTO> insertMessage(Authentication authentication, @RequestBody MessageDTO messageDetail) {
         try{
 
         String userId = authentication.getDetails().toString();
-            MessageResponseDTO responseDTO = conversationService.insertMessage(messageDetail,userId);
+        MessageResponseDTO responseDTO = conversationService.insertMessage(messageDetail,userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponseDTO(resourceNotFoundException.getMessage() , false,null,null));
         }
     }
 
-    @PutMapping("/addMember")
+    @PutMapping("/api/addMember")
     public ResponseEntity<ResponseDTO> addMember(Authentication authentication , @RequestParam String memberId,@RequestParam Long conversationId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -78,7 +78,7 @@ public class ConversationController {
         }
     }
 
-    @PutMapping("/removeMember")
+    @PutMapping("/api/removeMember")
     public ResponseEntity<ResponseDTO> removeMember(Authentication authentication , @RequestParam String memberId,@RequestParam Long conversationId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -93,7 +93,7 @@ public class ConversationController {
 
 
     // For team members
-    @PutMapping("/startCall")
+    @PutMapping("/api/startCall")
     public ResponseEntity<ResponseDTO> startCall(Authentication authentication , @RequestParam Long conversationId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -109,7 +109,7 @@ public class ConversationController {
     }
 
     // For team members
-    @PutMapping("/joinCall")
+    @PutMapping("/api/joinCall")
     public ResponseEntity<ResponseDTO> joinCall(Authentication authentication , @RequestParam Long conversationId , @RequestParam String callId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -125,7 +125,7 @@ public class ConversationController {
     }
 
     // For team members
-    @PutMapping("/leaveCall")
+    @PutMapping("/api/leaveCall")
     public ResponseEntity<ResponseDTO> leaveCall(Authentication authentication , @RequestParam Long conversationId , @RequestParam String callId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -141,7 +141,7 @@ public class ConversationController {
     }
 
     // For content creator and managers
-    @PostMapping("/scheduleMeet")
+    @PostMapping("/api/scheduleMeet")
     public ResponseEntity<ResponseDTO> scheduleMeet( @RequestBody MeetingCreateDTO meetingCreateDTO){
         try{
 
@@ -155,7 +155,7 @@ public class ConversationController {
     }
 
     // For invited members
-    @PutMapping("/joinMeeting")
+    @PutMapping("/api/joinMeeting")
     public ResponseEntity<ResponseDTO>joinMeet(Authentication authentication  , @RequestParam String meetId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -169,7 +169,7 @@ public class ConversationController {
     }
 
     // For invited members
-    @PutMapping("/leaveMeet")
+    @PutMapping("/api/leaveMeet")
     public ResponseEntity<ResponseDTO> leaveMeet(Authentication authentication , @RequestParam String meetId){
         try{
             String authUserId = authentication.getDetails().toString();
@@ -183,7 +183,7 @@ public class ConversationController {
     }
 
     // For any invited members
-    @PutMapping("/updateMeetInvite")
+    @PutMapping("/api/updateMeetInvite")
     public ResponseEntity<ResponseDTO> updateMeetInvite(Authentication authentication , @RequestParam String meetId , @RequestBody MeetingCreateDTO meetingCreateDTO){
         try{
             String authUserId = authentication.getDetails().toString();

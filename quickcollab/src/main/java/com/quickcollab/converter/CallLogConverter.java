@@ -17,7 +17,6 @@ public class CallLogConverter implements AttributeConverter<List<CallLog>, Strin
     @Override
     public String convertToDatabaseColumn(List<CallLog> callLogs) {
         try {
-            System.out.println("Converting callLog to JSON: " + callLogs);
             return objectMapper.writeValueAsString(callLogs);
         } catch (JsonProcessingException jpe) {
             return "[]";
@@ -27,7 +26,6 @@ public class CallLogConverter implements AttributeConverter<List<CallLog>, Strin
     @Override
     public List<CallLog> convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to callLogs: " + value);
             return objectMapper.readValue(value, objectMapper.getTypeFactory().constructCollectionType(List.class, CallLog.class));
         } catch (JsonProcessingException e) {
             return new ArrayList<>();

@@ -64,6 +64,17 @@ public class JwtTokenUtil {
                 .getPayload();
         return claims.get("username",String.class);
     }
+    public String getUserId(String token) {
+        String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY,
+                ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
+        SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("userId",String.class);
+    }
     public List<SimpleGrantedAuthority> getUserAuthorities(String token){
         String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY,
                 ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);

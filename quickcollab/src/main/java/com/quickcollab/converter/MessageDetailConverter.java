@@ -18,7 +18,6 @@ public class MessageDetailConverter implements AttributeConverter<List<MessageDe
     @Override
     public String convertToDatabaseColumn(List<MessageDetail> messageDetails) {
         try {
-            System.out.println("Converting messageDetails to JSON: " + messageDetails);
             return objectMapper.writeValueAsString(messageDetails);
         } catch (JsonProcessingException jpe) {
             return "[]";
@@ -28,7 +27,6 @@ public class MessageDetailConverter implements AttributeConverter<List<MessageDe
     @Override
     public List<MessageDetail> convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to MessageDetails: " + value);
             return objectMapper.readValue(value, objectMapper.getTypeFactory().constructCollectionType(List.class, MessageDetail.class));
         } catch (JsonProcessingException e) {
             return new ArrayList<>();

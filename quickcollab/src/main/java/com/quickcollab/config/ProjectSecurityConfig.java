@@ -59,10 +59,10 @@ public class ProjectSecurityConfig {
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService, jwtTokenUtil,env), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/me","/insertMessage","/all/conversations").authenticated()
-                        .requestMatchers("/getUserListedJobs","/createJob","/updateJob","/sendOffer","/reviseOffer","/updateEmployeeSalary","/updateEmployeeRole","/createConversation").hasAnyRole("CONTENT_CREATOR")
-                        .requestMatchers("/applyForJob","/applyForJob","/getAllJobs","/updateOfferStatus","/updateResignationStatus","/joinCompany").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
-                        .requestMatchers( "/error", "/register","/apiLogin","/apiLogout").permitAll());
+                        .requestMatchers("/api/me","/api/insertMessage","/api/all/conversations").authenticated()
+                        .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation").hasAnyRole("CONTENT_CREATOR")
+                        .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
+                        .requestMatchers( "/api/error", "/api/register","/api/apiLogin","/api/apiLogout","/api/chat/**").permitAll());
 
 //        http.formLogin(fl -> fl
 //                .loginPage("/apiLogin")

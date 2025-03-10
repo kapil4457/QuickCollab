@@ -8,6 +8,8 @@ import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.UserRole;
+import com.quickcollab.events.CustomAuthenticationSuccessEvent;
+import com.quickcollab.events.CustomLogoutSuccessEvent;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Job;
@@ -20,6 +22,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.authentication.event.LogoutSuccessEvent;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,6 +43,8 @@ public class UserService {
     private final JwtTokenUtil jwtTokenUtil;
     private final JwtBlacklistService jwtBlacklistService;
     private final JobRepository jobRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
 
 
     public LoginResponseDTO<?> registerUser(UserRegisterDTO userRegisterDTO){
@@ -52,6 +62,9 @@ public class UserService {
         LoginResponseDTO<?> loginResponseDTO = getUserByEmail(userRegisterDTO.getEmailId());
         loginResponseDTO.setMessage("User registered successfully");
         loginResponseDTO.setSuccess(true);
+
+        eventPublisher.publishEvent(new CustomAuthenticationSuccessEvent(this,savedUser.getUserId()));
+
         return loginResponseDTO;
     }
 
@@ -152,13 +165,15 @@ public class UserService {
     }
 
     public ResponseDTO logoutUser(HttpServletRequest request){
+
         String jwtToken = request.getHeader("Authorization");
+
         if (jwtToken != null && !jwtToken.isEmpty()) {
             long tokenExpiration = jwtTokenUtil.getRemainingTime(jwtToken);
             jwtBlacklistService.blacklistToken(jwtToken, tokenExpiration);
+            eventPublisher.publishEvent(new CustomLogoutSuccessEvent(this,jwtTokenUtil.getUserId(jwtToken)));
            return new ResponseDTO("Logged out successfully" , true);
         } else {
-
            return new ResponseDTO("Invalid token" , false);
         }
     }

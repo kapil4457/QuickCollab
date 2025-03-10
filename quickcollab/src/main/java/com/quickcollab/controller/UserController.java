@@ -45,7 +45,7 @@ public class UserController {
     private final JwtTokenUtil jwtTokenUtil;
 
 
-    @PostMapping("/register")
+    @PostMapping("/api/register")
     public ResponseEntity<LoginResponseDTO<?>> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
         try{
             String jwt = "";
@@ -77,14 +77,14 @@ public class UserController {
         }
     }
 
-    @RequestMapping("/me")
+    @RequestMapping("/api/me")
     public  ResponseEntity<LoginResponseDTO<?>> selfDetails(Authentication authentication){
             String emailId = (String) authentication.getPrincipal();
             LoginResponseDTO<?> loginResponseDTO = userService.getUserByEmail(emailId);
             return ResponseEntity.status(loginResponseDTO.getSuccess() ? 200 : 401).body(loginResponseDTO);
     }
 
-    @PostMapping("/apiLogin")
+    @PostMapping("/api/apiLogin")
     public ResponseEntity<LoginResponseDTO<?>> apiLogin (@RequestBody LoginRequestDTO loginRequest) {
         String jwt = "";
         Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getEmailId(),
@@ -114,7 +114,7 @@ public class UserController {
 
     }
 
-    @PostMapping("/apiLogout")
+    @PostMapping("/api/apiLogout")
     public ResponseEntity<ResponseDTO> logout(HttpServletRequest request) {
         ResponseDTO responseDTO = userService.logoutUser(request);
         return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);

@@ -13,7 +13,6 @@ public class ReportsToAttributeConverter implements AttributeConverter<Reporting
     @Override
     public String convertToDatabaseColumn(ReportingUser reportingUser) {
         try {
-            System.out.println("Converting ReportingUser to JSON: " + reportingUser);
             return objectMapper.writeValueAsString(reportingUser);
         } catch (JsonProcessingException jpe) {
             return null;
@@ -23,7 +22,6 @@ public class ReportsToAttributeConverter implements AttributeConverter<Reporting
     @Override
     public ReportingUser convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to ReportingUser: " + value);
             return objectMapper.readValue(value, ReportingUser.class);
         } catch (JsonProcessingException e) {
             return null;

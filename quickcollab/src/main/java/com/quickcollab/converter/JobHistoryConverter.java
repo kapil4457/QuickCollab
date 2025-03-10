@@ -14,7 +14,6 @@ public class JobHistoryConverter implements AttributeConverter<JobHistory, Strin
     @Override
     public String convertToDatabaseColumn(JobHistory reportingUser) {
         try {
-            System.out.println("Converting JobHistory to JSON: " + reportingUser);
             return objectMapper.writeValueAsString(reportingUser);
         } catch (JsonProcessingException jpe) {
             return null;
@@ -24,7 +23,6 @@ public class JobHistoryConverter implements AttributeConverter<JobHistory, Strin
     @Override
     public JobHistory convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to JobHistory: " + value);
             return objectMapper.readValue(value, JobHistory.class);
         } catch (JsonProcessingException e) {
             return null;

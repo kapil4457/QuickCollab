@@ -28,7 +28,7 @@ public class JobController {
     private final UserService userService;
 
     //     [Done]
-    @GetMapping("/getUserListedJobs")
+    @GetMapping("/api/getUserListedJobs")
     public ResponseEntity<ContentCreatorJobResponseDTO> getUserListedJobs(Authentication authentication) {
         try{
         String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
@@ -44,7 +44,7 @@ public class JobController {
     }
 
     //     [Done]
-    @PostMapping("/createJob")
+    @PostMapping("/api/createJob")
     public ResponseEntity<ContentCreatorJobResponseDTO>createJob(Authentication authentication, @RequestBody @Valid JobRequestDTO jobRequestDTO) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
@@ -61,7 +61,7 @@ public class JobController {
     }
 
     //  [Done]
-    @PutMapping("/updateJob")
+    @PutMapping("/api/updateJob")
     public ResponseEntity<ContentCreatorJobResponseDTO>updateJobByJobId(Authentication authentication,
                                                                         @RequestBody JobRequestDTO jobRequestDTO,
                                                                         @RequestParam Long jobId) {
@@ -79,7 +79,7 @@ public class JobController {
         }
     }
 
-    @GetMapping("/getAllJobs")
+    @GetMapping("/api/getAllJobs")
     public ResponseEntity<JobSeekerJobResponseDTO>getAllListedJobs(Authentication authentication){
         String userId = (String) authentication.getDetails();
         JobSeekerJobResponseDTO jobSeekerJobResponseDTO = jobService.getAllJobs(userId);
@@ -87,7 +87,7 @@ public class JobController {
 
     }
 
-    @PostMapping("/applyForJob")
+    @PostMapping("/api/applyForJob")
     public ResponseEntity<ResponseDTO>applyToJob(Authentication authentication,@RequestParam Long jobId) {
         try{
 
@@ -104,7 +104,7 @@ public class JobController {
 
 
     // this is for the content creator or manager
-    @PutMapping("/sendOffer")
+    @PutMapping("/api/sendOffer")
     public ResponseEntity<ResponseDTO>sendOffer(Authentication authentication, @Valid @RequestBody OfferDetail offerDetails) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
@@ -119,7 +119,7 @@ public class JobController {
     }
 
     // This is for the job seeker
-    @PutMapping("/updateOfferStatus")
+    @PutMapping("/api/updateOfferStatus")
     public ResponseEntity<ResponseDTO>updateOfferStatus(Authentication authentication , @RequestParam Long jobId , @RequestParam String offerStatus ) {
         try{
             String applicantId = (String) authentication.getDetails();
@@ -132,7 +132,7 @@ public class JobController {
     }
 
     // this is for content creator or manager
-    @PutMapping("/reviseOffer")
+    @PutMapping("/api/reviseOffer")
     public ResponseEntity<ResponseDTO> reviseOffer(Authentication authentication   , @RequestBody  OfferDetail offerDetails) {
         try{
             String authUserId = (String) authentication.getDetails();
@@ -147,7 +147,7 @@ public class JobController {
         }
     }
 
-    @PutMapping("/updateResignationStatus")
+    @PutMapping("/api/updateResignationStatus")
     public ResponseEntity<ResponseDTO> updateResignationStatus(Authentication authentication , @RequestParam Boolean status){
         try{
             String authUserId = (String) authentication.getDetails();
@@ -159,7 +159,7 @@ public class JobController {
         }
     }
 
-    @PutMapping("/updateEmployeeSalary")
+    @PutMapping("/api/updateEmployeeSalary")
     public ResponseEntity<ResponseDTO> updateEmployeeSalary(Authentication authentication , @RequestParam Long salary , @RequestParam String employeeId){
         try{
             String authUserId = (String) authentication.getDetails();
@@ -171,7 +171,7 @@ public class JobController {
         }
     }
 
-    @PutMapping("/updateEmployeeRole")
+    @PutMapping("/api/updateEmployeeRole")
     public ResponseEntity<ResponseDTO> updateEmployeeRole(Authentication authentication , @RequestParam String employeeId , @RequestParam String userRole){
         try{
             String authUserId = (String) authentication.getDetails();
@@ -183,7 +183,7 @@ public class JobController {
         }
     }
 
-    @PutMapping("/joinCompany")
+    @PutMapping("/api/joinCompany")
     public ResponseEntity<ResponseDTO> joinCompany(Authentication authentication , @RequestParam Long jobId){
         try{
 
@@ -196,11 +196,6 @@ public class JobController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
-
-
-
-
-
 
 
 }

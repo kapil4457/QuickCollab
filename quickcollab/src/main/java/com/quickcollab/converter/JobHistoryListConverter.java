@@ -16,7 +16,6 @@ public class JobHistoryListConverter implements AttributeConverter<List<JobHisto
     @Override
     public String convertToDatabaseColumn(List<JobHistory> jobHistory) {
         try {
-            System.out.println("Converting JobHistory to JSON: " + jobHistory);
             return objectMapper.writeValueAsString(jobHistory);
         } catch (JsonProcessingException jpe) {
             return "[]";
@@ -26,7 +25,6 @@ public class JobHistoryListConverter implements AttributeConverter<List<JobHisto
     @Override
     public List<JobHistory> convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to JobHistory: " + value);
             return objectMapper.readValue(value, objectMapper.getTypeFactory().constructCollectionType(List.class, JobHistory.class));
         } catch (JsonProcessingException e) {
             return new ArrayList<>();

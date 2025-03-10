@@ -19,7 +19,6 @@ public class PlatformConverter implements AttributeConverter<List<Platform>, Str
     @Override
     public String convertToDatabaseColumn(List<Platform> platforms) {
         try {
-            System.out.println("Converting platform to JSON: " + platforms);
             return objectMapper.writeValueAsString(platforms);
         } catch (JsonProcessingException jpe) {
             return "[]";
@@ -29,7 +28,6 @@ public class PlatformConverter implements AttributeConverter<List<Platform>, Str
     @Override
     public List<Platform> convertToEntityAttribute(String value) {
         try {
-            System.out.println("Converting JSON to platform: " + value);
             return objectMapper.readValue(value, objectMapper.getTypeFactory().constructCollectionType(List.class, Platform.class));
         } catch (JsonProcessingException e) {
             return new ArrayList<>();

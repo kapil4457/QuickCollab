@@ -61,8 +61,8 @@ const Conversations = () => {
   }, [userConversations, conversationMode, user, filterVal]);
   return (
     <DashboardLayout extendedClassName="!p-0">
-      <div className="flex gap-2 overflow-hidden w-full">
-        <div className="w-full flex items-center p-4 gap-2 md:gap-4 flex-col h-[100vh]  overflow-hidden">
+      <div className="flex gap-2  overflow-hidden w-full">
+        <div className="w-full flex items-center p-4 gap-2 md:gap-4  flex-col h-[100vh]  overflow-hidden">
           {user?.userRole === AllRoles.CONTENT_CREATOR ? (
             <Tabs
               aria-label="Options"
@@ -94,7 +94,7 @@ const Conversations = () => {
               />
             </Tabs>
           ) : null}
-          <div className="h-full  w-full flex items-center justify-center">
+          <div className="h-[calc(min(100vh,90%))] w-full flex  items-center justify-center">
             {currentConversation === null ? (
               <div className="flex h-full justify-center items-center text-gray-500 font-semibold text-2xl font-sans">
                 Please select a conversation
