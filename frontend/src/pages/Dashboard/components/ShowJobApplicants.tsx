@@ -24,7 +24,11 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/table";
-import { MessageSquareText, SquareArrowOutUpRight } from "lucide-react";
+import {
+  FileText,
+  MessageSquareText,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import {
   forwardRef,
   useCallback,
@@ -141,7 +145,7 @@ const ShowJobApplicants = forwardRef((props: propsType, ref) => {
     navigate("/my-conversations");
   };
   return (
-    <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
+    <Modal backdrop="blur" size="full" isOpen={isOpen} onClose={onClose}>
       <ModalContent>
         {() => (
           <>
@@ -197,17 +201,19 @@ const ShowJobApplicants = forwardRef((props: propsType, ref) => {
                 }}
               >
                 <TableHeader>
+                  <TableColumn key="userId">User ID</TableColumn>
                   <TableColumn key="firstName">First Name</TableColumn>
                   <TableColumn key="lastName">Last Name</TableColumn>
                   <TableColumn key="profile">Profile</TableColumn>
                   <TableColumn key="message">Message</TableColumn>
+                  <TableColumn key="sendOffer">Send Offer</TableColumn>
                 </TableHeader>
                 <TableBody emptyContent={"No applicants yet"} items={items}>
                   {(item) => {
                     return (
                       <TableRow key={item?.userId}>
                         {(columnKey) => (
-                          <TableCell className="max-w-[10rem] whitespace-normal break-words overflow-x-hidden overflow-y-auto">
+                          <TableCell className="whitespace-normal break-words overflow-x-hidden overflow-y-auto">
                             {columnKey === "profile" ? (
                               <Button
                                 as={Link}
@@ -226,6 +232,16 @@ const ShowJobApplicants = forwardRef((props: propsType, ref) => {
                                 }
                               >
                                 <MessageSquareText />
+                              </Button>
+                            ) : columnKey == "sendOffer" ? (
+                              <Button
+                                size="md"
+                                isIconOnly
+                                onPress={() =>
+                                  createConversationAndRedirect(item?.userId)
+                                }
+                              >
+                                <FileText />
                               </Button>
                             ) : (
                               getKeyValue(item, columnKey)

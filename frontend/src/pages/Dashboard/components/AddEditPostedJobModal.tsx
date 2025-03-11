@@ -111,7 +111,7 @@ export const AddEditPostedJobModal = forwardRef((props: propsType, ref) => {
   }, [props]);
   return (
     <>
-      <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
+      <Modal backdrop="blur" size="3xl" isOpen={isOpen} onClose={onClose}>
         <ModalContent>
           {() => (
             <>
