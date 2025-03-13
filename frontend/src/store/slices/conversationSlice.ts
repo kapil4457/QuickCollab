@@ -16,7 +16,7 @@ export interface ConversationState {
 interface ConversationUpdatePayload {
   conversationId: number;
   messageDetail: MessageDetail;
-  lastMessage: Date;
+  lastMessage: string;
 }
 
 export let dispatchType: ThunkDispatch<
@@ -28,7 +28,7 @@ export let dispatchType: ThunkDispatch<
 > &
   Dispatch<UnknownAction>;
 
-// Define the initial state using that type
+// Define the initial state using that types
 const initialState: ConversationState = {
   conversations: null,
   loading: false,

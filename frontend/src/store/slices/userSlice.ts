@@ -86,13 +86,19 @@ export const selectPostedJobs = (state: RootState) => {
   if (state.user.user && "jobsPosted" in state.user.user) {
     return state.user.user.jobsPosted;
   }
-  return null;
+  return [];
 };
 export const selectAppliedJobs = (state: RootState) => {
   if (state.user.user && "appliedJobs" in state.user.user) {
     return state.user.user.appliedJobs;
   }
-  return null;
+  return [];
+};
+export const selectOffersRecieved = (state: RootState) => {
+  if (state.user.user && "offersReceived" in state.user.user) {
+    return state.user.user.offersReceived;
+  }
+  return [];
 };
 
 // export const selectAllConversations = (state: RootState) => {

@@ -29,7 +29,11 @@ import {
 } from "@/store/controllers/JobController";
 import showToast from "@/utils/showToast";
 import { JobStatus } from "@/utils/enums";
-import { selectAppliedJobs } from "@/store/slices/userSlice";
+import {
+  selectAppliedJobs,
+  selectOffersRecieved,
+} from "@/store/slices/userSlice";
+import { FileText } from "lucide-react";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -98,6 +102,24 @@ const AppliedJobs = () => {
   const rowsCount = [5, 10, 15];
   const [rowsPerPage, setRowsPerPage] = useState(rowsCount[0]);
   const pages = Math.ceil((allListedJobs?.length || 0) / rowsPerPage);
+  const offersReceived = useAppSelector(selectOffersRecieved);
+
+  const isOfferedRecieved = (jobId: number) => {
+    let offerReceived = offersReceived.filter((offer) => {
+      if (offer.jobId === jobId) return true;
+    });
+    if (offerReceived.length == 0) {
+      return {
+        offerReceived: false,
+        offer: null,
+      };
+    }
+
+    return {
+      offerReceived: true,
+      offer: offerReceived[0],
+    };
+  };
 
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -216,6 +238,7 @@ const AppliedJobs = () => {
               <TableColumn key="openingsCount">Openings</TableColumn>
               <TableColumn key="jobLocationType">Location Type</TableColumn>
               <TableColumn key="jobLocation">Location</TableColumn>
+              <TableColumn key="offerRecieved">Offer Recieved</TableColumn>
             </TableHeader>
 
             <TableBody
@@ -265,6 +288,16 @@ const AppliedJobs = () => {
                           >
                             {getKeyValue(item, columnKey)}
                           </Chip>
+                        ) : columnKey === "offerRecieved" ? (
+                          <Button
+                            size="md"
+                            isIconOnly
+                            isDisabled={
+                              !isOfferedRecieved(item.jobId).offerReceived
+                            }
+                          >
+                            <FileText />
+                          </Button>
                         ) : columnKey === "postedOn" ? (
                           dateFormatter(getKeyValue(item, columnKey))
                         ) : (

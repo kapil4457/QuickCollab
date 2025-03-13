@@ -79,7 +79,6 @@ export const insertMessage = async (
         message: "Please login in to access this functionality",
       };
     }
-    let conversationId = body.conversationId;
     const headers = {
       Authorization: authorizationToken,
     };

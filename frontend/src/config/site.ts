@@ -6,6 +6,7 @@ import {
   User,
   MessageSquareText,
   LayoutDashboard,
+  FileText,
 } from "lucide-react";
 
 export type SiteConfig = typeof siteConfig;
@@ -110,6 +111,12 @@ export const siteConfig = {
       href: "/my-conversations",
       logo: MessageSquareText,
       type: 0,
+    },
+    {
+      label: "Jobs offered",
+      href: "/offered-jobs",
+      logo: FileText,
+      type: 2,
     },
   ],
   links: {

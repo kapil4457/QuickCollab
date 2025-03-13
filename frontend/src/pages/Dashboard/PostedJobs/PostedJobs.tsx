@@ -223,9 +223,13 @@ const PostedJobs = () => {
     }
   }, []);
 
-  const openApplicantsList = async (applicants: ContentCreatorEmployee[]) => {
+  const openApplicantsList = async (
+    applicants: ContentCreatorEmployee[],
+    jobId: string
+  ) => {
     // console.log("currentApplicants : ", applicants);
     setCurrentJobApplicants(applicants);
+    setCurrentJobId(jobId);
     if (
       showApplicantsModalRef.current &&
       "openModal" in showApplicantsModalRef.current
@@ -248,6 +252,7 @@ const PostedJobs = () => {
         ref={addEditJobPostingModalRef}
       />
       <ShowJobApplicants
+        jobId={currentJobId}
         applicants={currentJobApplicants}
         ref={showApplicantsModalRef}
       />
@@ -377,7 +382,12 @@ const PostedJobs = () => {
                           dateFormatter(getKeyValue(item, columnKey))
                         ) : columnKey === "applicants" ? (
                           <Button
-                            onPress={() => openApplicantsList(item.applicants)}
+                            onPress={() =>
+                              openApplicantsList(
+                                item.applicants,
+                                item.jobId.toString()
+                              )
+                            }
                           >
                             <User />
                           </Button>

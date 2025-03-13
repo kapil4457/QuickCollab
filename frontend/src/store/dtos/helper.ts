@@ -4,7 +4,7 @@ export interface Conversation {
   groupName: string;
   messages: Array<MessageDetail>;
   callLogs: Array<CallLog>;
-  lastMessage: Date;
+  lastMessage: string;
   isGroupChat: boolean;
   isTeamMemberConversation: boolean;
   admin: ConversationUser;
@@ -56,7 +56,7 @@ export interface MessageDetail {
   description: string;
   messageType: string;
   author: ConversationUser;
-  sentOn: Date;
+  sentOn: string;
   isUploadRequest: boolean;
   uploadTo: Array<string>;
   uploadTypeMapping: Map<string, string>;
@@ -107,6 +107,7 @@ export interface JobSeekerJobApplication {
 }
 
 export interface OfferDetail {
+  offerId: string;
   userId: string;
   jobId: number;
   jobTitle: string;

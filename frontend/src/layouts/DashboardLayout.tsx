@@ -37,10 +37,20 @@ export default function DashboardLayout({
           updateLocalConversationByConversationId({
             conversationId: roomId,
             messageDetail: receivedMessage,
-            lastMessage: new Date(),
+            lastMessage: new Date().toISOString(),
           })
         );
       });
+
+      console.log("subscribe to online and offline events");
+
+      stompClient.subscribe(
+        `/room/conversations/online/${roomId}`,
+        (message) => {
+          // subscribe to online and offline events
+          console.log("online : ", message);
+        }
+      );
     });
   };
 
