@@ -46,6 +46,7 @@ export interface ContentCreatorJobPost {
   jobLocationType: string;
   jobLocation: string;
   applicants: Array<ContentCreatorEmployee>;
+  offeredTo: Array<OfferDetail>;
   postedOn: Date;
   noticePeriodDays: number;
 }

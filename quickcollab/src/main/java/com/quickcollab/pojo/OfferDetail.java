@@ -15,7 +15,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OfferDetail {
-
+    public String offerId;
     @NotNull
     public String userId;
     @NotNull

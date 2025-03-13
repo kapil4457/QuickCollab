@@ -33,7 +33,7 @@ public class WebSocketEventListener {
         }).toList();
 
         conversationIds.forEach(conversationId->{
-        messagingTemplate.convertAndSend("/room/conversations/online", conversationId);
+        messagingTemplate.convertAndSend("/room/conversations/online"+conversationId, userId);
         });
     }
     @EventListener
@@ -44,7 +44,7 @@ public class WebSocketEventListener {
         }).toList();
 
         conversationIds.forEach(conversationId->{
-        messagingTemplate.convertAndSend("/room/conversations/offline", conversationId);
+        messagingTemplate.convertAndSend("/room/conversations/offline"+conversationId, userId);
         });
     }
 

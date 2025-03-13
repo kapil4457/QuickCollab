@@ -4,6 +4,7 @@ import com.quickcollab.dtos.request.JobRequestDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobResponseDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobResponseDTO;
+import com.quickcollab.enums.OfferStatus;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
@@ -104,7 +105,7 @@ public class JobController {
 
 
     // this is for the content creator or manager
-    @PutMapping("/api/sendOffer")
+    @PostMapping("/api/sendOffer")
     public ResponseEntity<ResponseDTO>sendOffer(Authentication authentication, @Valid @RequestBody OfferDetail offerDetails) {
         try{
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
@@ -118,9 +119,8 @@ public class JobController {
         }
     }
 
-    // This is for the job seeker
     @PutMapping("/api/updateOfferStatus")
-    public ResponseEntity<ResponseDTO>updateOfferStatus(Authentication authentication , @RequestParam Long jobId , @RequestParam String offerStatus ) {
+    public ResponseEntity<ResponseDTO>updateOfferStatus(Authentication authentication , @RequestParam Long jobId , @RequestParam OfferStatus offerStatus ) {
         try{
             String applicantId = (String) authentication.getDetails();
             ResponseDTO responseDTO = jobService.updateOfferStatus(applicantId,jobId , offerStatus);
@@ -137,7 +137,7 @@ public class JobController {
         try{
             String authUserId = (String) authentication.getDetails();
             String userRole = authentication.getAuthorities().stream().findFirst().get().getAuthority();
-            ResponseDTO responseDTO = jobService.reviseOffer(authUserId,userRole , offerDetails);
+            ResponseDTO responseDTO = jobService.reviseOffer(authUserId,userRole ,offerDetails);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
 
         }catch(GenericError genericError){

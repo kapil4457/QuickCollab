@@ -7,7 +7,11 @@ import type {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { loggedInUser } from "../dtos/response/LoginResponseDTO";
-import { ContentCreatorJobPost, MessageDetail } from "../dtos/helper";
+import {
+  ContentCreatorJobPost,
+  MessageDetail,
+  OfferDetail,
+} from "../dtos/helper";
 
 // Define a type for the slice state
 export interface UserState {
@@ -101,6 +105,16 @@ export const selectOffersRecieved = (state: RootState) => {
   return [];
 };
 
+export const selectAllJobsOffered = (state: RootState) => {
+  if (state.user.user && "jobsPosted" in state.user.user) {
+    let offeredTo: Array<OfferDetail> = [];
+    state.user.user.jobsPosted.map((job) => {
+      offeredTo = offeredTo.concat(job.offeredTo);
+    });
+    return offeredTo;
+  }
+  return [];
+};
 // export const selectAllConversations = (state: RootState) => {
 //   if (state.user.user && "conversations" in state.user.user) {
 //     return state.user.user.conversations;

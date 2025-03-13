@@ -87,8 +87,9 @@ public class User {
     @Convert(converter = ReportsToAttributeConverter.class)
     private ReportingUser reportsTo;
 
-    @Convert(converter = OfferDetailsConverter.class)
-    private List<OfferDetail> offersReceived = new ArrayList<>();
+//    @Convert(converter = OfferDetailsConverter.class)
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<JobOffer> offersReceived = new ArrayList<>();
 
     @NotNull
     private Boolean isServingNoticePeriod = Boolean.FALSE;

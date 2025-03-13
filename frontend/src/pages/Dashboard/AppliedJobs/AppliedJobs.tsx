@@ -10,7 +10,14 @@ import {
 } from "@heroui/table";
 
 import { Pagination } from "@heroui/pagination";
-import { SVGProps, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  SVGProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import DashboardLayout from "../../../layouts/DashboardLayout";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
@@ -34,6 +41,8 @@ import {
   selectOffersRecieved,
 } from "@/store/slices/userSlice";
 import { FileText } from "lucide-react";
+import { OfferDetail } from "@/store/dtos/helper";
+import { JobOfferDetailModal } from "../components/JobOfferDetailModal";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -103,7 +112,8 @@ const AppliedJobs = () => {
   const [rowsPerPage, setRowsPerPage] = useState(rowsCount[0]);
   const pages = Math.ceil((allListedJobs?.length || 0) / rowsPerPage);
   const offersReceived = useAppSelector(selectOffersRecieved);
-
+  const [currOffer, setCurrOffer] = useState<OfferDetail | null>(null);
+  const offerDetailsModalRef = useRef();
   const isOfferedRecieved = (jobId: number) => {
     let offerReceived = offersReceived.filter((offer) => {
       if (offer.jobId === jobId) return true;
@@ -176,12 +186,22 @@ const AppliedJobs = () => {
       showToast({ title: message, color: "danger" });
     }
   };
+  const openJobOffer = async (offer: OfferDetail) => {
+    setCurrOffer(offer);
+    if (
+      offerDetailsModalRef.current &&
+      "openModal" in offerDetailsModalRef.current
+    ) {
+      (offerDetailsModalRef.current as { openModal: () => void }).openModal();
+    }
+  };
   useEffect(() => {
     getAllJobPostings();
   }, []);
 
   return (
     <DashboardLayout>
+      <JobOfferDetailModal offerDetail={currOffer} ref={offerDetailsModalRef} />
       <div className="p-4 flex flex-col gap-5">
         <div className="flex justify-between">
           <Input
@@ -295,6 +315,11 @@ const AppliedJobs = () => {
                             isDisabled={
                               !isOfferedRecieved(item.jobId).offerReceived
                             }
+                            onClick={() => {
+                              openJobOffer(
+                                isOfferedRecieved(item.jobId).offer!
+                              );
+                            }}
                           >
                             <FileText />
                           </Button>

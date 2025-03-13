@@ -1,6 +1,7 @@
 package com.quickcollab.dtos.response.job.contentCreator;
 
 import com.quickcollab.dtos.response.user.ContentCreatorEmployee;
+import com.quickcollab.pojo.OfferDetail;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,4 +25,5 @@ private String jobLocationType;
 private String jobLocation;
 private Date postedOn;
 private List<ContentCreatorEmployee> applicants;
+private List<OfferDetail> offeredTo;
 }

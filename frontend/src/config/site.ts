@@ -113,7 +113,7 @@ export const siteConfig = {
       type: 0,
     },
     {
-      label: "Jobs offered",
+      label: "Jobs Offered",
       href: "/offered-jobs",
       logo: FileText,
       type: 2,

@@ -15,9 +15,11 @@ import com.quickcollab.enums.UserRole;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.Job;
+import com.quickcollab.model.JobOffer;
 import com.quickcollab.model.User;
 import com.quickcollab.pojo.JobHistory;
 import com.quickcollab.pojo.OfferDetail;
+import com.quickcollab.repository.JobOfferRepository;
 import com.quickcollab.repository.JobRepository;
 import com.quickcollab.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -32,6 +34,7 @@ public class JobService {
     private final JobRepository jobRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
+    private final JobOfferRepository jobOfferRepository;
 
     public ContentCreatorJobResponseDTO getUserListedJobs(String authUserId, String userRole) {
                // get all listed jobs and return
@@ -118,7 +121,7 @@ public class JobService {
         if(job.getApplicants().contains(user) ){
             throw new GenericError("You  already applied to this job.");
         }
-        if(job.getOfferedTo().stream().map(OfferDetail::getUserId).toList().contains(userId)){
+        if(job.getOfferedTo().stream().map(JobOffer::getUserId).toList().contains(userId)){
             throw new GenericError("You already received an offer wrt this job.");
         }
 
@@ -134,10 +137,12 @@ public class JobService {
         User applicant = userRepository.findById(applicantUserId).orElseThrow(()->new ResourceNotFoundException("Applicant","applicantUserId",applicantUserId.toString()));
         Job job = jobRepository.findById(jobId).orElseThrow(()->new ResourceNotFoundException("Job", "jobId", jobId.toString()));
 
+
         if(!job.getPostedBy().getUserId().equals(contentCreatorId)){
             throw new GenericError("You are not allowed to perform this operation.");
         }
-        if(!applicant.getOffersReceived().stream().filter(offersRecieved -> offersRecieved.getJobId().equals(jobId)).toList().isEmpty()){
+        List<JobOffer> offersRecieved = jobOfferRepository.findByUserId(applicantUserId);
+        if(!offersRecieved.stream().filter(offerReceived -> offerReceived.getJobId().equals(jobId)).toList().isEmpty()){
             throw new GenericError("You have already sent an offer to "+applicant.getFirstName()+" "+applicant.getLastName()+" for this job. Try updating it");
         }
         if(!job.getApplicants().contains(applicant)) {
@@ -148,8 +153,19 @@ public class JobService {
             throw new GenericError("User "+applicant.getFirstName()+" "+applicant.getLastName()+" already reports to you.");
         }
 
-        applicant.getOffersReceived().add(offerDetail);
-        job.getOfferedTo().add(offerDetail);
+        JobOffer jobOffer = new JobOffer();
+        jobOffer.setUserId(applicantUserId);
+        jobOffer.setJobId(jobId);
+        jobOffer.setJobTitle(offerDetail.getJobTitle());
+        jobOffer.setOfferStatus(offerDetail.getOfferStatus());
+        jobOffer.setOfferedOn(offerDetail.getOfferedOn());
+        jobOffer.setSalary(offerDetail.getSalary());
+        jobOffer.setUserRole(offerDetail.getUserRole());
+        jobOffer.setValidTill(offerDetail.getValidTill());
+        JobOffer savedOffer = jobOfferRepository.save(jobOffer);
+
+        applicant.getOffersReceived().add(savedOffer);
+        job.getOfferedTo().add(savedOffer);
         userRepository.save(applicant);
         jobRepository.save(job);
 
@@ -157,9 +173,9 @@ public class JobService {
 
     }
 
-    public ResponseDTO updateOfferStatus(String applicantId,Long jobId ,String offerStatus){
-        User applicant = userRepository.getReferenceById(applicantId);
-        Job job = jobRepository.getReferenceById(jobId);
+    public ResponseDTO updateOfferStatus(String applicantId,Long jobId ,OfferStatus offerStatus){
+        User applicant = userRepository.findById(applicantId).orElseThrow(()->new ResourceNotFoundException("User", "id", applicantId));
+        Job job = jobRepository.findById(jobId).orElseThrow(()-> new ResourceNotFoundException("Job", "jobId", jobId.toString()));
 
         if(job.getJobStatus().equals(JobStatus.FILLED)){
             throw new GenericError("Job openings filled already.");
@@ -171,7 +187,8 @@ public class JobService {
                 throw new GenericError("Job expired already.");
         }
         User contentCreator = job.getPostedBy();
-        OfferDetail offerDetail = applicant.getOffersReceived().stream().filter(offer->offer.jobId.equals(job.getJobId())).toList().getFirst();
+        List<JobOffer> offersReceived = jobOfferRepository.findByUserId(applicantId);
+        JobOffer offerDetail = offersReceived.stream().filter(offer->offer.jobId.equals(job.getJobId())).toList().getFirst();
 
         if(!job.getApplicants().contains(applicant)){
             throw new GenericError("You are not allowed to perform this operation.");
@@ -226,11 +243,11 @@ public class JobService {
         }
 
         // update the offer status in job details
-        job.getOfferedTo().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(OfferStatus.valueOf(offerStatus)));
+        job.getOfferedTo().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(offerStatus));
 
 
         // Updating the offers status in applicant details
-        applicant.getOffersReceived().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(OfferStatus.valueOf(offerStatus)));
+        applicant.getOffersReceived().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(offerStatus));
 
 
 
@@ -255,45 +272,21 @@ public class JobService {
             throw new GenericError("You are not allowed to perform this operation");
         }
 
-        OfferDetail currentOfferDetail = applicant.getOffersReceived().stream().filter(offer -> offer.jobId.equals(job.getJobId())).toList().getFirst();
+        JobOffer currentOfferDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getOfferId().equals(offerDetail.getOfferId())).toList().getFirst();
         if(currentOfferDetail.getOfferStatus().equals(OfferStatus.ACCEPTED)){
             throw new GenericError("Applicant has already accepted the offer !");
         }
-        List<OfferDetail> updatedOfferDetails = applicant.getOffersReceived().stream().peek(offer ->{
-            if (offer.jobId.equals(job.getJobId())){
-                offer.setOfferedOn(offerDetail.getOfferedOn());
-                offer.setJobTitle(offerDetail.getJobTitle());
-                offer.setSalary(offerDetail.getSalary());
-                offer.setUserRole(offerDetail.getUserRole());
-                offer.setOfferStatus(offerDetail.getOfferStatus());
-                offer.setValidTill(offerDetail.getValidTill());
-                offer.setSalary(offerDetail.getSalary());
-                offer.setOfferedOn(offerDetail.getOfferedOn());
-            }
-                }
-            ).toList();
 
+        currentOfferDetail.setOfferedOn(offerDetail.getOfferedOn());
+        currentOfferDetail.setJobTitle(offerDetail.getJobTitle());
+        currentOfferDetail.setSalary(offerDetail.getSalary());
+        currentOfferDetail.setUserRole(offerDetail.getUserRole());
+        currentOfferDetail.setOfferStatus(offerDetail.getOfferStatus());
+        currentOfferDetail.setValidTill(offerDetail.getValidTill());
+        currentOfferDetail.setSalary(offerDetail.getSalary());
+        currentOfferDetail.setOfferedOn(offerDetail.getOfferedOn());
 
-        applicant.setOffersReceived(updatedOfferDetails);
-        List<OfferDetail> jobOfferedTo =  job.getOfferedTo().stream().peek(offer ->
-                {
-                    if(offer.jobId.equals(job.getJobId()) && offer.getUserId().equals(applicant.getUserId()) ){
-                        offer.setOfferedOn(offerDetail.getOfferedOn());
-                        offer.setJobTitle(offerDetail.getJobTitle());
-                        offer.setSalary(offerDetail.getSalary());
-                        offer.setUserRole(offerDetail.getUserRole());
-                        offer.setOfferStatus(offerDetail.getOfferStatus());
-                        offer.setValidTill(offerDetail.getValidTill());
-                        offer.setSalary(offerDetail.getSalary());
-                        offer.setOfferedOn(offerDetail.getOfferedOn());
-                    }
-                }
-                ).toList();
-        job.setOfferedTo(jobOfferedTo);
-
-
-         userRepository.save(applicant);
-         jobRepository.save(job);
+        jobOfferRepository.save(currentOfferDetail);
 
          return new ResponseDTO("Offer updated successfully!!",true);
 
@@ -344,7 +337,7 @@ public class JobService {
             if(job.getOfferedTo().stream().filter(offer-> offer.userId.equals(authUserId)).toList().isEmpty()){
                 throw new GenericError("You never received an offer for this job.");
             }
-            List<OfferDetail> offeredTo = job.getOfferedTo().stream().filter(offer -> offer.userId.equals(applicant.getUserId()) && offer.offerStatus.equals(OfferStatus.ACCEPTED)).toList();
+            List<JobOffer> offeredTo = job.getOfferedTo().stream().filter(offer -> offer.userId.equals(applicant.getUserId()) && offer.offerStatus.equals(OfferStatus.ACCEPTED)).toList();
             if(offeredTo.isEmpty()){
                 throw new GenericError("You never accepted the offer or the offer had been revoked.");
             }
@@ -364,7 +357,7 @@ public class JobService {
 
 
             //  Add current Job to the JobHistory of the applicant
-            OfferDetail offerDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getJobId().equals(jobId)).findFirst().get();
+            JobOffer offerDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getJobId().equals(jobId)).findFirst().get();
             JobHistory currentJobDetails = applicant.getCurrentJobDetails();
 
             if(currentJobDetails!=null){

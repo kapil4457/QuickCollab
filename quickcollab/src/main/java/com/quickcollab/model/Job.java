@@ -1,10 +1,8 @@
 package com.quickcollab.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.quickcollab.converter.OfferDetailsConverter;
+
 import com.quickcollab.enums.JobLocationType;
 import com.quickcollab.enums.JobStatus;
-import com.quickcollab.pojo.OfferDetail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -56,8 +54,9 @@ public class Job {
     @NotNull
     private String jobLocation;
 
-    @Convert(converter = OfferDetailsConverter.class)
-    private List<OfferDetail> offeredTo = new ArrayList<>();
+//    @Convert(converter = OfferDetailsConverter.class)
+    @OneToMany
+    private List<JobOffer> offeredTo = new ArrayList<>();
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

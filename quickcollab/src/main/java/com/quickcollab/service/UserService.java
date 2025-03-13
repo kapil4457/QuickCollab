@@ -13,7 +13,9 @@ import com.quickcollab.events.CustomLogoutSuccessEvent;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Job;
+import com.quickcollab.model.JobOffer;
 import com.quickcollab.model.User;
+import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.repository.JobRepository;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.utils.JwtBlacklistService;
@@ -101,9 +103,14 @@ public class UserService {
                     List<ContentCreatorEmployee> applicants =jobPost.getApplicants().stream().map((applicant)->{
                                     return modelMapper.map(applicant, ContentCreatorEmployee.class);
                     }).toList();
+
+                    List<OfferDetail>offeredTo = jobPost.getOfferedTo().stream().map(offer ->{
+                        return modelMapper.map(offer, OfferDetail.class);
+                    }).toList();
+                    contentCreatorJobPost.setOfferedTo(offeredTo);
                     contentCreatorJobPost.setApplicants(applicants);
                     return contentCreatorJobPost;
-                }
+                        }
                 ).toList();
 
 
@@ -113,6 +120,7 @@ public class UserService {
                 loginResponseDTO.setUser(contentCreatorUserDetails);
                 loginResponseDTO.setSuccess(true);
                 loginResponseDTO.setMessage("User details fetched successfully");
+                eventPublisher.publishEvent(new CustomAuthenticationSuccessEvent(this,contentCreatorUserDetails.getUserId()));
                 return (LoginResponseDTO<ContentCreatorUserDetails>) loginResponseDTO;
 
             }else if(userRole.equals(UserRole.JOB_SEEKER.toString())){
@@ -133,6 +141,7 @@ public class UserService {
                 loginResponseDTO.setUser(jobSeekerUserDetails);
                 loginResponseDTO.setSuccess(true);
                 loginResponseDTO.setMessage("User details fetched successfully");
+                eventPublisher.publishEvent(new CustomAuthenticationSuccessEvent(this,jobSeekerUserDetails.getUserId()));
                 return (LoginResponseDTO<JobSeekerUserDetails>) loginResponseDTO;
 
             }else{
@@ -153,6 +162,7 @@ public class UserService {
                 loginResponseDTO.setUser(teamMemberUserDetails);
                 loginResponseDTO.setSuccess(true);
                 loginResponseDTO.setMessage("User details fetched successfully");
+                eventPublisher.publishEvent(new CustomAuthenticationSuccessEvent(this,teamMemberUserDetails.getUserId()));
                 return (LoginResponseDTO<TeamMemberUserDetails>) loginResponseDTO;
 
             }

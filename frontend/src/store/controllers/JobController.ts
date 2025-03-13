@@ -256,3 +256,57 @@ export const createJobOfferHandler = async (
     dispatch(updateJobLoadingState(true));
   }
 };
+
+export const requestOfferRevisionHandler = async (
+  dispatch: typeof dispatchType,
+  jobId: string
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    const headers = {
+      Authorization: authorizationToken,
+    };
+    console.log("headers : ", headers);
+    dispatch(updateJobLoadingState(true));
+    const { data } = await axios.put(
+      `/api/updateOfferStatus?jobId=${jobId}&offerStatus=REVISION`,
+      {},
+      {
+        headers,
+      }
+    );
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateJobLoadingState(true));
+  }
+};

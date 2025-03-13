@@ -17,7 +17,6 @@ export interface ContentCreatorUserDetails {
   emailId: string;
   profilePicture: string;
   selfDescription: string;
-  // conversations: Array<Conversation>;
   socialMediaHandles: Array<SocialMediaHandle>;
   employees: Array<ContentCreatorEmployee>;
   jobsPosted: Array<ContentCreatorJobPost>;

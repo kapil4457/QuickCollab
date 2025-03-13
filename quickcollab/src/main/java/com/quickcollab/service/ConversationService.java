@@ -45,7 +45,18 @@ public class ConversationService {
         List<User> members = new ArrayList<>(conversationCreateDTO.getMembersIds().stream().map(memberId -> userRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", memberId))).toList());
         User admin = userRepository.findById(authUserId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", authUserId));
         members.add(admin);
-        List<Conversation> conversations = conversationRepository.findAll().stream().filter(conversation-> conversation.getMembers().equals(members)).toList();
+        List<Conversation> conversations = conversationRepository.findAll();
+
+        conversations = conversations.stream().filter(conversation-> {
+            boolean check = true;
+            List<User> currMembers = conversation.getMembers();
+            for(int i = 0 ; i < members.size(); i ++){
+                if(!currMembers.contains(members.get(i))){
+                    check=false;
+                }
+            }
+            return check;
+        }).toList();
         if(!conversations.isEmpty()){
             throw new GenericError("There already exists a conversation between the chosen members.");
         }

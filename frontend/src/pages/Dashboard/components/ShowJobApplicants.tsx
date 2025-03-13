@@ -32,7 +32,6 @@ import {
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -40,8 +39,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateOfferModal from "./CreateOfferModal";
-import { selectLoggedInUser, selectPostedJobs } from "@/store/slices/userSlice";
-import { selectAllJobs } from "@/store/slices/jobSlice";
+import { selectPostedJobs } from "@/store/slices/userSlice";
 
 type propsType = {
   applicants: ContentCreatorEmployee[] | null;
