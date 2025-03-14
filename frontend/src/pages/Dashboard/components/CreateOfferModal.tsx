@@ -20,13 +20,16 @@ import { TeamMemberRole } from "@/utils/enums";
 import { Select, SelectItem } from "@heroui/select";
 import { DateInput } from "@heroui/date-input";
 import { Button } from "@heroui/button";
-import { fromDate, parseZonedDateTime } from "@internationalized/date";
-import { createJobOfferHandler } from "@/store/controllers/JobController";
+import { fromDate } from "@internationalized/date";
+import {
+  createJobOfferHandler,
+  updateJobOfferHandler,
+} from "@/store/controllers/JobController";
 import { useAppDispatch } from "@/store/hooks";
 import showToast from "@/utils/showToast";
 type propsType = {
   operationType: "create" | "update";
-  body?: OfferDetail;
+  body?: OfferDetail | null;
 };
 
 type FormErrors = {
@@ -69,10 +72,8 @@ const CreateOfferModal = forwardRef((props: propsType, ref) => {
       userRole: offerDetail.userRole,
       validTill: offerDetail.validTill,
     };
-    console.log("body : ", body);
     const { message, success } = await createJobOfferHandler(dispatch, body);
-    console.log("success : ", success);
-    console.log("message : ", message);
+
     onClose();
     if (success) {
       showToast({ title: message, color: "success" });
@@ -80,13 +81,34 @@ const CreateOfferModal = forwardRef((props: propsType, ref) => {
       showToast({ title: message, color: "danger" });
     }
   };
-  const updateOfferLetter = async () => {};
+  const updateOfferLetter = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const body: OfferDetail = {
+      jobId: offerDetail.jobId!,
+      jobTitle: offerDetail.jobTitle,
+      offeredOn: new Date(),
+      offerId: offerDetail.offerId!,
+      offerStatus: "PENDING",
+      salary: offerDetail.salary,
+      userId: offerDetail.userId!,
+      userRole: offerDetail.userRole,
+      validTill: offerDetail.validTill,
+    };
+    const { message, success } = await updateJobOfferHandler(dispatch, body);
+
+    onClose();
+    if (success) {
+      showToast({ title: message, color: "success" });
+    } else {
+      showToast({ title: message, color: "danger" });
+    }
+  };
 
   useEffect(() => {
-    if (props.operationType === "update") {
+    if (props.operationType === "update" && props.body != null) {
       setOfferDetail(props.body!);
     }
-  }, [props]);
+  }, [props, props?.body]);
   return (
     <>
       <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
@@ -153,7 +175,7 @@ const CreateOfferModal = forwardRef((props: propsType, ref) => {
                 labelPlacement="outside"
                 isRequired
                 value={offerDetail?.userRole}
-                selectedKeys={[offerDetail.userRole]}
+                selectedKeys={[offerDetail?.userRole]}
                 onChange={(e) => {
                   setOfferDetail({
                     ...offerDetail,
@@ -175,11 +197,15 @@ const CreateOfferModal = forwardRef((props: propsType, ref) => {
                 label="Offer Valid Till"
                 labelPlacement="outside"
                 isRequired
-                defaultValue={fromDate(offerDetail.validTill, "Asia/Kolkata")}
+                defaultValue={
+                  offerDetail?.validTill instanceof Date
+                    ? fromDate(offerDetail.validTill, "Asia/Kolkata")
+                    : undefined
+                }
                 onChange={(e) => {
                   setOfferDetail((prev) => ({
                     ...prev,
-                    validTill: e ? e.toDate() : prev.validTill, // Convert DateValue to JS Date
+                    validTill: e ? e?.toDate() : prev?.validTill, // Convert DateValue to JS Date
                   }));
                 }}
               />

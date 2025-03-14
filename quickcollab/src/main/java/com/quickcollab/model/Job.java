@@ -36,7 +36,6 @@ public class Job {
     private JobStatus jobStatus;
 
     @NotNull
-    @Min(1)
     private Long openingsCount;
 
     @NotNull

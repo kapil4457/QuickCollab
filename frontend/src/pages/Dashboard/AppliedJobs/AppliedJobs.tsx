@@ -33,15 +33,18 @@ import { dateFormatter } from "@/utils/generalUtils";
 import {
   applyToJobHandler,
   getAllJobPostingsHandler,
+  joinCompanyHandler,
 } from "@/store/controllers/JobController";
 import showToast from "@/utils/showToast";
 import { JobStatus } from "@/utils/enums";
 import {
   selectAppliedJobs,
+  selectCurrentJob,
+  selectLoggedInUser,
   selectOffersRecieved,
 } from "@/store/slices/userSlice";
-import { FileText } from "lucide-react";
-import { OfferDetail } from "@/store/dtos/helper";
+import { FileText, Handshake } from "lucide-react";
+import { JobHistory, OfferDetail } from "@/store/dtos/helper";
 import { JobOfferDetailModal } from "../components/JobOfferDetailModal";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
@@ -106,7 +109,9 @@ const AppliedJobs = () => {
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const [filterValue, setFilterValue] = useState("");
-
+  const teamMemberCurrentJob: JobHistory | null =
+    useAppSelector(selectCurrentJob);
+  console.log("teamMemberCurrentJob : ", teamMemberCurrentJob);
   const allListedJobs = useAppSelector(selectAppliedJobs);
   const rowsCount = [5, 10, 15];
   const [rowsPerPage, setRowsPerPage] = useState(rowsCount[0]);
@@ -195,6 +200,14 @@ const AppliedJobs = () => {
       (offerDetailsModalRef.current as { openModal: () => void }).openModal();
     }
   };
+  const joinCompany = async (jobId: number) => {
+    const { message, success } = await joinCompanyHandler(dispatch, jobId);
+    if (success) {
+      showToast({ title: message, color: "success" });
+    } else {
+      showToast({ title: message, color: "danger" });
+    }
+  };
   useEffect(() => {
     getAllJobPostings();
   }, []);
@@ -216,7 +229,7 @@ const AppliedJobs = () => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Total {allListedJobs?.length || 0} jobs posted
+            Total {allListedJobs?.length || 0} jobs applied
           </span>
           <label className="flex items-center text-default-400 text-small">
             Rows per page:
@@ -232,7 +245,7 @@ const AppliedJobs = () => {
         </div>
         {allListedJobs ? (
           <Table
-            aria-label="Jobs Posted By me"
+            aria-label="Jobs applied by me"
             bottomContent={
               <div className="flex w-full justify-center">
                 <Pagination
@@ -254,15 +267,19 @@ const AppliedJobs = () => {
               <TableColumn key="jobId">Id</TableColumn>
               <TableColumn key="jobName">Title</TableColumn>
               <TableColumn key="jobDescription">Description</TableColumn>
-              <TableColumn key="jobStatus">Status</TableColumn>
-              <TableColumn key="openingsCount">Openings</TableColumn>
+              <TableColumn key="jobStatus">Job Status</TableColumn>
+              <TableColumn key="openingsCount">Openings Left</TableColumn>
               <TableColumn key="jobLocationType">Location Type</TableColumn>
               <TableColumn key="jobLocation">Location</TableColumn>
+              <TableColumn key="noticePeriodDays">
+                Notice Period (in days)
+              </TableColumn>
               <TableColumn key="offerRecieved">Offer Recieved</TableColumn>
+              <TableColumn key="joinCompany">Join Company</TableColumn>
             </TableHeader>
 
             <TableBody
-              emptyContent={"You have not posted any jobs yet."}
+              emptyContent={"You have not applied to any jobs yet"}
               items={items}
             >
               {(item) => {
@@ -322,6 +339,21 @@ const AppliedJobs = () => {
                             }}
                           >
                             <FileText />
+                          </Button>
+                        ) : columnKey === "joinCompany" ? (
+                          <Button
+                            size="md"
+                            isIconOnly
+                            isDisabled={
+                              !isOfferedRecieved(item.jobId).offerReceived ||
+                              (teamMemberCurrentJob != null &&
+                                teamMemberCurrentJob?.jobId === item.jobId)
+                            }
+                            onPress={() => {
+                              joinCompany(item?.jobId!);
+                            }}
+                          >
+                            <Handshake />
                           </Button>
                         ) : columnKey === "postedOn" ? (
                           dateFormatter(getKeyValue(item, columnKey))

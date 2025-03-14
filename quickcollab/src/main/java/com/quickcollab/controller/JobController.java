@@ -80,6 +80,7 @@ public class JobController {
         }
     }
 
+    // [Done]
     @GetMapping("/api/getAllJobs")
     public ResponseEntity<JobSeekerJobResponseDTO>getAllListedJobs(Authentication authentication){
         String userId = (String) authentication.getDetails();
@@ -88,6 +89,7 @@ public class JobController {
 
     }
 
+    // [Done]
     @PostMapping("/api/applyForJob")
     public ResponseEntity<ResponseDTO>applyToJob(Authentication authentication,@RequestParam Long jobId) {
         try{
@@ -103,7 +105,7 @@ public class JobController {
 
     }
 
-
+    // [Done]
     // this is for the content creator or manager
     @PostMapping("/api/sendOffer")
     public ResponseEntity<ResponseDTO>sendOffer(Authentication authentication, @Valid @RequestBody OfferDetail offerDetails) {
@@ -119,6 +121,7 @@ public class JobController {
         }
     }
 
+    // [Done]
     @PutMapping("/api/updateOfferStatus")
     public ResponseEntity<ResponseDTO>updateOfferStatus(Authentication authentication , @RequestParam Long jobId , @RequestParam OfferStatus offerStatus ) {
         try{
@@ -132,6 +135,7 @@ public class JobController {
     }
 
     // this is for content creator or manager
+    // [Done]
     @PutMapping("/api/reviseOffer")
     public ResponseEntity<ResponseDTO> reviseOffer(Authentication authentication   , @RequestBody  OfferDetail offerDetails) {
         try{
@@ -147,6 +151,7 @@ public class JobController {
         }
     }
 
+
     @PutMapping("/api/updateResignationStatus")
     public ResponseEntity<ResponseDTO> updateResignationStatus(Authentication authentication , @RequestParam Boolean status){
         try{
@@ -158,6 +163,7 @@ public class JobController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         }
     }
+
 
     @PutMapping("/api/updateEmployeeSalary")
     public ResponseEntity<ResponseDTO> updateEmployeeSalary(Authentication authentication , @RequestParam Long salary , @RequestParam String employeeId){
@@ -183,6 +189,8 @@ public class JobController {
         }
     }
 
+
+    // [Done]
     @PutMapping("/api/joinCompany")
     public ResponseEntity<ResponseDTO> joinCompany(Authentication authentication , @RequestParam Long jobId){
         try{

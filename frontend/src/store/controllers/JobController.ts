@@ -75,6 +75,10 @@ export const updateJobPostingHandler = async (
       headers,
     });
     const { message, success, jobs } = data;
+
+    console.log("message : ", message);
+    console.log("success : ", success);
+    console.log("jobs : ", jobs);
     dispatch(updatePostedJobs(jobs));
     return {
       message,
@@ -256,10 +260,60 @@ export const createJobOfferHandler = async (
     dispatch(updateJobLoadingState(true));
   }
 };
-
-export const requestOfferRevisionHandler = async (
+export const updateJobOfferHandler = async (
   dispatch: typeof dispatchType,
-  jobId: string
+  OfferDetails: OfferDetail
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    const headers = {
+      Authorization: authorizationToken,
+    };
+    console.log("headers : ", headers);
+    dispatch(updateJobLoadingState(true));
+    const { data } = await axios.put("/api/reviseOffer", OfferDetails, {
+      headers,
+    });
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateJobLoadingState(true));
+  }
+};
+
+export const updateOfferStatusHandler = async (
+  dispatch: typeof dispatchType,
+  jobId: string,
+  offerStatus: string
 ) => {
   try {
     const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
@@ -275,7 +329,7 @@ export const requestOfferRevisionHandler = async (
     console.log("headers : ", headers);
     dispatch(updateJobLoadingState(true));
     const { data } = await axios.put(
-      `/api/updateOfferStatus?jobId=${jobId}&offerStatus=REVISION`,
+      `/api/updateOfferStatus?jobId=${jobId}&offerStatus=${offerStatus}`,
       {},
       {
         headers,
@@ -283,6 +337,61 @@ export const requestOfferRevisionHandler = async (
     );
     const { success, message } = data;
     selfDetails(dispatch, authorizationToken);
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateJobLoadingState(true));
+  }
+};
+
+export const joinCompanyHandler = async (
+  dispatch: typeof dispatchType,
+  jobId: number
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    const headers = {
+      Authorization: authorizationToken,
+    };
+    console.log("headers : ", headers);
+    dispatch(updateJobLoadingState(true));
+    const { data } = await axios.put(
+      `/api/joinCompany?jobId=${jobId}`,
+      {},
+      {
+        headers,
+      }
+    );
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
+
     return {
       message,
       success,

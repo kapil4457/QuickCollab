@@ -49,6 +49,7 @@ public class UserService {
 
 
 
+
     public LoginResponseDTO<?> registerUser(UserRegisterDTO userRegisterDTO){
 
         // check if the user already exists
@@ -79,7 +80,7 @@ public class UserService {
         return Optional.empty();
     }
 
-//    @Transactional
+    @Transactional
     public  LoginResponseDTO<?> getUserByEmail(String emailId){
         Optional<User> optionalUser = findByEmail(emailId);
         if(optionalUser.isPresent()){
@@ -134,6 +135,8 @@ public class UserService {
                     appliedJob.setJobLocation(job.getJobLocation());
                     appliedJob.setJobLocationType(job.getJobLocationType().toString());
                     appliedJob.setOpeningsCount(job.getOpeningsCount());
+                    appliedJob.setNoticePeriodDays(job.getNoticePeriodDays());
+
                     return appliedJob;
                 }).toList();
                 jobSeekerUserDetails.setAppliedJobs(appliedJobs);
@@ -155,9 +158,13 @@ public class UserService {
                     appliedJob.setJobLocation(job.getJobLocation());
                     appliedJob.setJobLocationType(job.getJobLocationType().toString());
                     appliedJob.setOpeningsCount(job.getOpeningsCount());
+                    appliedJob.setNoticePeriodDays(job.getNoticePeriodDays());
+
                     return appliedJob;
                 }).toList();
                 teamMemberUserDetails.setAppliedJobs(appliedJobs);
+                teamMemberUserDetails.setCurrentSalary(user.getCurrentSalary());
+                teamMemberUserDetails.setCurrentJobDetails(user.getCurrentJobDetails());
                 LoginResponseDTO<TeamMemberUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(teamMemberUserDetails);
                 loginResponseDTO.setSuccess(true);

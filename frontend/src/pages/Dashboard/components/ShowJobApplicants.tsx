@@ -109,9 +109,11 @@ const ShowJobApplicants = forwardRef((props: propsType, ref) => {
   }, []);
 
   const isOfferedTo = (userId: string) => {
+    console.log("userId : ", userId);
     let currJob = jobs.filter((job) => job.jobId === parseInt(props.jobId))[0];
+    console.log("currJob : ", currJob);
     return (
-      currJob.applicants.filter((applicant) => {
+      currJob.offeredTo.filter((applicant) => {
         if (applicant.userId === userId) return true;
       }).length > 0
     );

@@ -115,6 +115,12 @@ export const selectAllJobsOffered = (state: RootState) => {
   }
   return [];
 };
+export const selectCurrentJob = (state: RootState) => {
+  if (state.user.user && "currentJobDetails" in state.user.user) {
+    return state.user.user.currentJobDetails;
+  }
+  return null;
+};
 // export const selectAllConversations = (state: RootState) => {
 //   if (state.user.user && "conversations" in state.user.user) {
 //     return state.user.user.conversations;

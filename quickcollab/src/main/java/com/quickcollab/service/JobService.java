@@ -7,6 +7,7 @@ import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobRespons
 import com.quickcollab.dtos.response.job.jobSeeker.JobDetailPostedByUserDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobDetailDTO;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobResponseDTO;
+import com.quickcollab.dtos.response.user.ContentCreatorEmployee;
 import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.dtos.response.user.UpdatedByUser;
 import com.quickcollab.enums.JobStatus;
@@ -14,11 +15,13 @@ import com.quickcollab.enums.OfferStatus;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
+import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Job;
 import com.quickcollab.model.JobOffer;
 import com.quickcollab.model.User;
 import com.quickcollab.pojo.JobHistory;
 import com.quickcollab.pojo.OfferDetail;
+import com.quickcollab.repository.ConversationRepository;
 import com.quickcollab.repository.JobOfferRepository;
 import com.quickcollab.repository.JobRepository;
 import com.quickcollab.repository.UserRepository;
@@ -35,6 +38,7 @@ public class JobService {
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
     private final JobOfferRepository jobOfferRepository;
+    private final ConversationRepository conversationRepository;
 
     public ContentCreatorJobResponseDTO getUserListedJobs(String authUserId, String userRole) {
                // get all listed jobs and return
@@ -77,13 +81,18 @@ public class JobService {
             modelMapper.map(jobRequestDTO, currentJob);
             User jobUpdator = userRepository.getReferenceById(authUserId);
             if(userId.equals(authUserId) || jobUpdator.getReportsTo().getUserId().equals(userId)){
-
+            if(currentJob.getOpeningsCount()>0 && currentJob.getJobStatus().equals(JobStatus.FILLED)){
+                currentJob.setJobStatus(JobStatus.ACTIVE);
+            }
             currentJob.setUpdatedBy(jobUpdator);
             currentJob.setUpdatedOn(new Date());
             jobRepository.save(currentJob);
             List<Job> userListedJobs= jobRepository.getJobByPostedByUserId(userId);
             List<ContentCreatorJobDetailDTO> contentCreatorJobDetailDTOList = userListedJobs.stream().map(userListedJob ->  {
                     ContentCreatorJobDetailDTO contentCreatorJobDetailDTO  = modelMapper.map(userListedJob , ContentCreatorJobDetailDTO.class);
+                    contentCreatorJobDetailDTO.setApplicants(userListedJob.getApplicants().stream().map((applicant)->{
+                        return modelMapper.map(applicant , ContentCreatorEmployee.class);
+                    }).toList());
                     UpdatedByUser updatedByUser = new UpdatedByUser();
                     updatedByUser.setFirstName(jobUpdator.getFirstName());
                     updatedByUser.setLastName(jobUpdator.getLastName());
@@ -91,6 +100,7 @@ public class JobService {
                     contentCreatorJobDetailDTO.setUpdatedBy(updatedByUser);
                     return contentCreatorJobDetailDTO;
                 }).toList();
+
             return new ContentCreatorJobResponseDTO(contentCreatorJobDetailDTOList,"Job updated successfully !!",true);
             }else{
                 throw new GenericError("You do not have the required permissions to update this Job");
@@ -195,7 +205,7 @@ public class JobService {
         }
 
         if(offerDetail.getOfferStatus().equals(OfferStatus.ACCEPTED)){
-            throw new GenericError("Can not update the offer status as you have already "+offerDetail.offerStatus.toString().toLowerCase()+" this offer");
+            throw new GenericError("Can not update the offer status as you have already "+offerDetail.getOfferStatus().toString().toLowerCase()+" this offer");
         }
 
         if(offerDetail.getValidTill().before(new Date())){
@@ -205,12 +215,22 @@ public class JobService {
             jobRepository.save(job);
             throw new GenericError("Offer expired already !!");
         }
-        if(offerStatus.equals(OfferStatus.ACCEPTED.toString())){
+        if(offerStatus.equals(OfferStatus.ACCEPTED)){
             // check if the user is serving notice period
             if(!applicant.getIsServingNoticePeriod() && applicant.getReportsTo()!=null){
                 Long noticePeriodLength = applicant.getCurrentJobNoticePeriodDays();
                 applicant.setIsServingNoticePeriod(true);
                 applicant.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 100)));
+            }
+
+
+            // if the job is not active
+            if(!job.getJobStatus().equals(JobStatus.ACTIVE)){
+                throw new GenericError("The job is currently not active.");
+            }
+            if(offerDetail.getValidTill().before(new Date())){
+                throw new GenericError("Job offer has already expired.");
+
             }
 
             // check if the user has accepted any other offer
@@ -227,27 +247,10 @@ public class JobService {
                 }
             } );
 
-            // Update openingsCount
-
-            Long openingCount = job.getOpeningsCount()-1;
-            job.setOpeningsCount(openingCount);
-            job.getApplicants().remove(applicant);
-
-            if (openingCount == 0) {
-            job.setJobStatus(JobStatus.FILLED);
-            }
-
-        }
-        if(offerDetail.getOfferStatus().equals(OfferStatus.DECLINED)){
-            job.setOpeningsCount(job.getOpeningsCount()+1);
         }
 
         // update the offer status in job details
         job.getOfferedTo().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(offerStatus));
-
-
-        // Updating the offers status in applicant details
-        applicant.getOffersReceived().stream().filter(offer -> offer.getUserId().equals(applicantId)).forEach(offer->offer.setOfferStatus(offerStatus));
 
 
 
@@ -255,7 +258,7 @@ public class JobService {
         jobRepository.save(job);
         userRepository.save(contentCreator);
 
-        return new ResponseDTO("Offer updated successfully!!",true);
+        return new ResponseDTO("Offer Status updated successfully!!",true);
 
 
     }
@@ -352,12 +355,22 @@ public class JobService {
 
                 }
             }
+            JobOffer offerDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getJobId().equals(jobId)).findFirst().get();
+            applicant.setCurrentSalary(offerDetail.getSalary());
+
             //  PENDING : clear older conversations from older teams.
-
-
+            List<Conversation> userConversations = conversationRepository.findAll().stream().filter(conversation ->{
+               return conversation.getMembers().contains(applicant);
+            }).toList();
+            userConversations.forEach(conversation->{
+                if(conversation.getIsTeamMemberConversation()){
+                List<User>members = conversation.getMembers().stream().filter (member->  !member.getUserId().equals(applicant.getUserId())).toList();
+                conversation.setMembers(members);
+                conversationRepository.save(conversation);
+                }
+            });
 
             //  Add current Job to the JobHistory of the applicant
-            JobOffer offerDetail = applicant.getOffersReceived().stream().filter(offer -> offer.getJobId().equals(jobId)).findFirst().get();
             JobHistory currentJobDetails = applicant.getCurrentJobDetails();
 
             if(currentJobDetails!=null){
@@ -387,10 +400,18 @@ public class JobService {
             reportingUser.setFirstName(contentCreator.getFirstName());
             reportingUser.setLastName(contentCreator.getLastName());
             applicant.setReportsTo(reportingUser);
+            // Update openingsCount
+
+            Long openingCount = job.getOpeningsCount()-1;
+            job.setOpeningsCount(openingCount);
+
+            if (openingCount == 0) {
+                job.setJobStatus(JobStatus.FILLED);
+            }
 
 
             userRepository.save(applicant);
             userRepository.save(contentCreator);
-            return new ResponseDTO("Joined "+contentCreator.getFirstName()+" "+contentCreator.getLastName()+"'s team as "+ offerDetail.getUserRole(),true);
+            return new ResponseDTO("Joined "+contentCreator.getFirstName()+" "+contentCreator.getLastName()+"'s team as "+ offerDetail.getJobTitle(),true);
     }
 }

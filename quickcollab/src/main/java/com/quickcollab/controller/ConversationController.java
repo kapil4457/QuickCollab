@@ -26,6 +26,7 @@ public class ConversationController {
 
     private final ConversationService conversationService;
 
+    // [Done]
     @GetMapping("/api/all/conversations")
     public ResponseEntity<LoggedInUserConversationsDTO> getAllConversations(Authentication authentication){
         try{
@@ -39,6 +40,7 @@ public class ConversationController {
         }
     }
 
+    // [Done]
     @PostMapping("/api/createConversation")
     public ResponseEntity<ConversationResponseDTO> createConversation(Authentication authentication , @RequestBody @Valid ConversationCreateDTO conversationCreateDTO) {
         try{
@@ -53,6 +55,7 @@ public class ConversationController {
         }
     }
 
+    // [Done]
     @PutMapping("/api/insertMessage")
     public ResponseEntity<MessageResponseDTO> insertMessage(Authentication authentication, @RequestBody MessageDTO messageDetail) {
         try{

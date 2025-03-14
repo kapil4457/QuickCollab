@@ -32,7 +32,6 @@ export interface JobSeekerUserDetails {
   profilePicture: string;
   selfDescription: string;
   jobHistory: Array<JobHistory>;
-  // conversations: Array<Conversation>;
   works: Array<Work>;
   appliedJobs: Array<JobSeekerJobApplication>;
   socialMediaHandles: Array<SocialMediaHandle>;
@@ -47,7 +46,6 @@ export interface TeamMemberUserDetails {
   emailId: string;
   profilePicture: string;
   selfDescription: string;
-  // conversations: Array<Conversation>;
   socialMediaHandles: Array<SocialMediaHandle>;
   appliedJobs: Array<JobSeekerJobApplication>;
   works: Array<Work>;
@@ -55,6 +53,8 @@ export interface TeamMemberUserDetails {
   userRole: string;
   currentJobNoticePeriodDays: number;
   reportsTo: ReportingUser;
+  currentJobDetails: JobHistory;
+  currentSalary: number;
   offersReceived: Array<OfferDetail>;
 }
 export type loggedInUser =

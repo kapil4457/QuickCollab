@@ -45,6 +45,7 @@ public class UserController {
     private final JwtTokenUtil jwtTokenUtil;
 
 
+    // [Done]
     @PostMapping("/api/register")
     public ResponseEntity<LoginResponseDTO<?>> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
         try{
@@ -77,6 +78,7 @@ public class UserController {
         }
     }
 
+    // [Done]
     @RequestMapping("/api/me")
     public  ResponseEntity<LoginResponseDTO<?>> selfDetails(Authentication authentication){
             String emailId = (String) authentication.getPrincipal();
@@ -84,6 +86,7 @@ public class UserController {
             return ResponseEntity.status(loginResponseDTO.getSuccess() ? 200 : 401).body(loginResponseDTO);
     }
 
+    // [Done]
     @PostMapping("/api/apiLogin")
     public ResponseEntity<LoginResponseDTO<?>> apiLogin (@RequestBody LoginRequestDTO loginRequest) {
         String jwt = "";
@@ -114,6 +117,7 @@ public class UserController {
 
     }
 
+    // [Done]
     @PostMapping("/api/apiLogout")
     public ResponseEntity<ResponseDTO> logout(HttpServletRequest request) {
         ResponseDTO responseDTO = userService.logoutUser(request);

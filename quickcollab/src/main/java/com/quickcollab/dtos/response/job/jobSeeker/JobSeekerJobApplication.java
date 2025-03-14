@@ -17,4 +17,5 @@ public class JobSeekerJobApplication {
     private Long openingsCount;
     private String jobLocationType;
     private String jobLocation;
+    private Long noticePeriodDays;
 }

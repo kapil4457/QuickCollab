@@ -31,9 +31,11 @@ public class TeamMemberUserDetails {
     private List<JobSeekerJobApplication> appliedJobs;
     private List<Work> works;
     private List<JobHistory> jobHistory;
+    private JobHistory currentJobDetails;
     private UserRole userRole;
     private Long currentJobNoticePeriodDays;
     private ReportingUser reportsTo;
     private List<OfferDetail> offersReceived;
+    private Long currentSalary;
 
 }
