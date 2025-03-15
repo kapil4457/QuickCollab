@@ -19,11 +19,6 @@ export interface UserState {
   jwtToken: string;
   loading: boolean;
 }
-interface ConversationUpdatePayload {
-  conversationId: number;
-  messageDetail: MessageDetail;
-  lastMessage: Date;
-}
 
 export let dispatchType: ThunkDispatch<
   {
@@ -34,7 +29,6 @@ export let dispatchType: ThunkDispatch<
 > &
   Dispatch<UnknownAction>;
 
-// Define the initial state using that type
 const initialState: UserState = {
   user: null,
   jwtToken: "",
@@ -61,27 +55,11 @@ export const userSlice = createSlice({
         state.user.jobsPosted = action.payload;
       }
     },
-    // updateLocalConversationByConversationId: (
-    //   state,
-    //   action: PayloadAction<ConversationUpdatePayload>
-    // ) => {
-    //   let conversations = state.user?.conversations;
-    //   conversations?.forEach((conversation) => {
-    //     if (conversation.conversationId === action.payload.conversationId) {
-    //       conversation.messages.push(action.payload.messageDetail);
-    //       conversation.lastMessage = action.payload.lastMessage;
-    //     }
-    //   });
-    // },
   },
 });
 
-export const {
-  updateUser,
-  updateUserLoadingState,
-  updatePostedJobs,
-  // updateLocalConversationByConversationId,
-} = userSlice.actions;
+export const { updateUser, updateUserLoadingState, updatePostedJobs } =
+  userSlice.actions;
 
 export const selectJwtToken = (state: RootState) => state.user.jwtToken;
 export const selectUserLoadingState = (state: RootState) => state.user.loading;
@@ -120,6 +98,24 @@ export const selectCurrentJob = (state: RootState) => {
     return state.user.user.currentJobDetails;
   }
   return null;
+};
+export const selectMyEmployees = (state: RootState) => {
+  if (state.user.user && "employees" in state.user.user) {
+    return state.user.user.employees;
+  }
+  return [];
+};
+export const selectCurrentJobDetails = (state: RootState) => {
+  if (state.user.user && "currentJobDetails" in state.user.user) {
+    return state.user.user.currentJobDetails;
+  }
+  return null;
+};
+export const selectWorkHistory = (state: RootState) => {
+  if (state.user.user && "jobHistory" in state.user.user) {
+    return state.user.user.jobHistory;
+  }
+  return [];
 };
 // export const selectAllConversations = (state: RootState) => {
 //   if (state.user.user && "conversations" in state.user.user) {

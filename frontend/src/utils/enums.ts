@@ -61,3 +61,10 @@ export const PlatformType = Object.freeze({
   YOUTUBE: "YOUTUBE",
   TWITTER: "TWITTER",
 });
+
+export const SocialMediaHandleType = Object.freeze({
+  INSTAGRAM: "INSTAGRAM",
+  FACEBOOK: "FACEBOOK",
+  YOUTUBE: "YOUTUBE",
+  TWITTER: "TWITTER",
+});

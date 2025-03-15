@@ -165,6 +165,7 @@ public class JobController {
     }
 
 
+    // [Done]
     @PutMapping("/api/updateEmployeeSalary")
     public ResponseEntity<ResponseDTO> updateEmployeeSalary(Authentication authentication , @RequestParam Long salary , @RequestParam String employeeId){
         try{

@@ -375,6 +375,7 @@ public class JobService {
 
             if(currentJobDetails!=null){
                currentJobDetails.setUserRole(applicant.getUserRole());
+               currentJobDetails.setSalary(applicant.getCurrentSalary());
                 applicant.getJobHistory().add(currentJobDetails);
             }
             JobHistory newJobDetails = new JobHistory();
@@ -390,6 +391,7 @@ public class JobService {
 
             applicant.setUserRole(UserRole.valueOf(String.valueOf(offerDetail.getUserRole())));
             applicant.setCurrentJobNoticePeriodDays(job.getNoticePeriodDays());
+            applicant.setCurrentSalary(offerDetail.getSalary());
 
             // Add the applicant to the list of employees for the contentCreator
             contentCreator.getEmployees().add(applicant);
