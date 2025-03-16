@@ -117,6 +117,13 @@ export const selectWorkHistory = (state: RootState) => {
   }
   return [];
 };
+
+export const selectReportsTo = (state: RootState) => {
+  if (state.user.user && "reportsTo" in state.user.user) {
+    return state.user.user.reportsTo;
+  }
+  return null;
+};
 // export const selectAllConversations = (state: RootState) => {
 //   if (state.user.user && "conversations" in state.user.user) {
 //     return state.user.user.conversations;

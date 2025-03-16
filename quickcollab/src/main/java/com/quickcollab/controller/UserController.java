@@ -2,19 +2,24 @@ package com.quickcollab.controller;
 
 import com.quickcollab.constants.ApplicationConstants;
 import com.quickcollab.dtos.request.LoginRequestDTO;
+import com.quickcollab.dtos.request.UpdateUserProfileRequestDTO;
 import com.quickcollab.dtos.request.UserRegisterDTO;
 import com.quickcollab.dtos.response.user.LoginResponseDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.user.ContentCreatorUserDetails;
 import com.quickcollab.dtos.response.user.JobSeekerUserDetails;
 import com.quickcollab.dtos.response.user.TeamMemberUserDetails;
+import com.quickcollab.exception.GenericError;
+import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.service.UserService;
 import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.hibernate.sql.Update;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,13 +28,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.core.env.Environment;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,6 +126,32 @@ public class UserController {
     public ResponseEntity<ResponseDTO> logout(HttpServletRequest request) {
         ResponseDTO responseDTO = userService.logoutUser(request);
         return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
+    }
+
+    ////                                                     @RequestBody @Valid UpdateUserProfileRequestDTO updateUserProfileRequestDTO
+    @PutMapping(value = "/api/updateProfile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseDTO> updateProfile(
+    Authentication authentication ,
+    @RequestPart("profilePicture") MultipartFile profilePicture ,
+    @RequestPart("firstName") String firstName ,
+    @RequestPart("lastName") String lastName ,
+    @RequestPart("selfDescription") String selfDescription,
+    @RequestPart("socialMediaHandles") String socialMediaHandles
+    ) {
+        try{
+
+        String authUserId = (String) authentication.getDetails();
+            UpdateUserProfileRequestDTO updateUserProfileRequestDTO = new UpdateUserProfileRequestDTO(firstName,lastName,selfDescription,socialMediaHandles,profilePicture);
+        ResponseDTO responseDTO = userService.updateProfile(authUserId , updateUserProfileRequestDTO);
+        return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
+        }catch (ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
+        }catch (GenericError genericError){
+            return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+
     }
 
 }

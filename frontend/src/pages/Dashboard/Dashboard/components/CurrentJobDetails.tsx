@@ -1,18 +1,27 @@
 import { useAppSelector } from "@/store/hooks";
-import { selectCurrentJobDetails } from "@/store/slices/userSlice";
+import {
+  selectCurrentJobDetails,
+  selectLoggedInUser,
+  selectReportsTo,
+} from "@/store/slices/userSlice";
 import { formatDate } from "@/utils/generalUtils";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import React from "react";
 
 const CurrentJobDetails = () => {
   const currentJobDetails = useAppSelector(selectCurrentJobDetails);
+  const user = useAppSelector(selectLoggedInUser);
+  const reportsTo = useAppSelector(selectReportsTo);
   return (
-    <Card className="border border-gray-300 shadow-md rounded-xl p-6">
+    <Card className="border border-gray-300 w-full  shadow-md rounded-xl p-6">
       <CardHeader className="text-xl font-semibold border-b pb-3">
         Current Job Details
       </CardHeader>
       <CardBody className="space-y-4 mt-3">
         {[
+          {
+            label: "Reports to",
+            value: reportsTo?.firstName + " " + reportsTo?.lastName,
+          },
           {
             label: "Job Designation",
             value: currentJobDetails?.title,
@@ -32,6 +41,10 @@ const CurrentJobDetails = () => {
           {
             label: "Joining Date",
             value: formatDate(currentJobDetails?.startDate?.toString() || ""),
+          },
+          {
+            label: "Notice Period (in days)",
+            value: user?.currentJobNoticePeriodDays,
           },
         ].map((item, index) => (
           <div key={index} className="flex justify-between items-center">

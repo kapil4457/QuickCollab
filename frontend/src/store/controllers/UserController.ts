@@ -8,6 +8,7 @@ import {
   updateUser,
 } from "../slices/userSlice";
 import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
+import { UserSelfDetails } from "@/pages/Dashboard/Dashboard/components/EditSelfDetailsModal";
 
 export const loginUserHandler = async (
   body: loginRequestDTO,
@@ -163,3 +164,74 @@ export const logoutUserHandler = async (dispatch: typeof dispatchType) => {
     );
   }
 };
+
+export const updateSelfDetailsHandler = async (
+  body: UserSelfDetails,
+  dispatch: typeof dispatchType
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    dispatch(updateUserLoadingState(true));
+    const headers = {
+      Authorization: authorizationToken,
+      "Content-Type": "multipart/form-data",
+    };
+    const formData = new FormData();
+    formData.append("firstName", body.firstName);
+    formData.append("lastName", body.lastName);
+    formData.append("selfDescription", body.selfDescription);
+    formData.append(
+      "socialMediaHandles",
+      JSON.stringify(body.socialMediaHandles)
+    );
+    if (typeof body.profilePicture !== "string") {
+      formData.append("profilePicture", body.profilePicture);
+    }
+    console.log("headers : ", headers);
+    const { data } = await axios.put("/api/updateProfile", formData, {
+      headers: headers,
+    });
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
+
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateUserLoadingState(false));
+  }
+};
+
+{
+  /*
+  
+
+  https://d15sct1rm695x0.cloudfront.net/profile-picture/47273965-89c7-4107-9e26-ceea8d1a987e-profile-pic-cropped.png
+  */
+}

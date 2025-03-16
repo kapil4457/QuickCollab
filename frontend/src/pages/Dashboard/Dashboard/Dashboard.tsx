@@ -36,13 +36,13 @@ const Dashboard = () => {
     5. Resign from Current Job
     6. 
     */}
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-2 flex-col xl:flex-row h-[80vh]">
-            <div className="flex w-full flex-col gap-4">
+        <div className="flex flex-col gap-4 h-full">
+          <div className="flex gap-2 flex-col xl:flex-row h-full flex-1">
+            <div className="flex w-full h-full flex-col gap-4 flex-1">
               <SelfDetails />
               {user?.userRole === AllRoles.TEAM_MEMBER && <CurrentJobDetails />}
             </div>
-            <div className="w-full h-full">
+            <div className="w-full h-full flex-1">
               {user?.userRole !== AllRoles.CONTENT_CREATOR ? (
                 <TimeLine jobHistory={jobHistory} />
               ) : (
@@ -52,6 +52,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+
           {user && user?.userRole !== AllRoles.CONTENT_CREATOR && (
             <>
               <div>

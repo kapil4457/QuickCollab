@@ -31,7 +31,6 @@ import java.util.Collections;
 @AllArgsConstructor
 public class ProjectSecurityConfig {
 
-    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final JwtBlacklistService jwtBlacklistService;
     private final JwtTokenUtil jwtTokenUtil;
     private final Environment env;
@@ -59,10 +58,11 @@ public class ProjectSecurityConfig {
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService, jwtTokenUtil,env), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/api/me","/api/insertMessage","/api/all/conversations").authenticated()
+                        .requestMatchers("/api/me","/api/insertMessage","/api/all/conversations","/api/updateProfile").authenticated()
                         .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation").hasAnyRole("CONTENT_CREATOR")
                         .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
                         .requestMatchers( "/api/error", "/api/register","/api/apiLogin","/api/apiLogout","/api/chat/**").permitAll());
+
 
 //        http.formLogin(fl -> fl
 //                .loginPage("/apiLogin")

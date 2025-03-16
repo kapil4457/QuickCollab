@@ -1,103 +1,122 @@
 import CustomAvatar from "@/components/CustomAvatar";
 import { useAppSelector } from "@/store/hooks";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
+import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Image } from "@heroui/image";
-import React from "react";
-
+import { Edit } from "lucide-react";
+import React, { useRef } from "react";
+import EditSelfDetailsModal from "./EditSelfDetailsModal";
+import { Link } from "@heroui/link";
 const SocialMediaIcon = ({ platform }: { platform: string }) => {
-  const icons: { [key: string]: string } = {
-    YOUTUBE: "🔗",
-    INSTAGRAM: "📸",
-    FACEBOOK: "📘",
-    TWITTER: "🐙",
+  const icons: {
+    [key: string]: string;
+  } = {
+    YOUTUBE: "youtube.svg",
+    INSTAGRAM: "instagram.svg",
+    FACEBOOK: "facebook.svg",
+    TWITTER: "twitter.svg",
   };
-  return <span className="text-lg">{icons[platform] || "🌐"}</span>;
+  return icons[platform];
 };
 
 const DetailItem = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col">
+  <div className="flex flex-col max-h-[5rem] overflow-auto break-words">
     <span className="text-gray-600 font-medium">{label}</span>
     <span className="text-gray-600 font-bold">{value || "N/A"}</span>
   </div>
 );
 const SelfDetails = () => {
   const user = useAppSelector(selectLoggedInUser);
+  const editSelfDetailsModalRef = useRef();
+  const openEditSelfDetails = () => {
+    if (
+      editSelfDetailsModalRef.current &&
+      "openModal" in editSelfDetailsModalRef.current
+    ) {
+      (
+        editSelfDetailsModalRef.current as { openModal: () => void }
+      ).openModal();
+    }
+  };
 
   return (
-    <Card className="border border-gray-300 shadow-md rounded-xl p-6 ">
-      <CardHeader className="text-xl font-semibold border-b pb-3">
-        Self Details
-      </CardHeader>
-      <CardBody className="space-y-5 mt-4">
-        {/* Profile Picture Section */}
-        <div className="flex items-center gap-4">
-          {user?.profilePicture ? (
-            <Image
-              isBlurred
-              alt="Profile Picture"
-              className="rounded-full border border-gray-300 shadow-md"
-              src={user?.profilePicture}
-              width={80}
-              height={80}
-            />
-          ) : (
-            <CustomAvatar
-              firstName={user?.firstName}
-              lastName={user?.lastName}
-            />
-          )}
-          <div>
-            <p className="text-lg font-semibold ">
-              {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
-            </p>
-            <p className="text-sm text-gray-500">{user?.userRole || "N/A"}</p>
+    <>
+      <EditSelfDetailsModal ref={editSelfDetailsModalRef} />
+      <Card className="border border-gray-300 shadow-md  w-full rounded-xl p-6 ">
+        <CardHeader className="text-xl font-semibold border-b pb-3 flex justify-between">
+          Self Details{" "}
+          <Button isIconOnly onPress={openEditSelfDetails}>
+            <Edit />
+          </Button>
+        </CardHeader>
+        <CardBody className="space-y-5 mt-4">
+          {/* Profile Picture Section */}
+          <div className="flex items-center gap-4">
+            {user?.profilePicture ? (
+              <Image
+                isBlurred
+                alt="Profile Picture"
+                className=" border border-gray-300 shadow-md"
+                src={user?.profilePicture}
+                width={80}
+                height={80}
+              />
+            ) : (
+              <CustomAvatar
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+              />
+            )}
+            <div>
+              <p className="text-lg font-semibold ">
+                {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
+              </p>
+              <p className="text-sm text-gray-500">{user?.userRole || "N/A"}</p>
+            </div>
           </div>
-        </div>
 
-        {/* Grid Layout for Details */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-          <DetailItem label="User ID" value={user?.userId || ""} />
-          <DetailItem label="Email ID" value={user?.emailId || ""} />
-          <DetailItem
-            label="Notice Period"
-            value={`${user?.currentJobNoticePeriodDays || "N/A"} days`}
-          />
-        </div>
+          {/* Grid Layout for Details */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <DetailItem label="User ID" value={user?.userId || ""} />
+            <DetailItem label="Email ID" value={user?.emailId || ""} />
+            <DetailItem label="About Me" value={user?.selfDescription || ""} />
+          </div>
 
-        {/* Social Media Handles Section */}
-        <div className="mt-3">
-          <span className="text-gray-600 font-medium">Social Media</span>
-          {user?.socialMediaHandles && user?.socialMediaHandles?.length > 0 ? (
-            <ul className="mt-2 space-y-1">
-              {user.socialMediaHandles.map((handle, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <SocialMediaIcon platform={handle.socialMediaPlatformName} />
-                  <a
-                    href={handle.socialMediaHandleUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {handle.socialMediaPlatformName}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 mt-1">N/A</p>
-          )}
-        </div>
-
-        {/* About Me Section */}
-        {user?.selfDescription && (
+          {/* Social Media Handles Section */}
           <div className="mt-3">
-            <span className="text-gray-600 font-medium">About Me</span>
-            <p className="mt-1 text-gray-800">{user?.selfDescription}</p>
+            <span className="text-gray-600 font-medium">Social Media</span>
+            {user?.socialMediaHandles &&
+            user?.socialMediaHandles?.length > 0 ? (
+              <ul className="mt-2 space-y-1 flex flex-wrap gap-2 items-center ">
+                {user.socialMediaHandles.map((handle, index) => (
+                  <Button
+                    size="md"
+                    as={Link}
+                    href={handle?.socialMediaHandleUrl}
+                    key={index}
+                    isIconOnly
+                    className="flex items-center gap-2"
+                  >
+                    <img
+                      src={SocialMediaIcon({
+                        platform: handle.socialMediaPlatformName,
+                      })}
+                      alt={handle.socialMediaPlatformName}
+                    />
+                    {/* <SocialMediaIcon
+                      platform={handle.socialMediaPlatformName}
+                    /> */}
+                  </Button>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 mt-1">N/A</p>
+            )}
           </div>
-        )}
-      </CardBody>
-    </Card>
+        </CardBody>
+      </Card>
+    </>
   );
 };
 

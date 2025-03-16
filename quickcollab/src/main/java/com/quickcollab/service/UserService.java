@@ -1,8 +1,10 @@
 package com.quickcollab.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quickcollab.config.AWSConfig;
+import com.quickcollab.dtos.request.UpdateUserProfileRequestDTO;
 import com.quickcollab.dtos.request.UserRegisterDTO;
-import com.quickcollab.dtos.response.conversation.ConversationUser;
-import com.quickcollab.dtos.response.conversation.UserConversationDetail;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.dtos.response.user.*;
@@ -10,44 +12,52 @@ import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.events.CustomAuthenticationSuccessEvent;
 import com.quickcollab.events.CustomLogoutSuccessEvent;
+import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
-import com.quickcollab.model.Conversation;
+import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.Job;
-import com.quickcollab.model.JobOffer;
 import com.quickcollab.model.User;
 import com.quickcollab.pojo.OfferDetail;
-import com.quickcollab.repository.JobRepository;
+import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.utils.JwtBlacklistService;
 import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.authentication.event.LogoutSuccessEvent;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import java.io.IOException;
+import java.util.*;
 
 @Service
-@AllArgsConstructor
 public class UserService {
 
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
     private final JwtBlacklistService jwtBlacklistService;
-    private final JobRepository jobRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ObjectMapper objectMapper;
+    private final AWSService awsService;
 
+    public UserService(ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService) {
+        this.modelMapper = modelMapper;
+        this.userRepository = userRepository;
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.awsService = awsService;
+        this.objectMapper = objectMapper;
+        this.eventPublisher = eventPublisher;
+        this.jwtBlacklistService = jwtBlacklistService;
+    }
 
+    @Value("${aws.cloudfront.distribution}")
+    private String cloudFrontDistribution;
 
 
     public LoginResponseDTO<?> registerUser(UserRegisterDTO userRegisterDTO){
@@ -193,5 +203,38 @@ public class UserService {
         } else {
            return new ResponseDTO("Invalid token" , false);
         }
+    }
+
+
+
+    public ResponseDTO updateProfile(String authUserId, @Valid UpdateUserProfileRequestDTO updateUserProfileRequestDTO) throws IOException {
+    User authUser = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
+    if(updateUserProfileRequestDTO.getProfilePicture()!=null) {
+        if(!Objects.equals(authUser.getProfilePicture(), "")){
+          String key =   awsService.extractKeyFromCloudFrontUrl(authUser.getProfilePicture());
+          awsService.s3MediaDelete(key);
+        }
+        String folderName = "profile-picture";
+        String mediaId =   awsService.s3MediaUploader(folderName,authUserId,updateUserProfileRequestDTO.getProfilePicture().getContentType(), updateUserProfileRequestDTO.getProfilePicture());
+        String mediaUrl = cloudFrontDistribution+folderName+"/"+mediaId;
+        authUser.setProfilePicture(mediaUrl);
+    }
+    authUser.setFirstName(updateUserProfileRequestDTO.getFirstName());
+    authUser.setLastName(updateUserProfileRequestDTO.getLastName());
+    authUser.setSelfDescription(updateUserProfileRequestDTO.getSelfDescription());
+
+        List<SocialMediaHandle> socialMediaHandles;
+        try {
+            socialMediaHandles = objectMapper.readValue(updateUserProfileRequestDTO.getSocialMediaHandles(),
+                    new TypeReference<List<SocialMediaHandle>>() {});
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid socialMediaHandles format");
+        }
+    authUser.setSocialMediaHandles(socialMediaHandles);
+//    authUser.setSocialMediaHandles(updateUserProfileRequestDTO.getSocialMediaHandles());
+    userRepository.save(authUser);
+
+    return new ResponseDTO("User profile updated successfully" , true);
+
     }
 }
