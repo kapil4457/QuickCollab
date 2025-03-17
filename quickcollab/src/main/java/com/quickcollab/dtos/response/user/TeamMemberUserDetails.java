@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -31,11 +32,14 @@ public class TeamMemberUserDetails {
     private List<JobSeekerJobApplication> appliedJobs;
     private List<Work> works;
     private List<JobHistory> jobHistory;
+    private Date noticePeriodEndDate;
     private JobHistory currentJobDetails;
     private UserRole userRole;
     private Long currentJobNoticePeriodDays;
     private ReportingUser reportsTo;
     private List<OfferDetail> offersReceived;
+    private Boolean isServingNoticePeriod ;
+    private Date currentJobJoinedOn;
     private Long currentSalary;
 
 }

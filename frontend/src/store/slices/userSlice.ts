@@ -124,10 +124,17 @@ export const selectReportsTo = (state: RootState) => {
   }
   return null;
 };
-// export const selectAllConversations = (state: RootState) => {
-//   if (state.user.user && "conversations" in state.user.user) {
-//     return state.user.user.conversations;
-//   }
-// };
+export const selectNoticePeriodEndDate = (state: RootState) => {
+  if (state.user.user && "noticePeriodEndDate" in state.user.user) {
+    return state.user.user.noticePeriodEndDate;
+  }
+  return null;
+};
+export const selectIsServingNoticePeriod = (state: RootState) => {
+  if (state.user.user && "isServingNoticePeriod" in state.user.user) {
+    return state.user.user.isServingNoticePeriod;
+  }
+  return null;
+};
 
 export default userSlice.reducer;

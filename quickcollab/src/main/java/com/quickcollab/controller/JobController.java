@@ -130,7 +130,6 @@ public class JobController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch (GenericError genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
-
         }
     }
 
@@ -161,6 +160,8 @@ public class JobController {
 
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        }catch (GenericError genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
 

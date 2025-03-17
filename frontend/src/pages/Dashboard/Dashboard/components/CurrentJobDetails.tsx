@@ -2,6 +2,7 @@ import { useAppSelector } from "@/store/hooks";
 import {
   selectCurrentJobDetails,
   selectLoggedInUser,
+  selectNoticePeriodEndDate,
   selectReportsTo,
 } from "@/store/slices/userSlice";
 import { formatDate } from "@/utils/generalUtils";
@@ -11,6 +12,7 @@ const CurrentJobDetails = () => {
   const currentJobDetails = useAppSelector(selectCurrentJobDetails);
   const user = useAppSelector(selectLoggedInUser);
   const reportsTo = useAppSelector(selectReportsTo);
+  const noticePeriodEndDate = useAppSelector(selectNoticePeriodEndDate);
   return (
     <Card className="border border-gray-300 w-full  shadow-md rounded-xl p-6">
       <CardHeader className="text-xl font-semibold border-b pb-3">
@@ -45,6 +47,12 @@ const CurrentJobDetails = () => {
           {
             label: "Notice Period (in days)",
             value: user?.currentJobNoticePeriodDays,
+          },
+          {
+            label: "Notice Period End Date",
+            value: noticePeriodEndDate
+              ? formatDate(noticePeriodEndDate.toString())
+              : "N/A",
           },
         ].map((item, index) => (
           <div key={index} className="flex justify-between items-center">

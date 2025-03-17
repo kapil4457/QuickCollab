@@ -1,9 +1,9 @@
 package com.quickcollab.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.quickcollab.constants.ApplicationConstants;
-import com.quickcollab.dtos.request.LoginRequestDTO;
-import com.quickcollab.dtos.request.UpdateUserProfileRequestDTO;
-import com.quickcollab.dtos.request.UserRegisterDTO;
+import com.quickcollab.dtos.request.*;
 import com.quickcollab.dtos.response.user.LoginResponseDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.user.ContentCreatorUserDetails;
@@ -11,6 +11,8 @@ import com.quickcollab.dtos.response.user.JobSeekerUserDetails;
 import com.quickcollab.dtos.response.user.TeamMemberUserDetails;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
+import com.quickcollab.pojo.ExternalLink;
+import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.service.UserService;
 import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -128,11 +130,10 @@ public class UserController {
         return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
     }
 
-    ////                                                     @RequestBody @Valid UpdateUserProfileRequestDTO updateUserProfileRequestDTO
     @PutMapping(value = "/api/updateProfile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDTO> updateProfile(
     Authentication authentication ,
-    @RequestPart("profilePicture") MultipartFile profilePicture ,
+    @RequestPart(value = "profilePicture",required = false) MultipartFile profilePicture ,
     @RequestPart("firstName") String firstName ,
     @RequestPart("lastName") String lastName ,
     @RequestPart("selfDescription") String selfDescription,
@@ -144,6 +145,52 @@ public class UserController {
             UpdateUserProfileRequestDTO updateUserProfileRequestDTO = new UpdateUserProfileRequestDTO(firstName,lastName,selfDescription,socialMediaHandles,profilePicture);
         ResponseDTO responseDTO = userService.updateProfile(authUserId , updateUserProfileRequestDTO);
         return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
+        }catch (ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
+        }catch (GenericError genericError){
+            return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+
+    }
+
+    @PutMapping(value="/api/addProject", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseDTO> addProject(Authentication authentication ,  @ModelAttribute  ProjectDetailsRequestStringifiedDTO projectDetailsRequestStringifyDTO) {
+        try{
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = userService.addPersonalProject(authUserId , projectDetailsRequestStringifyDTO);
+            return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(responseDTO);
+        }catch (ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
+        }catch (GenericError genericError){
+            return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+
+    }
+    @DeleteMapping("/api/deleteProject")
+    public ResponseEntity<ResponseDTO> deleteProject(Authentication authentication , @RequestParam Long workId) {
+        try{
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = userService.deletePersonalProject(authUserId , workId);
+            return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
+        }catch (ResourceNotFoundException resourceNotFoundException){
+            return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
+        }catch (GenericError genericError){
+            return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
+        }
+
+    }
+    @PutMapping("/api/updateProject")
+    public ResponseEntity<ResponseDTO> updateProject(Authentication authentication , @RequestParam Long workId , @RequestBody ProjectDetailsRequestDTO projectDetailsRequestDTO) {
+        try{
+            String authUserId = (String) authentication.getDetails();
+            ResponseDTO responseDTO = userService.updatePersonalProject(authUserId , workId,projectDetailsRequestDTO);
+            return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
         }catch (ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         } catch (IOException e) {

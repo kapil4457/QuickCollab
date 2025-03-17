@@ -44,7 +44,7 @@ export type UserSelfDetails = {
   lastName: string;
   selfDescription: string;
   socialMediaHandles: Array<SocialMediaHandle>;
-  profilePicture: string | File;
+  profilePicture: null | File;
 };
 const EditSelfDetailsModal = forwardRef((props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -79,7 +79,7 @@ const EditSelfDetailsModal = forwardRef((props, ref) => {
     lastName: "",
     selfDescription: "",
     socialMediaHandles: [],
-    profilePicture: "",
+    profilePicture: null,
   });
   const remainingSocialMediaHandles = useMemo(() => {
     let allPlatforms = [
@@ -129,7 +129,7 @@ const EditSelfDetailsModal = forwardRef((props, ref) => {
       setSelfDetails({
         firstName: user?.firstName,
         lastName: user?.lastName,
-        profilePicture: user?.profilePicture,
+        profilePicture: null,
         selfDescription: user?.selfDescription,
         socialMediaHandles: user?.socialMediaHandles,
       });
@@ -160,7 +160,7 @@ const EditSelfDetailsModal = forwardRef((props, ref) => {
             <div className="relative group">
               <div className="cursor-pointer" onClick={handleAvatarClick}>
                 <CustomAvatar
-                  src={previewUrl || ""}
+                  src={previewUrl ? previewUrl : user?.profilePicture}
                   size="lg"
                   firstName={selfDetails?.firstName}
                   lastName={selfDetails?.lastName}
@@ -218,6 +218,7 @@ const EditSelfDetailsModal = forwardRef((props, ref) => {
               }}
             />
             <Textarea
+              maxLength={200}
               label="About Me"
               labelPlacement="outside"
               name="selfDescription"

@@ -10,6 +10,7 @@ import EmployeeStats from "./components/EmployeeStats";
 import SelfDetails from "./components/SelfDetails";
 import CurrentJobDetails from "./components/CurrentJobDetails";
 import MyProjects from "./components/MyProjects";
+import OtherStats from "./components/OtherStats";
 
 const Dashboard = () => {
   const jobHistory = useAppSelector(selectWorkHistory);
@@ -32,19 +33,22 @@ const Dashboard = () => {
     1. Current Job details [Done]
     2. Job History [Done]
     3. Personal Projects [Section created]
-    4. Active Offers Pending
-    5. Resign from Current Job
+    4. Active Offers Pending [Done]
+    5. Resign from Current Job [Done]
     6. 
     */}
-        <div className="flex flex-col gap-4 h-full">
+        <div className="flex flex-col gap-2 h-full">
           <div className="flex gap-2 flex-col xl:flex-row h-full flex-1">
-            <div className="flex w-full h-full flex-col gap-4 flex-1">
+            <div className="flex w-full h-full flex-col gap-2 flex-1">
               <SelfDetails />
               {user?.userRole === AllRoles.TEAM_MEMBER && <CurrentJobDetails />}
             </div>
             <div className="w-full h-full flex-1">
               {user?.userRole !== AllRoles.CONTENT_CREATOR ? (
-                <TimeLine jobHistory={jobHistory} />
+                <div className="flex w-full h-full flex-col gap-2 flex-1">
+                  <TimeLine jobHistory={jobHistory} />
+                  <OtherStats />
+                </div>
               ) : (
                 <>
                   <EmployeeStats />

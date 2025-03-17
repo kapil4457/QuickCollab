@@ -3,23 +3,29 @@ package com.quickcollab.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quickcollab.config.AWSConfig;
+import com.quickcollab.dtos.request.ProjectDetailsRequestDTO;
+import com.quickcollab.dtos.request.ProjectDetailsRequestStringifiedDTO;
 import com.quickcollab.dtos.request.UpdateUserProfileRequestDTO;
 import com.quickcollab.dtos.request.UserRegisterDTO;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
+import com.quickcollab.enums.MediaType;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.events.CustomAuthenticationSuccessEvent;
 import com.quickcollab.events.CustomLogoutSuccessEvent;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.exception.ResourceNotFoundException;
+import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Job;
 import com.quickcollab.model.User;
-import com.quickcollab.pojo.OfferDetail;
-import com.quickcollab.pojo.SocialMediaHandle;
+import com.quickcollab.model.Work;
+import com.quickcollab.pojo.*;
+import com.quickcollab.repository.ConversationRepository;
 import com.quickcollab.repository.UserRepository;
+import com.quickcollab.repository.WorkRepository;
 import com.quickcollab.utils.JwtBlacklistService;
 import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,10 +36,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
 
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class UserService {
@@ -45,8 +54,11 @@ public class UserService {
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
     private final AWSService awsService;
+    private final ConversationRepository conversationRepository;
+    private final S3Client s3Client;
+    private final WorkRepository workRepository;
 
-    public UserService(ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService) {
+    public UserService( WorkRepository workRepository,ConversationRepository conversationRepository, ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService, S3Client s3Client) {
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
         this.jwtTokenUtil = jwtTokenUtil;
@@ -54,6 +66,9 @@ public class UserService {
         this.objectMapper = objectMapper;
         this.eventPublisher = eventPublisher;
         this.jwtBlacklistService = jwtBlacklistService;
+        this.conversationRepository = conversationRepository;
+        this.s3Client = s3Client;
+        this.workRepository =  workRepository;
     }
 
     @Value("${aws.cloudfront.distribution}")
@@ -95,7 +110,48 @@ public class UserService {
         Optional<User> optionalUser = findByEmail(emailId);
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
-            String userRole = optionalUser.get().getUserRole().toString();
+
+            // check if the user has completed his notice period
+            if(user.getIsServingNoticePeriod() && user.getNoticePeriodEndDate().before(new Date())){
+                user.setUserRole(UserRole.JOB_SEEKER);
+                user.setReportsTo(null);
+                List<Conversation> userConversations = conversationRepository.findAll().stream().filter(conversation ->{
+                    return conversation.getMembers().contains(user);
+                }).toList();
+                userConversations.forEach(conversation->{
+                    if(conversation.getIsTeamMemberConversation()){
+                        List<User>members = conversation.getMembers().stream().filter (member->  !member.getUserId().equals(user.getUserId())).toList();
+                        conversation.setMembers(members);
+                        conversationRepository.save(conversation);
+                    }
+                });
+
+                if(user.getReportsTo()!=null){
+
+                    userConversations.forEach((conversation)->{
+                        AtomicReference<Boolean> check = new AtomicReference<>(true);
+                        conversation.getMembers().forEach((member)->{
+                            if(!member.getReportsTo().getUserId().equals(user.getReportsTo().getUserId())){
+                                check.set(false);
+                            }
+                        });
+                        conversation.setIsTeamMemberConversation(check.get().equals(true));
+                        conversationRepository.save(conversation);
+                    });
+                }
+                JobHistory currentJobDetails = user.getCurrentJobDetails();
+
+                if(currentJobDetails!=null){
+                    currentJobDetails.setUserRole(user.getUserRole());
+                    currentJobDetails.setSalary(user.getCurrentSalary());
+                    user.getJobHistory().add(currentJobDetails);
+                }
+
+                userRepository.save(user);
+            }
+
+
+            String userRole =user.getUserRole().toString();
             if(userRole.equals(UserRole.CONTENT_CREATOR.toString())){
                 ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(user, ContentCreatorUserDetails.class);
                 List<ContentCreatorEmployee> employees = user.getEmployees().stream().map(employee -> modelMapper.map(employee , ContentCreatorEmployee.class)).toList();
@@ -172,6 +228,9 @@ public class UserService {
 
                     return appliedJob;
                 }).toList();
+                teamMemberUserDetails.setNoticePeriodEndDate(user.getNoticePeriodEndDate());
+                teamMemberUserDetails.setCurrentJobJoinedOn(user.getCurrentJobJoinedOn());
+                teamMemberUserDetails.setIsServingNoticePeriod(user.getIsServingNoticePeriod());
                 teamMemberUserDetails.setAppliedJobs(appliedJobs);
                 teamMemberUserDetails.setCurrentSalary(user.getCurrentSalary());
                 teamMemberUserDetails.setCurrentJobDetails(user.getCurrentJobDetails());
@@ -207,7 +266,7 @@ public class UserService {
 
 
 
-    public ResponseDTO updateProfile(String authUserId, @Valid UpdateUserProfileRequestDTO updateUserProfileRequestDTO) throws IOException {
+    public ResponseDTO updateProfile(String authUserId, UpdateUserProfileRequestDTO updateUserProfileRequestDTO) throws IOException {
     User authUser = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
     if(updateUserProfileRequestDTO.getProfilePicture()!=null) {
         if(!Objects.equals(authUser.getProfilePicture(), "")){
@@ -236,5 +295,105 @@ public class UserService {
 
     return new ResponseDTO("User profile updated successfully" , true);
 
+    }
+
+    public ResponseDTO addPersonalProject(String authUserId , ProjectDetailsRequestStringifiedDTO projectDetailsRequestStringifiedDTO) throws IOException {
+        User user = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
+        Work work = new Work();
+
+        ProjectDetailsRequestDTO projectDetailsRequestDTO = new ProjectDetailsRequestDTO();
+        projectDetailsRequestDTO.setDescription(projectDetailsRequestStringifiedDTO.getDescription());
+        projectDetailsRequestDTO.setTitle(projectDetailsRequestStringifiedDTO.getTitle());
+
+        try {
+            List<ExternalLink> externalLinks = objectMapper.readValue(projectDetailsRequestStringifiedDTO.getExternalLinks(),
+                    new TypeReference<List<ExternalLink>>() {});
+            projectDetailsRequestDTO.setExternalLinks(externalLinks);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid externalLinks format");
+        }
+
+        try {
+            List<MediaFile> existingMediaFiles = objectMapper.readValue(projectDetailsRequestStringifiedDTO.getExistingMedia(),
+                    new TypeReference<List<MediaFile>>() {});
+            projectDetailsRequestDTO.setExistingMedia(existingMediaFiles);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid existingMediaFiles format");
+        }
+        projectDetailsRequestDTO.setMediaFiles(projectDetailsRequestStringifiedDTO.getMediaFiles());
+
+
+        work.setUser(user);
+        work.setDescription(projectDetailsRequestDTO.getDescription());
+        work.setTitle(projectDetailsRequestDTO.getTitle());
+        work.setExternalLinks(projectDetailsRequestDTO.getExternalLinks());
+        List<MediaFile> mediaFiles = new ArrayList<>();
+        for (MultipartFile file : projectDetailsRequestDTO.getMediaFiles()) {
+            String folderName = "project-media-files";
+            String contentType = file.getContentType();
+            MediaType mediaType = (contentType != null && contentType.contains("image")) ? MediaType.IMAGE : MediaType.VIDEO;
+            String mediaId = awsService.s3MediaUploader(folderName, authUserId, file.getContentType(), file);
+            String mediaUrl = cloudFrontDistribution + folderName + "/" + mediaId;
+            MediaFile mediaFile = new MediaFile(mediaUrl, mediaType);
+            mediaFiles.add(mediaFile);
+        }
+        work.setMediaFiles(mediaFiles);
+
+
+    Work savedWork = workRepository.save(work);
+    user.getMyProjects().add(savedWork);
+    userRepository.save(user);
+
+    return new ResponseDTO("Project added successfully" , true);
+
+    }
+
+    public ResponseDTO updatePersonalProject(String authUserId , Long workId , ProjectDetailsRequestDTO projectDetailsRequestDTO) throws IOException {
+        User user = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
+        Work work = workRepository.findById(workId).orElseThrow(()-> new ResourceNotFoundException("Project","id",workId.toString()));
+        if(!work.getUser().equals(user)){
+            throw new GenericError("You are not allowed to update this project");
+        }
+        work.setMediaFiles(projectDetailsRequestDTO.getExistingMedia());
+        // delete any removed media from aws
+        for(MediaFile mediaFile : work.getMediaFiles()){
+            boolean check = false;
+            for(MediaFile existingMedia : projectDetailsRequestDTO.getExistingMedia()) {
+                if (existingMedia.getUrl().equals(mediaFile.getUrl())) {
+                    check = true;
+                    break;
+                }
+            }
+            if(!check){
+                String mediaId = awsService.extractKeyFromCloudFrontUrl(mediaFile.getUrl());
+                awsService.s3MediaDelete(mediaId);
+            }
+        }
+        // Upload any new media files
+        List<MediaFile> newMediaFiles = new ArrayList<>();
+        for (MultipartFile file : projectDetailsRequestDTO.getMediaFiles()) {
+            String folderName = "project-media-files";
+            String mediaId = awsService.s3MediaUploader(folderName, authUserId, file.getContentType(), file);
+            String mediaUrl = cloudFrontDistribution + folderName + "/" + mediaId;
+            MediaFile mediaFile = new MediaFile(mediaUrl , Objects.requireNonNull(file.getContentType()).contains("image") ? MediaType.IMAGE : MediaType.VIDEO);
+            newMediaFiles.add(mediaFile);
+        }
+        work.getMediaFiles().addAll(newMediaFiles);
+
+        Work savedWork = workRepository.save(work);
+        user.getMyProjects().add(savedWork);
+        userRepository.save(user);
+
+        return new ResponseDTO("Project updated successfully" , true);
+
+    }
+
+    public ResponseDTO deletePersonalProject(String authUserId , Long workId )throws IOException{
+        User user = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
+        Work work = workRepository.findById(workId).orElseThrow(()-> new ResourceNotFoundException("Project","id",workId.toString()));
+        workRepository.delete(work);
+        user.getMyProjects().remove(work);
+        userRepository.save(user);
+        return new ResponseDTO("Project deleted successfully" , true);
     }
 }

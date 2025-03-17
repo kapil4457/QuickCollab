@@ -9,6 +9,7 @@ import {
 } from "../slices/userSlice";
 import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
 import { UserSelfDetails } from "@/pages/Dashboard/Dashboard/components/EditSelfDetailsModal";
+import { ProjectDetailsRequestDTO } from "../dtos/request/projectDetailsRequestDTO";
 
 export const loginUserHandler = async (
   body: loginRequestDTO,
@@ -190,9 +191,10 @@ export const updateSelfDetailsHandler = async (
       "socialMediaHandles",
       JSON.stringify(body.socialMediaHandles)
     );
-    if (typeof body.profilePicture !== "string") {
+    if (body.profilePicture) {
       formData.append("profilePicture", body.profilePicture);
     }
+
     console.log("headers : ", headers);
     const { data } = await axios.put("/api/updateProfile", formData, {
       headers: headers,
@@ -228,10 +230,61 @@ export const updateSelfDetailsHandler = async (
   }
 };
 
-{
-  /*
-  
+export const createProjectHandler = async (
+  body: ProjectDetailsRequestDTO,
+  dispatch: typeof dispatchType
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    dispatch(updateUserLoadingState(true));
+    const headers = {
+      Authorization: authorizationToken,
+      "Content-Type": "multipart/form-data",
+    };
+    const formData = new FormData();
+    formData.append("title", body.title);
+    formData.append("description", body.description);
+    formData.append("existingMedia", JSON.stringify(body.existingMedia));
+    formData.append("externalLinks", JSON.stringify(body.externalLinks));
+    body.mediaFiles.forEach((file) => {
+      formData.append("mediaFiles", file);
+    });
+    const { data } = await axios.put("/api/addProject", formData, {
+      headers: headers,
+    });
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
 
-  https://d15sct1rm695x0.cloudfront.net/profile-picture/47273965-89c7-4107-9e26-ceea8d1a987e-profile-pic-cropped.png
-  */
-}
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateUserLoadingState(false));
+  }
+};

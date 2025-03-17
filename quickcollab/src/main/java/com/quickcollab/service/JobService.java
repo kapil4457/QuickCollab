@@ -30,6 +30,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @AllArgsConstructor
@@ -298,15 +300,29 @@ public class JobService {
 
     public ResponseDTO updateResignationStatus(String authUserId,Boolean status){
     User employee = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","userId",authUserId));
+    if(employee.getReportsTo().getUserId().equals(employee.getUserId())){
+        throw new GenericError("You are not allowed to perform this operation");
+    }
     employee.setIsServingNoticePeriod(status);
     Long noticePeriodLength = employee.getCurrentJobNoticePeriodDays();
     if(status){
         employee.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 1000)));
     }else{
+        long diffInMillies = employee.getNoticePeriodEndDate().getTime() - new Date().getTime();
+        long daysLeft = TimeUnit.MILLISECONDS.toDays(diffInMillies);
+        if (daysLeft < 15) {
+            throw new GenericError("Can not withdraw resignation in the last 15 days.");
+        }
         employee.setNoticePeriodEndDate(null);
+        employee.getOffersReceived().forEach((offer)->{
+            if(offer.getOfferStatus().equals(OfferStatus.ACCEPTED)){
+                offer.setOfferStatus(OfferStatus.REVISION);
+                jobOfferRepository.save(offer);
+            }
+        });
     }
     userRepository.save(employee);
-    return new ResponseDTO(status ? "Resignation submitted successfully !!": "Resignation withdrawn successfull!",true);
+    return new ResponseDTO(status ? "Resignation submitted successfully": "Resignation withdrawn successfully",true);
     }
 
     public ResponseDTO updateEmployeeSalary(Long newSalary , String employeeId , String authUserId  , String authUserRole){
@@ -370,6 +386,20 @@ public class JobService {
                 }
             });
 
+            if(applicant.getReportsTo()!=null){
+
+            userConversations.forEach((conversation)->{
+                AtomicReference<Boolean> check = new AtomicReference<>(true);
+                conversation.getMembers().forEach((member)->{
+                     if(!member.getReportsTo().getUserId().equals(contentCreatorId)){
+                         check.set(false);
+                     }
+                });
+                conversation.setIsTeamMemberConversation(check.get().equals(true));
+                conversationRepository.save(conversation);
+            });
+            }
+
             //  Add current Job to the JobHistory of the applicant
             JobHistory currentJobDetails = applicant.getCurrentJobDetails();
 
@@ -410,6 +440,9 @@ public class JobService {
             if (openingCount == 0) {
                 job.setJobStatus(JobStatus.FILLED);
             }
+
+            applicant.setIsServingNoticePeriod(false);
+            applicant.setNoticePeriodEndDate(null);
 
 
             userRepository.save(applicant);

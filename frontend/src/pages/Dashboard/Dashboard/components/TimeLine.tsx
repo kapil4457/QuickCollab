@@ -28,7 +28,7 @@ const TimeLine = ({ jobHistory }: { jobHistory: JobHistory[] }) => {
     return allJobHistory;
   }, [jobHistory, currJobDetails]);
   return (
-    <Card className="border border-gray-300 shadow-md rounded-xl p-6 w-full h-full overflow-x-hidden flex flex-col gap-3 overflow-auto ">
+    <Card className="border border-gray-300 shadow-md rounded-xl p-6 w-full h-full overflow-x-hidden flex flex-col gap-3 flex-1 min-h-[20rem] overflow-auto">
       <CardHeader className="text-xl font-semibold border-b pb-3">
         Job History
       </CardHeader>

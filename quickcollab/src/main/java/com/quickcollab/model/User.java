@@ -87,7 +87,6 @@ public class User {
     @Convert(converter = ReportsToAttributeConverter.class)
     private ReportingUser reportsTo;
 
-//    @Convert(converter = OfferDetailsConverter.class)
     @OneToMany(fetch = FetchType.LAZY)
     private List<JobOffer> offersReceived = new ArrayList<>();
 
@@ -100,6 +99,9 @@ public class User {
 
     private Long currentJobNoticePeriodDays;
     private Date currentJobJoinedOn;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Work> myProjects;
 
     @NotNull
     private Long currentSalary = 0L;

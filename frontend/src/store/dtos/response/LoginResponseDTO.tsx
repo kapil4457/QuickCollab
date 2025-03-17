@@ -56,6 +56,9 @@ export interface TeamMemberUserDetails {
   currentJobDetails: JobHistory;
   currentSalary: number;
   offersReceived: Array<OfferDetail>;
+  noticePeriodEndDate: Date;
+  currentJobJoinedOn: Date;
+  isServingNoticePeriod: boolean;
 }
 export type loggedInUser =
   | null

@@ -21,9 +21,11 @@ const SocialMediaIcon = ({ platform }: { platform: string }) => {
 };
 
 const DetailItem = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col max-h-[5rem] overflow-auto break-words">
+  <div className="flex flex-col max-h-[7rem]">
     <span className="text-gray-600 font-medium">{label}</span>
-    <span className="text-gray-600 font-bold">{value || "N/A"}</span>
+    <span className="text-gray-600 font-bold max-h-[5rem] overflow-auto break-words">
+      {value || "N/A"}
+    </span>
   </div>
 );
 const SelfDetails = () => {
@@ -57,7 +59,7 @@ const SelfDetails = () => {
               <Image
                 isBlurred
                 alt="Profile Picture"
-                className=" border border-gray-300 shadow-md"
+                className=" border border-gray-300 shadow-md object-cover"
                 src={user?.profilePicture}
                 width={80}
                 height={80}
@@ -97,6 +99,7 @@ const SelfDetails = () => {
                     key={index}
                     isIconOnly
                     className="flex items-center gap-2"
+                    variant="shadow"
                   >
                     <img
                       src={SocialMediaIcon({
@@ -104,9 +107,6 @@ const SelfDetails = () => {
                       })}
                       alt={handle.socialMediaPlatformName}
                     />
-                    {/* <SocialMediaIcon
-                      platform={handle.socialMediaPlatformName}
-                    /> */}
                   </Button>
                 ))}
               </ul>
