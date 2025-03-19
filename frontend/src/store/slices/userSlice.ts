@@ -136,5 +136,10 @@ export const selectIsServingNoticePeriod = (state: RootState) => {
   }
   return null;
 };
-
+export const selectPersonalProjects = (state: RootState) => {
+  if (state.user.user && "personalProjects" in state.user.user) {
+    return state.user.user.personalProjects;
+  }
+  return [];
+};
 export default userSlice.reducer;

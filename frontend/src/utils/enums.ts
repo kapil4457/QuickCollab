@@ -68,3 +68,8 @@ export const SocialMediaHandleType = Object.freeze({
   YOUTUBE: "YOUTUBE",
   TWITTER: "TWITTER",
 });
+
+export const MediaType = Object.freeze({
+  IMAGE: "IMAGE",
+  VIDEO: "VIDEO",
+});

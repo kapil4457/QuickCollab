@@ -1,5 +1,6 @@
 package com.quickcollab.dtos.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.quickcollab.converter.ExternalLinkAttributeConverter;
 import com.quickcollab.converter.MediaFileAttributeConverter;
 import com.quickcollab.pojo.ExternalLink;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor

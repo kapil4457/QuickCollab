@@ -70,6 +70,7 @@ public class User {
 
     @NotNull
     @URL
+    @Column(length = 2000)
     private String profilePicture = "";
 
     @OneToMany(mappedBy = "postedBy", fetch = FetchType.LAZY)

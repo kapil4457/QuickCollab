@@ -7,6 +7,7 @@ import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Work;
 import com.quickcollab.pojo.JobHistory;
 import com.quickcollab.pojo.OfferDetail;
+import com.quickcollab.pojo.PersonalProject;
 import com.quickcollab.pojo.SocialMediaHandle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class JobSeekerUserDetails {
     private String profilePicture;
     private String selfDescription;
     private List<JobHistory> jobHistory;
-    private List<Work> works;
+    private List<PersonalProject> personalProjects;
     private List<JobSeekerJobApplication> appliedJobs;
     private List<SocialMediaHandle> socialMediaHandles;
     private UserRole userRole;

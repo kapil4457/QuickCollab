@@ -23,7 +23,9 @@ public class Work {
     private Long workId;
     @ManyToOne
     private User user;
+    @Column(length = 2000)
     private String title;
+    @Column(length = 2000)
     private String description;
     @Convert(converter = MediaFileAttributeConverter.class)
     private List<MediaFile> mediaFiles;

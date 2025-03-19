@@ -5,9 +5,9 @@ import {
   JobHistory,
   JobSeekerJobApplication,
   OfferDetail,
+  PersonalProject,
   ReportingUser,
   SocialMediaHandle,
-  Work,
 } from "../helper";
 
 export interface ContentCreatorUserDetails {
@@ -32,7 +32,7 @@ export interface JobSeekerUserDetails {
   profilePicture: string;
   selfDescription: string;
   jobHistory: Array<JobHistory>;
-  works: Array<Work>;
+  personalProjects: Array<PersonalProject>;
   appliedJobs: Array<JobSeekerJobApplication>;
   socialMediaHandles: Array<SocialMediaHandle>;
   userRole: string;
@@ -48,7 +48,7 @@ export interface TeamMemberUserDetails {
   selfDescription: string;
   socialMediaHandles: Array<SocialMediaHandle>;
   appliedJobs: Array<JobSeekerJobApplication>;
-  works: Array<Work>;
+  personalProjects: Array<PersonalProject>;
   jobHistory: Array<JobHistory>;
   userRole: string;
   currentJobNoticePeriodDays: number;

@@ -12,10 +12,10 @@ import LoaderOverlay from "./components/loaderOverlay/LoaderOverlay.tsx";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
+      <LoaderOverlay />
       <BrowserRouter>
         <HeroUIProvider>
           <App />
-          <LoaderOverlay />
         </HeroUIProvider>
       </BrowserRouter>
     </Provider>

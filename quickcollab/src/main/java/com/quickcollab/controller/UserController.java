@@ -170,6 +170,7 @@ public class UserController {
         }
 
     }
+
     @DeleteMapping("/api/deleteProject")
     public ResponseEntity<ResponseDTO> deleteProject(Authentication authentication , @RequestParam Long workId) {
         try{
@@ -185,8 +186,9 @@ public class UserController {
         }
 
     }
-    @PutMapping("/api/updateProject")
-    public ResponseEntity<ResponseDTO> updateProject(Authentication authentication , @RequestParam Long workId , @RequestBody ProjectDetailsRequestDTO projectDetailsRequestDTO) {
+
+    @PutMapping(value="/api/updateProject",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseDTO> updateProject(Authentication authentication , @RequestParam Long workId , @ModelAttribute ProjectDetailsRequestStringifiedDTO projectDetailsRequestDTO) {
         try{
             String authUserId = (String) authentication.getDetails();
             ResponseDTO responseDTO = userService.updatePersonalProject(authUserId , workId,projectDetailsRequestDTO);

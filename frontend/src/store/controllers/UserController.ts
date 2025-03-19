@@ -255,9 +255,130 @@ export const createProjectHandler = async (
     body.mediaFiles.forEach((file) => {
       formData.append("mediaFiles", file);
     });
+
     const { data } = await axios.put("/api/addProject", formData, {
       headers: headers,
     });
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
+
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateUserLoadingState(false));
+  }
+};
+
+export const updateProjectHandler = async (
+  body: ProjectDetailsRequestDTO,
+  dispatch: typeof dispatchType
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    dispatch(updateUserLoadingState(true));
+    const headers = {
+      Authorization: authorizationToken,
+      "Content-Type": "multipart/form-data",
+    };
+    const formData = new FormData();
+
+    formData.append("title", body.title);
+    formData.append("description", body.description);
+    formData.append("existingMedia", JSON.stringify(body.existingMedia));
+    formData.append("externalLinks", JSON.stringify(body.externalLinks));
+
+    body.mediaFiles.forEach((file) => {
+      formData.append("mediaFiles", file);
+    });
+
+    const { data } = await axios.put(
+      `/api/updateProject?workId=${body.projectId}`,
+      formData,
+      {
+        headers: headers,
+      }
+    );
+    const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
+
+    return {
+      message,
+      success,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+    };
+  } finally {
+    dispatch(updateUserLoadingState(false));
+  }
+};
+
+export const deleteProjectHandler = async (
+  projectId: number,
+  dispatch: typeof dispatchType
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+      };
+    }
+    dispatch(updateUserLoadingState(true));
+    const headers = {
+      Authorization: authorizationToken,
+    };
+
+    const { data } = await axios.delete(
+      `/api/deleteProject?workId=${projectId}`,
+      {
+        headers: headers,
+      }
+    );
     const { success, message } = data;
     selfDetails(dispatch, authorizationToken);
 

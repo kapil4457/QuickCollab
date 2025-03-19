@@ -1,3 +1,5 @@
+import { ExternalLink, MediaFile } from "./request/projectDetailsRequestDTO";
+
 export interface Conversation {
   conversationId: number;
   members: Array<ConversationUser>;
@@ -29,12 +31,20 @@ export interface ContentCreatorEmployee {
   profilePicture: string;
   selfDescription: string;
   socialMediaHandles: Array<SocialMediaHandle>;
-  works: Array<Work>;
+  personalProjects: Array<PersonalProject>;
   jobHistory: Array<JobHistory>;
   userRole: string;
   currentSalary: number;
   isServingNoticePeriod: boolean;
   noticePeriodEndDate: Date;
+}
+
+export interface PersonalProject {
+  title: string;
+  projectId: number;
+  description: string;
+  mediaFiles: Array<MediaFile>;
+  externalLinks: Array<ExternalLink>;
 }
 
 export interface ContentCreatorJobPost {
@@ -76,8 +86,6 @@ export interface CallLog {
   endedAt: Date;
 }
 export interface User {}
-
-export interface Work {}
 
 export interface JobHistory {
   jobId: number;

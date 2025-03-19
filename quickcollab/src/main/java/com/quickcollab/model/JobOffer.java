@@ -2,10 +2,7 @@ package com.quickcollab.model;
 
 import com.quickcollab.enums.OfferStatus;
 import com.quickcollab.enums.UserRole;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +25,7 @@ public class JobOffer {
     @NotNull
     public Long jobId;
     @NotNull
+    @Column(length = 2000)
     public String jobTitle;
     @NotNull
     public Long salary;

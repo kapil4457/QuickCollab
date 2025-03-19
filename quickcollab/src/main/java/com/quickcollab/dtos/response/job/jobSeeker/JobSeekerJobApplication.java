@@ -1,9 +1,12 @@
 package com.quickcollab.dtos.response.job.jobSeeker;
 
+import com.quickcollab.pojo.PersonalProject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter

@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import IndexPage from "@/pages/index";
 import DocsPage from "@/pages/docs";

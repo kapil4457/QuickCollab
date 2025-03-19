@@ -26,9 +26,11 @@ public class Job {
     private Long jobId;
 
     @NotNull
+    @Column(length = 2000)
     private String jobName;
 
     @NotNull
+    @Column(length = 2000)
     private String jobDescription;
 
     @NotNull
@@ -51,6 +53,7 @@ public class Job {
     private List<User> applicants = new ArrayList<>();
 
     @NotNull
+    @Column(length = 2000)
     private String jobLocation;
 
 //    @Convert(converter = OfferDetailsConverter.class)

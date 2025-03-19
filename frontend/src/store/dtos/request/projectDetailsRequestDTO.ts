@@ -4,6 +4,7 @@ export interface ProjectDetailsRequestDTO {
   mediaFiles: Array<File>;
   externalLinks: Array<ExternalLink>;
   existingMedia: Array<MediaFile>;
+  projectId: number;
 }
 
 export interface ExternalLink {

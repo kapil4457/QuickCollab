@@ -6,6 +6,7 @@ import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Work;
 import com.quickcollab.pojo.OfferDetail;
+import com.quickcollab.pojo.PersonalProject;
 import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.pojo.JobHistory;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,7 @@ public class TeamMemberUserDetails {
     private String selfDescription;
     private List<SocialMediaHandle> socialMediaHandles;
     private List<JobSeekerJobApplication> appliedJobs;
-    private List<Work> works;
+    private List<PersonalProject> personalProjects;
     private List<JobHistory> jobHistory;
     private Date noticePeriodEndDate;
     private JobHistory currentJobDetails;

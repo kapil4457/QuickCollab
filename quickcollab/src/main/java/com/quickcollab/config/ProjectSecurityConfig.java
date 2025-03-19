@@ -60,7 +60,7 @@ public class ProjectSecurityConfig {
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/api/me","/api/insertMessage","/api/all/conversations","/api/updateProfile").authenticated()
                         .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation").hasAnyRole("CONTENT_CREATOR")
-                        .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
+                        .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany","/api/deleteProject","/api/addProject" , "/api/updateProject").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
                         .requestMatchers( "/api/error", "/api/register","/api/apiLogin","/api/apiLogout","/api/chat/**").permitAll());
 
 

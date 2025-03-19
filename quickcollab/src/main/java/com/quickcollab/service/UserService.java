@@ -205,6 +205,18 @@ public class UserService {
 
                     return appliedJob;
                 }).toList();
+
+                List<PersonalProject> personalProjectList = user.getMyProjects().stream().map(project -> {
+                    PersonalProject personalProject = new PersonalProject();
+                    personalProject.setDescription(project.getDescription());
+                    personalProject.setTitle(project.getTitle());
+                    personalProject.setExternalLinks(project.getExternalLinks());
+                    personalProject.setMediaFiles(project.getMediaFiles());
+                    personalProject.setProjectId(project.getWorkId());
+                    personalProject.getMediaFiles().sort(Comparator.comparing(media -> media.getType() == MediaType.IMAGE ? 0 : 1));
+                    return personalProject;
+                }).toList();
+                jobSeekerUserDetails.setPersonalProjects(personalProjectList);
                 jobSeekerUserDetails.setAppliedJobs(appliedJobs);
                 LoginResponseDTO<JobSeekerUserDetails> loginResponseDTO = new LoginResponseDTO<>();
                 loginResponseDTO.setUser(jobSeekerUserDetails);
@@ -228,6 +240,19 @@ public class UserService {
 
                     return appliedJob;
                 }).toList();
+
+                List<PersonalProject> personalProjectList = user.getMyProjects().stream().map(project -> {
+                    PersonalProject personalProject = new PersonalProject();
+                    personalProject.setDescription(project.getDescription());
+                    personalProject.setTitle(project.getTitle());
+                    personalProject.setExternalLinks(project.getExternalLinks());
+                    personalProject.setMediaFiles(project.getMediaFiles());
+                    personalProject.setProjectId(project.getWorkId());
+                    personalProject.getMediaFiles().sort(Comparator.comparing(media -> media.getType() == MediaType.IMAGE ? 0 : 1));
+                    return personalProject;
+                }).toList();
+                teamMemberUserDetails.setPersonalProjects(personalProjectList);
+
                 teamMemberUserDetails.setNoticePeriodEndDate(user.getNoticePeriodEndDate());
                 teamMemberUserDetails.setCurrentJobJoinedOn(user.getCurrentJobJoinedOn());
                 teamMemberUserDetails.setIsServingNoticePeriod(user.getIsServingNoticePeriod());
@@ -327,6 +352,7 @@ public class UserService {
         work.setDescription(projectDetailsRequestDTO.getDescription());
         work.setTitle(projectDetailsRequestDTO.getTitle());
         work.setExternalLinks(projectDetailsRequestDTO.getExternalLinks());
+        if(projectDetailsRequestDTO.getMediaFiles()!=null){
         List<MediaFile> mediaFiles = new ArrayList<>();
         for (MultipartFile file : projectDetailsRequestDTO.getMediaFiles()) {
             String folderName = "project-media-files";
@@ -338,6 +364,9 @@ public class UserService {
             mediaFiles.add(mediaFile);
         }
         work.setMediaFiles(mediaFiles);
+        }else{
+            work.setMediaFiles(new ArrayList<>());
+        }
 
 
     Work savedWork = workRepository.save(work);
@@ -348,13 +377,38 @@ public class UserService {
 
     }
 
-    public ResponseDTO updatePersonalProject(String authUserId , Long workId , ProjectDetailsRequestDTO projectDetailsRequestDTO) throws IOException {
+    public ResponseDTO updatePersonalProject(String authUserId , Long workId , ProjectDetailsRequestStringifiedDTO projectDetailsRequestStringifiedDTO) throws IOException {
         User user = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
         Work work = workRepository.findById(workId).orElseThrow(()-> new ResourceNotFoundException("Project","id",workId.toString()));
         if(!work.getUser().equals(user)){
             throw new GenericError("You are not allowed to update this project");
         }
+
+        work.setTitle(projectDetailsRequestStringifiedDTO.getTitle());
+        work.setDescription(projectDetailsRequestStringifiedDTO.getDescription());
+        ProjectDetailsRequestDTO projectDetailsRequestDTO = new ProjectDetailsRequestDTO();
+
+        try {
+            List<ExternalLink> externalLinks = objectMapper.readValue(projectDetailsRequestStringifiedDTO.getExternalLinks(),
+                    new TypeReference<List<ExternalLink>>() {});
+            work.setExternalLinks(externalLinks);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid externalLinks format");
+        }
+
+        try {
+            List<MediaFile> existingMediaFiles = objectMapper.readValue(projectDetailsRequestStringifiedDTO.getExistingMedia(),
+                    new TypeReference<List<MediaFile>>() {});
+            projectDetailsRequestDTO.setExistingMedia(existingMediaFiles);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid existingMediaFiles format");
+        }
+
         work.setMediaFiles(projectDetailsRequestDTO.getExistingMedia());
+
+        projectDetailsRequestDTO.setMediaFiles(projectDetailsRequestStringifiedDTO.getMediaFiles());
+
+
         // delete any removed media from aws
         for(MediaFile mediaFile : work.getMediaFiles()){
             boolean check = false;
@@ -369,7 +423,10 @@ public class UserService {
                 awsService.s3MediaDelete(mediaId);
             }
         }
+
+
         // Upload any new media files
+        if(projectDetailsRequestDTO.getMediaFiles()!=null){
         List<MediaFile> newMediaFiles = new ArrayList<>();
         for (MultipartFile file : projectDetailsRequestDTO.getMediaFiles()) {
             String folderName = "project-media-files";
@@ -379,10 +436,11 @@ public class UserService {
             newMediaFiles.add(mediaFile);
         }
         work.getMediaFiles().addAll(newMediaFiles);
+        }
 
-        Work savedWork = workRepository.save(work);
-        user.getMyProjects().add(savedWork);
-        userRepository.save(user);
+
+
+       workRepository.save(work);
 
         return new ResponseDTO("Project updated successfully" , true);
 
@@ -391,8 +449,12 @@ public class UserService {
     public ResponseDTO deletePersonalProject(String authUserId , Long workId )throws IOException{
         User user = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
         Work work = workRepository.findById(workId).orElseThrow(()-> new ResourceNotFoundException("Project","id",workId.toString()));
-        workRepository.delete(work);
         user.getMyProjects().remove(work);
+        work.getMediaFiles().forEach((media)->{
+            String mediaId = awsService.extractKeyFromCloudFrontUrl(media.getUrl());
+            awsService.s3MediaDelete(mediaId);
+        });
+        workRepository.delete(work);
         userRepository.save(user);
         return new ResponseDTO("Project deleted successfully" , true);
     }
