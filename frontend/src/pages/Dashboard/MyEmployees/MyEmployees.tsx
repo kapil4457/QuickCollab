@@ -30,6 +30,8 @@ import {
 } from "@heroui/dropdown";
 import { VerticalDotsIcon } from "../PostedJobs/PostedJobs";
 import UpdateSalaryModal from "../components/UpdateSalaryModal";
+import { formatDate } from "@/utils/generalUtils";
+import { Chip } from "@heroui/chip";
 
 const MyEmployees = () => {
   const [page, setPage] = useState(1);
@@ -39,6 +41,7 @@ const MyEmployees = () => {
   const [currentEmployee, setCurrentEmployee] =
     useState<ContentCreatorEmployee | null>(null);
   const myEmployees = useAppSelector(selectMyEmployees);
+  console.log("myEmployees : ", myEmployees);
   const rowsCount = [5, 10, 15];
   const [rowsPerPage, setRowsPerPage] = useState(rowsCount[0]);
   const pages = Math.ceil((myEmployees?.length || 0) / rowsPerPage);
@@ -231,6 +234,20 @@ const MyEmployees = () => {
                             </DropdownMenu>
                           </Dropdown>
                         </div>
+                      ) : columnKey === "noticePeriodEndDate" ? (
+                        <>
+                          {item?.noticePeriodEndDate
+                            ? formatDate(item?.noticePeriodEndDate?.toString())
+                            : "N/A"}
+                        </>
+                      ) : columnKey === "isServingNoticePeriod" ? (
+                        <Chip
+                          color={
+                            item?.isServingNoticePeriod ? "danger" : "success"
+                          }
+                        >
+                          {item?.isServingNoticePeriod ? "TRUE" : "FALSE"}
+                        </Chip>
                       ) : (
                         getKeyValue(item, columnKey)
                       )}

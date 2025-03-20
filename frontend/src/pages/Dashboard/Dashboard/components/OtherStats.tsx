@@ -61,7 +61,7 @@ const OtherStats = () => {
   return (
     <>
       <EditSelfDetailsModal ref={editSelfDetailsModalRef} />
-      <Card className="border border-gray-300 shadow-md  flex-1 w-full  rounded-xl p-6 flex-1 min-h-[15rem] overflow-auto ">
+      <Card className="border border-gray-300 shadow-md  flex-1 w-full  rounded-xl p-6  min-h-[15rem] overflow-auto ">
         <CardHeader className="text-xl font-semibold border-b pb-3 flex justify-between">
           Other Stats
           <Button onPress={updateResignationStatus}>

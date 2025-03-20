@@ -12,6 +12,7 @@ import { Link } from "@heroui/link";
 import { Delete, ExternalLink, Pencil, Trash } from "lucide-react";
 import { useRef } from "react";
 import { Video } from "reactjs-media";
+import ReactPlayer from "react-player";
 
 const ProjectCard = ({
   project,
@@ -64,10 +65,10 @@ const ProjectCard = ({
           base: "w-[100%] lg:w-[30rem] h-[100%]",
         }}
       >
-        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+        <CardHeader className="pb-0 pt-2 px-4 flex-col gap-4 items-start">
           <p className="text-tiny uppercase font-bold flex justify-between w-full">
-            {project?.title}
-            <span>
+            <div className="break-words w-[70%]">{project?.title}</div>
+            <div>
               {isAdmin ? (
                 <>
                   <Button
@@ -99,7 +100,7 @@ const ProjectCard = ({
               >
                 <ExternalLink size={15} />
               </Button>
-            </span>
+            </div>
           </p>
           <span className="flex flex-wrap">
             {project?.externalLinks?.map((link) => {
@@ -133,10 +134,10 @@ const ProjectCard = ({
                     }}
                   />
                 ) : (
-                  <Video
-                    src={project?.existingMedia[0].url}
-                    height={400}
-                    width={400}
+                  <ReactPlayer
+                    url={project?.existingMedia[0].url}
+                    controls
+                    muted
                   />
                 )}
               </>

@@ -310,8 +310,8 @@ public class JobService {
     }else{
         long diffInMillies = employee.getNoticePeriodEndDate().getTime() - new Date().getTime();
         long daysLeft = TimeUnit.MILLISECONDS.toDays(diffInMillies);
-        if (daysLeft < 15) {
-            throw new GenericError("Can not withdraw resignation in the last 15 days.");
+        if (daysLeft < 5) {
+            throw new GenericError("Can not withdraw resignation in the last 5 days.");
         }
         employee.setNoticePeriodEndDate(null);
         employee.getOffersReceived().forEach((offer)->{
@@ -440,6 +440,7 @@ public class JobService {
             if (openingCount == 0) {
                 job.setJobStatus(JobStatus.FILLED);
             }
+            applicant.setCurrentJobJoinedOn(new Date());
 
             applicant.setIsServingNoticePeriod(false);
             applicant.setNoticePeriodEndDate(null);

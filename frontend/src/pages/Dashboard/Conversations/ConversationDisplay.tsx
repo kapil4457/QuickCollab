@@ -96,7 +96,7 @@ const ConversationDisplay = ({
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Button
             variant="solid"
             size="md"
@@ -124,7 +124,7 @@ const ConversationDisplay = ({
           >
             <Calendar />
           </Button>
-        </div>
+        </div> */}
       </div>
       <div className="w-full h-[95%] overflow-scroll overflow-x-hidden flex flex-col gap-5 p-2 pl-2 pr-2 md:pr-4 md:pl-4 ">
         {conversation?.messages?.map((msg) => (

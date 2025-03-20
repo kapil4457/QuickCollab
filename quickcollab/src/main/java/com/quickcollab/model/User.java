@@ -70,7 +70,7 @@ public class User {
 
     @NotNull
     @URL
-    @Column(length = 2000)
+    @Column(length = 10000)
     private String profilePicture = "";
 
     @OneToMany(mappedBy = "postedBy", fetch = FetchType.LAZY)
@@ -96,6 +96,7 @@ public class User {
     private Date noticePeriodEndDate;
 
     @Convert(converter = JobHistoryConverter.class)
+    @Column(length = 10000)
     private JobHistory currentJobDetails;
 
     private Long currentJobNoticePeriodDays;

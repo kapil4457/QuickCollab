@@ -29,13 +29,13 @@ public class Message {
     @ManyToOne
     private Conversation conversation;
 
-    @Column(length = 2000)
+    @Column(length = 10000)
     private String message="";
 
-    @Column(length = 2000)
+    @Column(length = 10000)
     private String fileUrl="";
 
-    @Column(length = 2000)
+    @Column(length = 10000)
     private String description="";
     private MessageType messageType;
     @ManyToOne

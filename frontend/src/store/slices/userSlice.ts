@@ -142,4 +142,29 @@ export const selectPersonalProjects = (state: RootState) => {
   }
   return [];
 };
+export const selectEmployeesCount = (state: RootState) => {
+  if (state.user.user && "employees" in state.user.user) {
+    return state.user.user.employees.length;
+  }
+  return 0;
+};
+export const selectEmployeesOnNoticePeriodCount = (state: RootState) => {
+  if (state.user.user && "employees" in state.user.user) {
+    return state.user.user.employees.filter(
+      (employee) => employee.isServingNoticePeriod
+    ).length;
+  }
+  return 0;
+};
+
+export const selectTotalSalaryPaid = (state: RootState) => {
+  if (state.user.user && "employees" in state.user.user) {
+    let salary = 0;
+    state.user.user.employees.forEach((employee) => {
+      salary += employee.currentSalary;
+    });
+    return salary;
+  }
+  return 0;
+};
 export default userSlice.reducer;

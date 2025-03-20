@@ -44,7 +44,6 @@ const TimeLine = ({ jobHistory }: { jobHistory: JobHistory[] }) => {
         >
           {items?.length > 0 ? (
             items?.map((history) => {
-              console.log("history :", history);
               return (
                 <TimelineItem>
                   <TimelineOppositeContent>
@@ -65,9 +64,9 @@ const TimeLine = ({ jobHistory }: { jobHistory: JobHistory[] }) => {
                         {history?.location} ( {history?.locationType} )
                       </span>
                     </div>
-                    <h3 className="font-light text-sm text-gray-400">
+                    {/* <h3 className="font-light text-sm text-gray-400">
                       {history?.description}
-                    </h3>
+                    </h3> */}
                   </TimelineContent>
                 </TimelineItem>
               );

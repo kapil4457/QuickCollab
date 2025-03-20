@@ -25,7 +25,7 @@ public class JobOffer {
     @NotNull
     public Long jobId;
     @NotNull
-    @Column(length = 2000)
+    @Column(length = 10000)
     public String jobTitle;
     @NotNull
     public Long salary;

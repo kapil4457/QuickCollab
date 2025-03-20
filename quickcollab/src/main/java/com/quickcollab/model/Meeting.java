@@ -21,9 +21,9 @@ public class Meeting {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String meetId;
 
-    @Column(length = 2000)
+    @Column(length = 10000)
     private String title;
-    @Column(length = 2000)
+    @Column(length = 10000)
     private String description;
 
     @ManyToMany

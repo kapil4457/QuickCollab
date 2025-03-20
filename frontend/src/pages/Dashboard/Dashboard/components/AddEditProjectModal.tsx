@@ -180,7 +180,6 @@ const AddEditProjectModal = forwardRef((props: propsType, ref) => {
                 }}
               />
               <Textarea
-                maxLength={500}
                 isRequired
                 value={newProject.description}
                 onChange={(e) =>

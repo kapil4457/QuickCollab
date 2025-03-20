@@ -204,6 +204,9 @@ public class JobController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         }catch(GenericError genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }catch(Exception exception){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(exception.getMessage(),false));
+
         }
     }
 
