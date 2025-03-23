@@ -126,6 +126,12 @@ export const siteConfig = {
     discord: "https://discord.gg/9b6yyZKmH4",
     sponsor: "https://patreon.com/jrgarciadev",
   },
+  providers: [
+    {
+      name: "Youtube",
+      icon: "youtube.svg",
+    },
+  ],
   services: {
     backend: "http://localhost:8080/api/v1",
   },

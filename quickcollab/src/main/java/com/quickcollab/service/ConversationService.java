@@ -6,6 +6,7 @@ import com.quickcollab.dtos.request.MessageDTO;
 import com.quickcollab.dtos.response.conversation.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.dtos.response.user.ReportingUser;
+import com.quickcollab.enums.MessageType;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.events.MessageSentEvent;
 import com.quickcollab.exception.GenericError;
@@ -23,14 +24,15 @@ import com.quickcollab.repository.MessageRepository;
 import com.quickcollab.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
-@AllArgsConstructor
 public class ConversationService {
 
     private final UserRepository userRepository;
@@ -39,6 +41,20 @@ public class ConversationService {
     private final ModelMapper modelMapper;
     private final MessageRepository messageRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final AWSService awsService;
+
+    public ConversationService(UserRepository userRepository, ConversationRepository conversationRepository, AWSService awsService, ApplicationEventPublisher eventPublisher, MessageRepository messageRepository, ModelMapper modelMapper, MeetingRepository meetingRepository) {
+        this.userRepository = userRepository;
+        this.conversationRepository = conversationRepository;
+        this.awsService = awsService;
+        this.eventPublisher = eventPublisher;
+        this.messageRepository = messageRepository;
+        this.modelMapper = modelMapper;
+        this.meetingRepository = meetingRepository;
+    }
+
+    @Value("${aws.cloudfront.distribution}")
+    private String cloudFrontDistribution;
 
 
     public ConversationResponseDTO createConversation(ConversationCreateDTO conversationCreateDTO, String userRole, String authUserId) {
@@ -99,23 +115,17 @@ public class ConversationService {
 
     }
 
-    public MessageResponseDTO insertMessage(MessageDTO messageDTO, String userId) {
+    public MessageResponseDTO insertMessage(MessageDTO messageDTO, String userId) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
         UserRole userRole = user.getUserRole();
         Long conversationId = messageDTO.getConversationId();
         Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(() -> new ResourceNotFoundException("Conversation", "id", conversationId.toString()));
-        if(messageDTO.getIsUploadRequest()){
-            if(userRole.equals(UserRole.JOB_SEEKER)){
-                throw new GenericError("You are not allowed to perform this operation");
-            }
-            if(!conversation.getMembers().contains(user)){
-                throw new GenericError("You are not allowed to perform this operation");
-            }
-        }
-        String fileUrl="";
-        if(messageDTO.getIsUploadRequest()){
-            // upload to cloud storage
-            // take that link and save it as message
+
+        String fileUrl = "";
+        if(!messageDTO.getMessageType().equals(MessageType.MESSAGE)){
+            String folderName = "conversation-message-media";
+            String mediaId = awsService.s3MediaUploader(folderName,userId,messageDTO.getMessageType().toString(),messageDTO.getMedia());
+            fileUrl = cloudFrontDistribution+folderName+"/"+mediaId;
         }
         if (!conversation.getMembers().contains(user)) {
             throw new GenericError("Can not send message as you are not a part of this conversation.");
@@ -126,14 +136,11 @@ public class ConversationService {
                 messageDTO.getDescription(),
                 messageDTO.getMessageType(),
                 user,
-                currDate,
-                messageDTO.getIsUploadRequest(),
-                messageDTO.getUploadTo(),
-                messageDTO.getUploadTypeMapping());
+                currDate);
        Message savedMessage =  messageRepository.save(message);
         conversation.getMessages().add(savedMessage);
         conversation.setLastMessage(currDate);
-        MessageDetail messageDetail = new MessageDetail(message.getMessage(),message.getFileUrl(),message.getDescription(),message.getMessageType(),message.getAuthor(),message.getSentOn(),message.getIsUploadRequest(),message.getUploadTo(),message.getUploadTypeMapping());
+        MessageDetail messageDetail = new MessageDetail(message.getMessage(),message.getFileUrl(),message.getDescription(),message.getMessageType(),message.getAuthor(),message.getSentOn());
 
         conversationRepository.save(conversation);
         MessageDetailResponse messageDetailResponse = modelMapper.map(messageDetail, MessageDetailResponse.class);
@@ -348,18 +355,14 @@ public class ConversationService {
                 messageDetailResponse.setDescription(message.getDescription());
                 messageDetailResponse.setFileUrl(message.getFileUrl());
                 messageDetailResponse.setSentOn(message.getSentOn());
-                messageDetailResponse.setUploadTo(message.getUploadTo());
-                messageDetailResponse.setIsUploadRequest(message.getIsUploadRequest());
                 messageDetailResponse.setMessageType(message.getMessageType());
-                messageDetailResponse.setUploadTypeMapping(message.getUploadTypeMapping());
                 ConversationUser author = new ConversationUser();
                 author.setUserId(message.getAuthor().getUserId());
                 author.setFirstName(message.getAuthor().getFirstName());
                 author.setLastName(message.getAuthor().getLastName());
                 messageDetailResponse.setAuthor(author);
                 return messageDetailResponse;
-//                 MessageDetail messageDetail =  new MessageDetail(message.getMessage(),message.getFileUrl(),message.getDescription(),message.getMessageType(),message.getSentOn(),message.getIsUploadRequest(),message.getUploadTo(),message.getUploadTypeMapping());
-            }).toList().reversed();
+            }).toList();
 
             userConversationsDTO.setMessages(messages);
             userConversationsDTO.setIsGroupChat(conversation.getIsGroupChat());

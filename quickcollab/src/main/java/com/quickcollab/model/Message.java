@@ -41,17 +41,8 @@ public class Message {
     @ManyToOne
     private User author;
     private Date sentOn;
-    private Boolean isUploadRequest;
 
-    @ElementCollection
-    @Enumerated(EnumType.STRING)
-    private List<Platform> uploadTo;
-
-
-    @Convert(converter = UploadTypeMappingConverter.class)
-    private Map<Platform, ContentType> uploadTypeMapping;
-
-    public Message(Conversation conversation , String message, String fileUrl, String description, MessageType messageType, User user, Date currDate, Boolean isUploadRequest, List<Platform> uploadTo, Map<Platform, ContentType> uploadTypeMapping) {
+    public Message(Conversation conversation , String message, String fileUrl, String description, MessageType messageType, User user, Date currDate) {
         this.conversation = conversation;
         this.message = message;
         this.fileUrl = fileUrl;
@@ -59,9 +50,6 @@ public class Message {
         this.messageType = messageType;
         this.author = user;
         this.sentOn = currDate;
-        this.isUploadRequest = isUploadRequest;
-        this.uploadTo = uploadTo;
-        this.uploadTypeMapping = uploadTypeMapping;
     }
 }
 

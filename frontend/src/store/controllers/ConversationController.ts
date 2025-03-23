@@ -8,10 +8,7 @@ import axios, { AxiosError } from "axios";
 import { selfDetails } from "./UserController";
 import { createConversationDTO } from "../dtos/request/conversationCreateDTO";
 import { MessageRequestDTO } from "../dtos/request/MessageRequestDTO";
-import {
-  updateConversations,
-  updateLocalConversationByConversationId,
-} from "../slices/conversationSlice";
+import { updateConversations } from "../slices/conversationSlice";
 
 export const createConversation = async (
   dispatch: typeof dispatchType,
@@ -81,8 +78,14 @@ export const insertMessage = async (
     }
     const headers = {
       Authorization: authorizationToken,
+      "Content-Type": "multipart/form-data",
     };
-    const { data } = await axios.put("/api/insertMessage", body, {
+    const formData = new FormData();
+    formData.append("message", body.message);
+    formData.append("conversationId", body.conversationId.toString());
+    formData.append("messageType", body.messageType);
+    if (body.media) formData.append("media", body.media);
+    const { data } = await axios.put("/api/insertMessage", formData, {
       headers: headers,
     });
     const { success, message } = data;
@@ -92,16 +95,6 @@ export const insertMessage = async (
         success: false,
       };
     }
-
-    // dispatch(
-    //   updateLocalConversationByConversationId({
-    //     conversationId,
-    //     messageDetail,
-    //     lastMessage,
-    //   })
-    // );
-
-    // selfDetails(dispatch, authorizationToken);
     return {
       message: message,
       success: success,

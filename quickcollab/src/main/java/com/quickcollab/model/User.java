@@ -1,14 +1,11 @@
 package com.quickcollab.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.quickcollab.converter.*;
 import com.quickcollab.enums.RegisterationMethod;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.dtos.response.user.ReportingUser;
-import com.quickcollab.pojo.OfferDetail;
 import com.quickcollab.pojo.SocialMediaHandle;
 import com.quickcollab.pojo.JobHistory;
 import jakarta.persistence.*;
@@ -107,6 +104,12 @@ public class User {
 
     @NotNull
     private Long currentSalary = 0L;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Provider> providers=new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<UploadRequest> uploadRequests=new ArrayList<>();
 
     @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
     private List<Conversation> conversations = new ArrayList<>();

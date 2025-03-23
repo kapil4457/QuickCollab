@@ -1,6 +1,9 @@
 import CustomAvatar from "@/components/CustomAvatar";
-import { useAppSelector } from "@/store/hooks";
-import { selectLoggedInUser } from "@/store/slices/userSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectConfiguredProviders,
+  selectLoggedInUser,
+} from "@/store/slices/userSlice";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Image } from "@heroui/image";
@@ -8,6 +11,12 @@ import { Edit } from "lucide-react";
 import React, { useRef } from "react";
 import EditSelfDetailsModal from "./EditSelfDetailsModal";
 import { Link } from "@heroui/link";
+import { AllRoles, ProviderName } from "@/utils/enums";
+import { siteConfig } from "@/config/site";
+import { useGoogleLogin } from "@react-oauth/google";
+import { addProviderHandler } from "@/store/controllers/ProviderController";
+import { AddProviderDTO } from "@/store/dtos/request/AddProviderDTO";
+import showToast from "@/utils/showToast";
 const SocialMediaIcon = ({ platform }: { platform: string }) => {
   const icons: {
     [key: string]: string;
@@ -30,7 +39,9 @@ const DetailItem = ({ label, value }: { label: string; value: string }) => (
 );
 const SelfDetails = () => {
   const user = useAppSelector(selectLoggedInUser);
+  const dispatch = useAppDispatch();
   const editSelfDetailsModalRef = useRef();
+  const configuredProviders = useAppSelector(selectConfiguredProviders);
   const openEditSelfDetails = () => {
     if (
       editSelfDetailsModalRef.current &&
@@ -41,6 +52,30 @@ const SelfDetails = () => {
       ).openModal();
     }
   };
+
+  const youtubeLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      let addProviderDTO: AddProviderDTO = {
+        accessCode: tokenResponse.code,
+        name: ProviderName.YOUTUBE,
+      };
+      const { message, success } = await addProviderHandler(
+        dispatch,
+        addProviderDTO
+      );
+      if (success) {
+        showToast({ title: message, color: "success" });
+      } else {
+        showToast({ title: message, color: "danger" });
+      }
+    },
+    flow: "auth-code",
+    // redirect_uri: "http://localhost:8080/login/oauth2/code/google",
+    include_granted_scopes: true,
+    ux_mode: "popup",
+    scope:
+      "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
+  });
 
   return (
     <>
@@ -114,6 +149,27 @@ const SelfDetails = () => {
               <p className="text-gray-500 mt-1">N/A</p>
             )}
           </div>
+          {user?.userRole === AllRoles.CONTENT_CREATOR && (
+            <div className="mt-3 flex flex-col gap-2">
+              <span className="text-gray-600 font-medium">Providers</span>
+              {siteConfig.providers.map((provider) => {
+                return (
+                  <Button
+                    isIconOnly
+                    onPress={() => youtubeLogin()}
+                    isDisabled={
+                      configuredProviders?.filter(
+                        (provider) =>
+                          provider.providerName === ProviderName.YOUTUBE
+                      ).length > 0
+                    }
+                  >
+                    <img src={provider?.icon} alt={provider?.name} />
+                  </Button>
+                );
+              })}
+            </div>
+          )}
         </CardBody>
       </Card>
     </>

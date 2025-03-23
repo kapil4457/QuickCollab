@@ -7,12 +7,10 @@ import { SideBar } from "../pages/Dashboard/components/SideBar";
 import RootLayout from "./RootLayout";
 import { useEffect } from "react";
 import { getAllConversations } from "@/store/controllers/ConversationController";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import SockJS from "sockjs-client";
-import { Client, IFrame, Stomp } from "@stomp/stompjs";
+import { useAppDispatch } from "@/store/hooks";
+import { Client, IFrame } from "@stomp/stompjs";
 import { Conversation } from "@/store/dtos/helper";
 import { updateLocalConversationByConversationId } from "@/store/slices/conversationSlice";
-import { selectJwtToken } from "@/store/slices/userSlice";
 import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
 
 export default function DashboardLayout({

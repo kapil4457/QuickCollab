@@ -18,6 +18,7 @@ import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.Response;
 import org.hibernate.sql.Update;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -87,14 +88,21 @@ public class UserController {
     // [Done]
     @RequestMapping("/api/me")
     public  ResponseEntity<LoginResponseDTO<?>> selfDetails(Authentication authentication){
+        try{
+
             String emailId = (String) authentication.getPrincipal();
             LoginResponseDTO<?> loginResponseDTO = userService.getUserByEmail(emailId);
             return ResponseEntity.status(loginResponseDTO.getSuccess() ? 200 : 401).body(loginResponseDTO);
+        }catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoginResponseDTO<>(null,genericError.getMessage(),false));
+        }
     }
 
     // [Done]
     @PostMapping("/api/apiLogin")
     public ResponseEntity<LoginResponseDTO<?>> apiLogin (@RequestBody LoginRequestDTO loginRequest) {
+        try{
+
         String jwt = "";
         Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getEmailId(),
                 loginRequest.getPassword());
@@ -120,14 +128,22 @@ public class UserController {
         loginResponseDTO.setMessage("Logged in successfully");
         }
         return ResponseEntity.status(loginResponseDTO.getSuccess() ? 200 : 401).header(ApplicationConstants.JWT_HEADER,jwt).body(loginResponseDTO);
+        }catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoginResponseDTO<>(null,genericError.getMessage(),false));
+        }
 
     }
 
     // [Done]
     @PostMapping("/api/apiLogout")
     public ResponseEntity<ResponseDTO> logout(HttpServletRequest request) {
+        try{
+
         ResponseDTO responseDTO = userService.logoutUser(request);
         return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
+        }catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
+        }
     }
 
     @PutMapping(value = "/api/updateProfile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -149,7 +165,7 @@ public class UserController {
             return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         } catch (IOException e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
-        }catch (GenericError genericError){
+        }catch (Exception genericError){
             return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
         }
 
@@ -165,7 +181,7 @@ public class UserController {
             return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         } catch (IOException e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
-        }catch (GenericError genericError){
+        }catch (Exception genericError){
             return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
         }
 
@@ -181,7 +197,7 @@ public class UserController {
             return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         } catch (IOException e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
-        }catch (GenericError genericError){
+        }catch (Exception genericError){
             return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
         }
 
@@ -197,10 +213,12 @@ public class UserController {
             return ResponseEntity.status(401).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
         } catch (IOException e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(),false));
-        }catch (GenericError genericError){
+        }catch (Exception genericError){
             return ResponseEntity.status(400).body(new ResponseDTO(genericError.getMessage(),false));
         }
 
     }
+
+
 
 }

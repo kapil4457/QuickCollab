@@ -83,9 +83,14 @@ public class JobController {
     // [Done]
     @GetMapping("/api/getAllJobs")
     public ResponseEntity<JobSeekerJobResponseDTO>getAllListedJobs(Authentication authentication){
+        try{
+
         String userId = (String) authentication.getDetails();
         JobSeekerJobResponseDTO jobSeekerJobResponseDTO = jobService.getAllJobs(userId);
         return ResponseEntity.status(HttpStatus.OK).body(jobSeekerJobResponseDTO);
+        }catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new JobSeekerJobResponseDTO(null,genericError.getMessage(),false));
+        }
 
     }
 
@@ -97,10 +102,11 @@ public class JobController {
         String userId = authentication.getDetails().toString();
         ResponseDTO responseDTO = jobService.applyToJob(userId , jobId);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
-        }catch(GenericError genericError){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
-        }catch (ResourceNotFoundException e){
+        }
+        catch (ResourceNotFoundException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(e.getMessage(),false));
+        }catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
 
     }
@@ -114,10 +120,11 @@ public class JobController {
             String authUserId = (String) authentication.getDetails();
             ResponseDTO responseDTO = jobService.sendOffer(authUserId,offerDetails.getUserId(), offerDetails.getJobId(), userRole,offerDetails);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
-        }catch(GenericError genericError){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }catch (ResourceNotFoundException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(e.getMessage(),false));
+        }
+        catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
 
@@ -128,9 +135,10 @@ public class JobController {
             String applicantId = (String) authentication.getDetails();
             ResponseDTO responseDTO = jobService.updateOfferStatus(applicantId,jobId , offerStatus);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
-        }catch (GenericError genericError){
+        }catch (Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
+
     }
 
     // this is for content creator or manager
@@ -143,10 +151,11 @@ public class JobController {
             ResponseDTO responseDTO = jobService.reviseOffer(authUserId,userRole ,offerDetails);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
 
-        }catch(GenericError genericError){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }catch(ResourceNotFoundException ex){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(ex.getMessage(),false));
+        }
+        catch(Exception genericError){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
 
@@ -160,7 +169,7 @@ public class JobController {
 
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
-        }catch (GenericError genericError){
+        }catch (Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
@@ -174,7 +183,7 @@ public class JobController {
             String authUserRole = (String) authentication.getAuthorities().stream().findFirst().get().getAuthority();
             ResponseDTO responseDTO = jobService.updateEmployeeSalary(salary , employeeId , authUserId , authUserRole);
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
@@ -186,7 +195,7 @@ public class JobController {
             String authUserRole = (String) authentication.getAuthorities().stream().findFirst().get().getAuthority();
             ResponseDTO responseDTO = jobService.updateEmployeeRole(employeeId , authUserId , authUserRole ,  UserRole.valueOf(userRole));
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
         }
     }
@@ -202,9 +211,7 @@ public class JobController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage(),false));
-        }catch(GenericError genericError){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage(),false));
-        }catch(Exception exception){
+        } catch(Exception exception){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(exception.getMessage(),false));
 
         }

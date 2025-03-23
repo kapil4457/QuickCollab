@@ -167,4 +167,10 @@ export const selectTotalSalaryPaid = (state: RootState) => {
   }
   return 0;
 };
+export const selectConfiguredProviders = (state: RootState) => {
+  if (state.user.user && "providers" in state.user.user) {
+    return state.user.user.providers;
+  }
+  return [];
+};
 export default userSlice.reducer;

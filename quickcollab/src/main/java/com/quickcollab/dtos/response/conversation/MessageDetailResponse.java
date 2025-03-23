@@ -24,7 +24,5 @@ public class MessageDetailResponse {
     private MessageType messageType;
     private ConversationUser author;
     private Date sentOn;
-    private Boolean isUploadRequest;
-    private List<Platform> uploadTo;
-    private Map<Platform, ContentType> uploadTypeMapping;
+
 }

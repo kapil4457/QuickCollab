@@ -8,6 +8,7 @@ import com.quickcollab.utils.JwtBlacklistService;
 import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -59,7 +61,7 @@ public class ProjectSecurityConfig {
                 .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService, jwtTokenUtil,env), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/api/me","/api/insertMessage","/api/all/conversations","/api/updateProfile").authenticated()
-                        .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation").hasAnyRole("CONTENT_CREATOR")
+                        .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation","/api/addProvider").hasAnyRole("CONTENT_CREATOR")
                         .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany","/api/deleteProject","/api/addProject" , "/api/updateProject").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
                         .requestMatchers( "/api/error", "/api/register","/api/apiLogin","/api/apiLogout","/api/chat/**").permitAll());
 
@@ -84,5 +86,8 @@ public class ProjectSecurityConfig {
     public CompromisedPasswordChecker compromisedPasswordChecker() {
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }
-
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
+    }
 }

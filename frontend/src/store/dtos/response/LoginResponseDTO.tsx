@@ -1,7 +1,6 @@
 import {
   ContentCreatorEmployee,
   ContentCreatorJobPost,
-  Conversation,
   JobHistory,
   JobSeekerJobApplication,
   OfferDetail,
@@ -22,8 +21,11 @@ export interface ContentCreatorUserDetails {
   jobsPosted: Array<ContentCreatorJobPost>;
   userRole: string;
   currentJobNoticePeriodDays: number;
+  providers: Array<ProviderDTO>;
 }
-
+export interface ProviderDTO {
+  providerName: string;
+}
 export interface JobSeekerUserDetails {
   userId: string;
   firstName: string;

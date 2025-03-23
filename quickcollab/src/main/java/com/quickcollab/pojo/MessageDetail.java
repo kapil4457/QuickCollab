@@ -27,8 +27,9 @@ public class MessageDetail {
     @JsonBackReference
     private User author;
     private Date sentOn;
-    private Boolean isUploadRequest;
-    private List<Platform> uploadTo;
-    private Map<Platform, ContentType>  uploadTypeMapping;
+//    private Boolean isUploadRequest;
+//    private List<Platform> uploadTo;
+//    private Map<Platform, ContentType>  uploadTypeMapping;
+
 
 }

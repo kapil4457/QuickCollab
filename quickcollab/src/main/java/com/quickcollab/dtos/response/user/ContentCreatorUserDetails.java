@@ -4,6 +4,7 @@ import com.quickcollab.dtos.response.conversation.UserConversationDetail;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
+import com.quickcollab.pojo.ProviderDTO;
 import com.quickcollab.pojo.SocialMediaHandle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,6 +31,7 @@ public class ContentCreatorUserDetails  {
     private List<ContentCreatorJobPost> jobsPosted;
     private UserRole userRole;
     private Long currentJobNoticePeriodDays;
+    private List<ProviderDTO> providers;
 
 
 }

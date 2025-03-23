@@ -68,9 +68,6 @@ export interface MessageDetail {
   messageType: string;
   author: ConversationUser;
   sentOn: string;
-  isUploadRequest: boolean;
-  uploadTo: Array<string>;
-  uploadTypeMapping: Map<string, string>;
 }
 
 export interface DateRange {

@@ -73,3 +73,10 @@ export const MediaType = Object.freeze({
   IMAGE: "IMAGE",
   VIDEO: "VIDEO",
 });
+
+export const ProviderName = Object.freeze({
+  YOUTUBE: "YOUTUBE",
+  INSTAGRAM: "INSTAGRAM",
+  TWITTER: "TWITTER",
+  FACEBOOK: "FACEBOOK",
+});

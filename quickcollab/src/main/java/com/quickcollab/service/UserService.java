@@ -170,7 +170,6 @@ public class UserService {
                     List<ContentCreatorEmployee> applicants =jobPost.getApplicants().stream().map((applicant)->{
                                     return modelMapper.map(applicant, ContentCreatorEmployee.class);
                     }).toList();
-
                     List<OfferDetail>offeredTo = jobPost.getOfferedTo().stream().map(offer ->{
                         return modelMapper.map(offer, OfferDetail.class);
                     }).toList();
@@ -179,8 +178,12 @@ public class UserService {
                     return contentCreatorJobPost;
                         }
                 ).toList();
-
-
+                List<ProviderDTO> providers = user.getProviders().stream().map((provider)->{
+                        ProviderDTO providerDTO = new ProviderDTO();
+                        providerDTO.setProviderName(provider.getName());
+                        return providerDTO;
+                }).toList();
+                contentCreatorUserDetails.setProviders(providers);
                 contentCreatorUserDetails.setEmployees(employees);
                 contentCreatorUserDetails.setJobsPosted(jobsPosted);
                 LoginResponseDTO<ContentCreatorUserDetails> loginResponseDTO = new LoginResponseDTO<>();

@@ -13,6 +13,7 @@ import com.quickcollab.service.ConversationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,7 @@ public class ConversationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new LoggedInUserConversationsDTO(resourceNotFoundException.getMessage() , false,null));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoggedInUserConversationsDTO(genericError.getMessage() , false,null));
         }
     }
@@ -50,14 +51,14 @@ public class ConversationController {
             return  ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ConversationResponseDTO(resourceNotFoundException.getMessage() , false,-1L));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ConversationResponseDTO(genericError.getMessage() , false,-1L));
         }
     }
 
     // [Done]
-    @PutMapping("/api/insertMessage")
-    public ResponseEntity<MessageResponseDTO> insertMessage(Authentication authentication, @RequestBody MessageDTO messageDetail) {
+    @PutMapping(value="/api/insertMessage",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageResponseDTO> insertMessage(Authentication authentication, @ModelAttribute MessageDTO messageDetail) {
         try{
 
         String userId = authentication.getDetails().toString();
@@ -65,6 +66,8 @@ public class ConversationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponseDTO(resourceNotFoundException.getMessage() , false,null,null));
+        }catch(Exception exception){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponseDTO(exception.getMessage() , false,null,null));
         }
     }
 
@@ -76,7 +79,7 @@ public class ConversationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -89,7 +92,7 @@ public class ConversationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -106,7 +109,7 @@ public class ConversationController {
         }
         catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -122,7 +125,7 @@ public class ConversationController {
         }
         catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -138,7 +141,7 @@ public class ConversationController {
         }
         catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        } catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -152,7 +155,7 @@ public class ConversationController {
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -166,7 +169,7 @@ public class ConversationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -180,7 +183,7 @@ public class ConversationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
@@ -194,7 +197,7 @@ public class ConversationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         }catch(ResourceNotFoundException resourceNotFoundException){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO(resourceNotFoundException.getMessage() , false));
-        }catch(GenericError genericError){
+        }catch(Exception genericError){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDTO(genericError.getMessage() , false));
         }
     }
