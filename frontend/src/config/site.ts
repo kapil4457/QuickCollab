@@ -7,6 +7,7 @@ import {
   MessageSquareText,
   LayoutDashboard,
   FileText,
+  Upload,
 } from "lucide-react";
 
 export type SiteConfig = typeof siteConfig;
@@ -16,6 +17,7 @@ export type SiteConfig = typeof siteConfig;
   0 -> Everyone
   1 -> Everyone except Content Creator
   2 -> Content Creator
+  3 -> Team Members and Content Creator
   */
 }
 export const siteConfig = {
@@ -118,6 +120,12 @@ export const siteConfig = {
       logo: FileText,
       type: 2,
     },
+    {
+      label: "Upload Requests",
+      href: "/upload-requests",
+      logo: Upload,
+      type: 3,
+    },
   ],
   links: {
     github: "https://github.com/frontio-ai/heroui",
@@ -126,6 +134,7 @@ export const siteConfig = {
     discord: "https://discord.gg/9b6yyZKmH4",
     sponsor: "https://patreon.com/jrgarciadev",
   },
+
   providers: [
     {
       name: "Youtube",

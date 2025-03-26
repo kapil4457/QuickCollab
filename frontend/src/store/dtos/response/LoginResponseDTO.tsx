@@ -8,6 +8,7 @@ import {
   ReportingUser,
   SocialMediaHandle,
 } from "../helper";
+import { UploadRequestItem } from "../request/UploadRequestDTO";
 
 export interface ContentCreatorUserDetails {
   userId: string;
@@ -22,6 +23,17 @@ export interface ContentCreatorUserDetails {
   userRole: string;
   currentJobNoticePeriodDays: number;
   providers: Array<ProviderDTO>;
+  uploadRequests: Array<UploadRequestResponseDTO>;
+}
+export interface UploadRequestResponseDTO {
+  title: string;
+  description: string;
+  tags: Array<string>;
+  uploadTo: Array<string>;
+  uploadRequestStatus: string;
+  mediaUrl: string;
+  uploadTypeMapping: UploadRequestItem[];
+  mediaType: string;
 }
 export interface ProviderDTO {
   providerName: string;
@@ -61,6 +73,14 @@ export interface TeamMemberUserDetails {
   noticePeriodEndDate: Date;
   currentJobJoinedOn: Date;
   isServingNoticePeriod: boolean;
+  availablePlatforms: Array<string>;
+  availableContentTypes: UploadRequestItemList[];
+  uploadRequests: Array<UploadRequestResponseDTO>;
+}
+
+export interface UploadRequestItemList {
+  platform: string;
+  contentTypes: string[];
 }
 export type loggedInUser =
   | null

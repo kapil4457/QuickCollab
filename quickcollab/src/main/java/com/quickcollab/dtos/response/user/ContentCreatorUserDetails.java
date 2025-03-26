@@ -32,6 +32,7 @@ public class ContentCreatorUserDetails  {
     private UserRole userRole;
     private Long currentJobNoticePeriodDays;
     private List<ProviderDTO> providers;
+    private List<UploadRequestResponseDTO> uploadRequests;
 
 
 }

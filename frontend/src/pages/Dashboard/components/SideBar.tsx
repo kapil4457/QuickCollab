@@ -41,6 +41,12 @@ export function SideBar({ ...props }) {
                   if (user?.userRole === AllRoles.CONTENT_CREATOR) return null;
                 } else if (item.type == 2) {
                   if (user?.userRole !== AllRoles.CONTENT_CREATOR) return null;
+                } else if (item.type === 3) {
+                  if (
+                    user?.userRole !== AllRoles.TEAM_MEMBER &&
+                    user?.userRole !== AllRoles.CONTENT_CREATOR
+                  )
+                    return null;
                 }
                 return (
                   <SidebarMenuItem key={item.label}>

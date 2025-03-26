@@ -80,3 +80,10 @@ export const ProviderName = Object.freeze({
   TWITTER: "TWITTER",
   FACEBOOK: "FACEBOOK",
 });
+
+export const UploadRequestStatus = Object.freeze({
+  PENDING: "PENDING",
+  REVISION: "REVISION",
+  COMPLETED: "COMPLETED",
+  DECLINED: "DECLINED",
+});

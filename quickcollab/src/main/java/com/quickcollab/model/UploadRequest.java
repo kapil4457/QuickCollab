@@ -3,6 +3,7 @@ package com.quickcollab.model;
 import com.quickcollab.converter.PlatformConverter;
 import com.quickcollab.converter.TagConverter;
 import com.quickcollab.converter.UploadTypeMappingConverter;
+import com.quickcollab.dtos.response.user.UploadTypeMappingItem;
 import com.quickcollab.enums.ContentType;
 import com.quickcollab.enums.MediaType;
 import com.quickcollab.enums.Platform;
@@ -54,7 +55,7 @@ public class UploadRequest {
     private MediaType mediaType;
 
     @Convert(converter = UploadTypeMappingConverter.class)
-    private Map<Platform, ContentType> uploadTypeMapping;
+    private List<UploadTypeMappingItem> uploadTypeMapping;
 
 }
 

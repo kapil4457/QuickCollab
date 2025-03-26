@@ -14,6 +14,7 @@ import AppliedJobs from "./pages/Dashboard/AppliedJobs/AppliedJobs";
 import Conversations from "./pages/Dashboard/Conversations/Conversations";
 import JobsOffered from "./pages/Dashboard/JobsOffered/JobsOffered";
 import MyEmployees from "./pages/Dashboard/MyEmployees/MyEmployees";
+import UploadRequests from "./pages/Dashboard/UploadRequests";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
       <Route element={<Conversations />} path="/my-conversations" />
       <Route element={<JobsOffered />} path="/offered-jobs" />
       <Route element={<MyEmployees />} path="/my-employees" />
+      <Route element={<UploadRequests />} path="/upload-requests" />
 
       <Route element={<DocsPage />} path="/docs" />
       <Route element={<PricingPage />} path="/pricing" />

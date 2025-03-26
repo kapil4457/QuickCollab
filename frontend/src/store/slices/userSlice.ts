@@ -7,11 +7,7 @@ import type {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { loggedInUser } from "../dtos/response/LoginResponseDTO";
-import {
-  ContentCreatorJobPost,
-  MessageDetail,
-  OfferDetail,
-} from "../dtos/helper";
+import { ContentCreatorJobPost, OfferDetail } from "../dtos/helper";
 
 // Define a type for the slice state
 export interface UserState {
@@ -170,6 +166,19 @@ export const selectTotalSalaryPaid = (state: RootState) => {
 export const selectConfiguredProviders = (state: RootState) => {
   if (state.user.user && "providers" in state.user.user) {
     return state.user.user.providers;
+  }
+  return [];
+};
+
+export const selectAllUploadRequests = (state: RootState) => {
+  if (state.user.user && "uploadRequests" in state.user.user) {
+    return state.user.user.uploadRequests;
+  }
+  return [];
+};
+export const selectUploadRequestMappings = (state: RootState) => {
+  if (state.user.user && "availableContentTypes" in state.user.user) {
+    return state.user.user.availableContentTypes;
   }
   return [];
 };

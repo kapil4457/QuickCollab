@@ -12,20 +12,19 @@ import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
 import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.MediaType;
+import com.quickcollab.enums.Platform;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.events.CustomAuthenticationSuccessEvent;
 import com.quickcollab.events.CustomLogoutSuccessEvent;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceAlreadyExistsException;
 import com.quickcollab.exception.ResourceNotFoundException;
-import com.quickcollab.model.Conversation;
-import com.quickcollab.model.Job;
-import com.quickcollab.model.User;
-import com.quickcollab.model.Work;
+import com.quickcollab.model.*;
 import com.quickcollab.pojo.*;
 import com.quickcollab.repository.ConversationRepository;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.repository.WorkRepository;
+import com.quickcollab.utils.GeneralConfig;
 import com.quickcollab.utils.JwtBlacklistService;
 import com.quickcollab.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,8 +56,9 @@ public class UserService {
     private final ConversationRepository conversationRepository;
     private final S3Client s3Client;
     private final WorkRepository workRepository;
+    private final GeneralConfig generalConfig;
 
-    public UserService( WorkRepository workRepository,ConversationRepository conversationRepository, ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService, S3Client s3Client) {
+    public UserService( GeneralConfig generalConfig ,WorkRepository workRepository,ConversationRepository conversationRepository, ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService, S3Client s3Client) {
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
         this.jwtTokenUtil = jwtTokenUtil;
@@ -69,6 +69,7 @@ public class UserService {
         this.conversationRepository = conversationRepository;
         this.s3Client = s3Client;
         this.workRepository =  workRepository;
+        this.generalConfig = generalConfig;
     }
 
     @Value("${aws.cloudfront.distribution}")
@@ -156,6 +157,21 @@ public class UserService {
                 ContentCreatorUserDetails contentCreatorUserDetails = modelMapper.map(user, ContentCreatorUserDetails.class);
                 List<ContentCreatorEmployee> employees = user.getEmployees().stream().map(employee -> modelMapper.map(employee , ContentCreatorEmployee.class)).toList();
                 List<Job> postedJobs = user.getJobsPosted();
+                List<UploadRequest> uploadRequests = user.getUploadRequests();
+                List<UploadRequestResponseDTO> uploadRequestResponseDTOS = uploadRequests.stream().map(request -> {
+                    UploadRequestResponseDTO uploadRequestResponseDTO = new UploadRequestResponseDTO();
+                    uploadRequestResponseDTO.setUploadTo(request.getUploadTo());
+                    uploadRequestResponseDTO.setTags(request.getTags());
+                    uploadRequestResponseDTO.setUploadRequestStatus(request.getUploadRequestStatus());
+                    uploadRequestResponseDTO.setUploadTypeMapping(request.getUploadTypeMapping());
+                    uploadRequestResponseDTO.setMediaType(request.getMediaType());
+                    uploadRequestResponseDTO.setMediaUrl(request.getFileUrl());
+                    uploadRequestResponseDTO.setDescription(request.getDescription());
+                    uploadRequestResponseDTO.setTitle(request.getTitle());
+                    return uploadRequestResponseDTO;
+                }).toList();
+
+                contentCreatorUserDetails.setUploadRequests(uploadRequestResponseDTOS);
                 List<ContentCreatorJobPost> jobsPosted = postedJobs.stream().map(jobPost -> {
                     ContentCreatorJobPost contentCreatorJobPost = new ContentCreatorJobPost();
                     contentCreatorJobPost.setJobLocation(jobPost.getJobLocation());
@@ -230,6 +246,27 @@ public class UserService {
 
             }else{
                 TeamMemberUserDetails teamMemberUserDetails = modelMapper.map(user, TeamMemberUserDetails.class);
+                User contentCreator = userRepository.findById(teamMemberUserDetails.getReportsTo().getUserId()).orElseThrow(()-> new ResourceNotFoundException("User","id",teamMemberUserDetails.getReportsTo().getUserId()));
+                List<Platform> platforms = contentCreator.getProviders().stream().map(Provider::getName).toList();
+                teamMemberUserDetails.setAvailablePlatforms(platforms);
+                teamMemberUserDetails.setAvailableContentTypes(generalConfig.availableContentTypes());
+                List<UploadRequest> uploadRequests = contentCreator.getUploadRequests().stream().filter((request)->{
+                   return  request.getRequestedBy().getUserId().equals(teamMemberUserDetails.getUserId());
+                }).toList();
+                List<UploadRequestResponseDTO> uploadRequestResponseDTOS = uploadRequests.stream().map(request -> {
+                    UploadRequestResponseDTO uploadRequestResponseDTO = new UploadRequestResponseDTO();
+                    uploadRequestResponseDTO.setUploadTo(request.getUploadTo());
+                    uploadRequestResponseDTO.setTags(request.getTags());
+                    uploadRequestResponseDTO.setUploadRequestStatus(request.getUploadRequestStatus());
+                    uploadRequestResponseDTO.setUploadTypeMapping(request.getUploadTypeMapping());
+                    uploadRequestResponseDTO.setMediaType(request.getMediaType());
+                    uploadRequestResponseDTO.setMediaUrl(request.getFileUrl());
+                    uploadRequestResponseDTO.setDescription(request.getDescription());
+                    uploadRequestResponseDTO.setTitle(request.getTitle());
+                    return uploadRequestResponseDTO;
+                }).toList();
+
+                teamMemberUserDetails.setUploadRequests(uploadRequestResponseDTOS);
                 List<JobSeekerJobApplication> appliedJobs = user.getAppliedJobs().stream().map(job->{
                     JobSeekerJobApplication appliedJob = new JobSeekerJobApplication();
                     appliedJob.setJobDescription(job.getJobDescription());

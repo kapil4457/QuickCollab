@@ -66,7 +66,6 @@ const EditSelfDetailsModal = forwardRef((props, ref) => {
         profilePicture: file,
       });
       const objectUrl = URL.createObjectURL(file);
-      console.log(objectUrl);
       setPreviewUrl(objectUrl);
     }
   };

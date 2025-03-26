@@ -1,7 +1,11 @@
 package com.quickcollab.dtos.response.user;
 
+import com.quickcollab.dtos.request.UploadRequestDTO;
 import com.quickcollab.dtos.response.conversation.UserConversationDetail;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
+import com.quickcollab.enums.ContentType;
+import com.quickcollab.enums.MediaType;
+import com.quickcollab.enums.Platform;
 import com.quickcollab.enums.UserRole;
 import com.quickcollab.model.Conversation;
 import com.quickcollab.model.Work;
@@ -16,6 +20,7 @@ import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @Getter
@@ -42,5 +47,8 @@ public class TeamMemberUserDetails {
     private Boolean isServingNoticePeriod ;
     private Date currentJobJoinedOn;
     private Long currentSalary;
+    private List<Platform> availablePlatforms;
+    private List<UploadTypeMappingItemList> availableContentTypes;
+    private List<UploadRequestResponseDTO> uploadRequests;
 
 }
