@@ -137,6 +137,8 @@ const ProjectCard = ({
                   <ReactPlayer
                     url={project?.existingMedia[0].url}
                     controls
+                    width={100}
+                    height={100}
                     muted
                   />
                 )}

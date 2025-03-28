@@ -26,6 +26,7 @@ export interface ContentCreatorUserDetails {
   uploadRequests: Array<UploadRequestResponseDTO>;
 }
 export interface UploadRequestResponseDTO {
+  requestId: number;
   title: string;
   description: string;
   tags: Array<string>;
@@ -34,6 +35,7 @@ export interface UploadRequestResponseDTO {
   mediaUrl: string;
   uploadTypeMapping: UploadRequestItem[];
   mediaType: string;
+  requestedBy: ReportingUser;
 }
 export interface ProviderDTO {
   providerName: string;

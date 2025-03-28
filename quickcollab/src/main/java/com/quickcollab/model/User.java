@@ -100,7 +100,7 @@ public class User {
     private Date currentJobJoinedOn;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<Work> myProjects;
+    private List<Work> myProjects=new ArrayList<>();
 
     @NotNull
     private Long currentSalary = 0L;

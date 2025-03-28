@@ -61,8 +61,9 @@ public class ProjectSecurityConfig {
                 .addFilterBefore(new JWTTokenValidatorFilter(jwtBlacklistService, jwtTokenUtil,env), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/api/me","/api/insertMessage","/api/all/conversations","/api/updateProfile").authenticated()
-                        .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation","/api/addProvider").hasAnyRole("CONTENT_CREATOR")
+                        .requestMatchers("/api/getUserListedJobs","/api/createJob","/api/updateJob","/api/sendOffer","/api/reviseOffer","/api/updateEmployeeSalary","/api/updateEmployeeRole","/api/createConversation","/api/addProvider","/api/updateUploadRequestStatus").hasAnyRole("CONTENT_CREATOR")
                         .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany","/api/deleteProject","/api/addProject" , "/api/updateProject").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
+                        .requestMatchers("/api/createUploadRequest","/api/updateUploadRequest").hasRole("TEAM_MEMBER")
                         .requestMatchers( "/api/error", "/api/register","/api/apiLogin","/api/apiLogout","/api/chat/**").permitAll());
 
 
@@ -71,7 +72,6 @@ public class ProjectSecurityConfig {
 //                .successHandler(customAuthenticationSuccessHandler));
 
         http.formLogin(AbstractHttpConfigurer::disable);
-
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();

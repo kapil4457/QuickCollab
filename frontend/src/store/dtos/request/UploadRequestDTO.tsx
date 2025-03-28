@@ -6,7 +6,7 @@ export interface UploadRequestDTO {
   uploadRequestStatus: string;
   media: File | null;
   uploadTypeMapping: UploadRequestItem[] | null;
-  mediaType: string;
+  mediaType: string | null;
   mediaUrl: string;
 }
 

@@ -10,6 +10,7 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import React, {
+  FormEvent,
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -23,16 +24,23 @@ import { Button } from "@heroui/button";
 import { Save, X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ValidationError } from "@react-types/shared";
-import { MediaType, PlatformType } from "@/utils/enums";
+import { MediaType, PlatformType, UploadRequestStatus } from "@/utils/enums";
 import { Label } from "@/components/ui/label";
 import { selectUploadRequestMappings } from "@/store/slices/userSlice";
 import { Image } from "@heroui/image";
 import { Video } from "reactjs-media";
+import { PlusIcon } from "../PostedJobs/PostedJobs";
+import { Chip } from "@heroui/chip";
+import {
+  createUploadRequestHandler,
+  updateUploadRequestHandler,
+} from "@/store/controllers/UploadRequestController";
+import showToast from "@/utils/showToast";
 
 type propsType = {
   operationType: "UPDATE" | "CREATE";
   uploadRequest?: UploadRequestDTO | null;
-  uploadRequestId?: string;
+  uploadRequestId?: number;
 };
 
 type FormErrors = {
@@ -42,6 +50,7 @@ type FormErrors = {
   uploadTypeMapping?: string;
   media?: string;
   mediaUrl?: string;
+  tags?: string;
 };
 
 const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
@@ -56,7 +65,8 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
     uploadTo: [],
     uploadTypeMapping: null,
   });
-  const [uploadRequestId, setUploadRequestId] = useState<string>("");
+  const [uploadRequestId, setUploadRequestId] = useState<number>(0);
+  const [tag, setTag] = useState<string>("");
   const [errors, setErrors] = useState<FormErrors>({});
   const dispatch = useAppDispatch();
   const mediaFileRef = useRef<HTMLInputElement>(null);
@@ -69,6 +79,7 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log("file :", file);
     if (file) {
       setUploadRequest({
         ...uploadRequest,
@@ -79,8 +90,79 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
     }
   };
 
-  const createUploadRequest = async () => {};
-  const updateUploadRequest = async () => {};
+  const createUploadRequest = async (e: FormEvent) => {
+    e.preventDefault();
+    if (uploadRequest.media === null) {
+      setErrors({ ...errors, media: "Select a media file to upload" });
+      return;
+    }
+
+    const request: UploadRequestDTO = {
+      description: uploadRequest.description,
+      media: uploadRequest.media,
+      mediaType: uploadRequest?.media?.type?.includes("image")
+        ? MediaType.IMAGE
+        : MediaType.VIDEO,
+      mediaUrl: uploadRequest.mediaUrl,
+      tags: uploadRequest.tags,
+      title: uploadRequest.title,
+      uploadRequestStatus: UploadRequestStatus.PENDING,
+      uploadTo: uploadRequest.uploadTo,
+      uploadTypeMapping: uploadRequest.uploadTypeMapping,
+    };
+    const { message, success } = await createUploadRequestHandler(
+      dispatch,
+      request
+    );
+
+    if (success) {
+      showToast({ color: "success", title: message });
+    } else {
+      showToast({ color: "danger", title: message });
+    }
+    setUploadRequest({
+      title: "",
+      description: "",
+      media: null,
+      mediaType: "",
+      mediaUrl: "",
+      tags: [],
+      uploadRequestStatus: "",
+      uploadTo: [],
+      uploadTypeMapping: null,
+    });
+    setPreviewUrl("");
+    onClose();
+  };
+  const updateUploadRequest = async (e: FormEvent) => {
+    e.preventDefault();
+    const request: UploadRequestDTO = {
+      description: uploadRequest.description,
+      media: uploadRequest.media,
+      mediaType: uploadRequest?.media?.type?.includes("image")
+        ? MediaType.IMAGE
+        : MediaType.VIDEO,
+      mediaUrl: uploadRequest.mediaUrl,
+      tags: uploadRequest.tags,
+      title: uploadRequest.title,
+      uploadRequestStatus: UploadRequestStatus.PENDING,
+      uploadTo: uploadRequest.uploadTo,
+      uploadTypeMapping: uploadRequest.uploadTypeMapping,
+    };
+    const { message, success } = await updateUploadRequestHandler(
+      dispatch,
+      request,
+      props?.uploadRequestId || 0
+    );
+
+    if (success) {
+      showToast({ color: "success", title: message });
+    } else {
+      showToast({ color: "danger", title: message });
+    }
+    setPreviewUrl("");
+    onClose();
+  };
   useEffect(() => {
     if (props?.operationType === "UPDATE") {
       setUploadRequest(props.uploadRequest!);
@@ -146,6 +228,53 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                     return errors.description;
                   }}
                 />
+                <div className="flex w-full gap-2 items-end justify-center">
+                  <Input
+                    label="Tags"
+                    labelPlacement="outside"
+                    name="tags"
+                    placeholder="Enter the tags"
+                    value={tag}
+                    onChange={(e) => {
+                      setTag(e.target.value);
+                    }}
+                  />
+                  <Button
+                    onPress={() => {
+                      if (tag.trim() != "") {
+                        const newTags = [...uploadRequest.tags, tag];
+                        setUploadRequest({
+                          ...uploadRequest,
+                          tags: newTags,
+                        });
+                        setTag("");
+                      }
+                    }}
+                  >
+                    Add <PlusIcon />
+                  </Button>
+                </div>
+                <div className="w-full justify-start flex-wrap">
+                  {uploadRequest?.tags?.map((tag, index) => {
+                    return (
+                      <Chip
+                        key={index}
+                        variant="flat"
+                        onClose={() => {
+                          let newTags = uploadRequest.tags.filter(
+                            (currTag) => currTag !== tag
+                          );
+                          setUploadRequest({
+                            ...uploadRequest,
+                            tags: newTags,
+                          });
+                        }}
+                      >
+                        {tag}
+                      </Chip>
+                    );
+                  })}
+                </div>
                 <Select
                   label="Upload to"
                   placeholder="Select a platform"
@@ -203,11 +332,15 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                           name={`uploadTypeMapping-${platform}`}
                           labelPlacement="outside"
                           isRequired
-                          value={
-                            uploadRequest?.uploadTypeMapping?.find(
-                              (ele) => ele.platform === platform
-                            )?.contentType || ""
-                          }
+                          value={(() => {
+                            return (
+                              uploadRequest?.uploadTypeMapping?.filter(
+                                (ele) => {
+                                  return ele.platform === platform;
+                                }
+                              )[0]?.contentType || ""
+                            );
+                          })()}
                           onSelectionChange={(e) => {
                             const newMap: UploadRequestItem[] =
                               uploadRequest?.uploadTypeMapping?.filter(
@@ -246,22 +379,23 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                   <Input
                     id="fileHandle"
                     type="file"
+                    name="media"
                     accept="image/*,video/*"
                     onChange={handleFileChange}
                     ref={mediaFileRef}
                   />
-                  {uploadRequest?.media && (
+                  {(uploadRequest?.media || uploadRequest?.mediaUrl != "") && (
                     <div className="w-full flex flex-wrap justify-start items-center">
                       <span className="relative">
                         {uploadRequest?.media?.type.includes("image") ? (
                           <Image
-                            src={previewUrl || ""}
+                            src={previewUrl || uploadRequest.mediaUrl || ""}
                             height={50}
                             width={50}
                           />
                         ) : (
                           <Video
-                            src={previewUrl || ""}
+                            src={previewUrl || uploadRequest.mediaUrl || ""}
                             height={50}
                             width={50}
                           />
@@ -275,6 +409,10 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                             }
                             setUploadRequest({
                               ...uploadRequest,
+                              mediaUrl: "",
+                            });
+                            setUploadRequest({
+                              ...uploadRequest,
                               media: null,
                             });
                           }}
@@ -283,7 +421,17 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                     </div>
                   )}
                 </div>
-                <Button className="w-full" color="primary" type="submit">
+                <Button
+                  isDisabled={
+                    uploadRequest?.uploadRequestStatus ===
+                      UploadRequestStatus?.COMPLETED ||
+                    uploadRequest?.uploadRequestStatus ===
+                      UploadRequestStatus?.DECLINED
+                  }
+                  className="w-full"
+                  color="primary"
+                  type="submit"
+                >
                   <Save />
                   {props?.operationType === "CREATE" ? "Create" : "Save"}
                 </Button>

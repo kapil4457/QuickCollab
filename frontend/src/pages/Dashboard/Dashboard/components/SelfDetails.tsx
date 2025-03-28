@@ -80,7 +80,7 @@ const SelfDetails = () => {
   return (
     <>
       <EditSelfDetailsModal ref={editSelfDetailsModalRef} />
-      <Card className="border border-gray-300 shadow-md  w-full rounded-xl p-6">
+      <Card className="border border-gray-300 shadow-md  w-full rounded-xl p-6 h-full">
         <CardHeader className="text-xl font-semibold border-b pb-3 flex justify-between">
           Self Details{" "}
           <Button isIconOnly onPress={openEditSelfDetails}>

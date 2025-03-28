@@ -6,18 +6,15 @@ import {
 } from "@/store/slices/userSlice";
 import { AllRoles } from "@/utils/enums";
 import { Button } from "@heroui/button";
-import React, { useRef, useState } from "react";
-import { PlusIcon } from "./PostedJobs/PostedJobs";
-import UploadRequestCard from "./components/UploadRequestCard";
-import AddEditUploadRequest from "./components/AddEditUploadRequest";
+import React, { useEffect, useRef, useState } from "react";
+import { PlusIcon } from "../PostedJobs/PostedJobs";
+import UploadRequestCard from "../components/UploadRequestCard";
+import AddEditUploadRequest from "../components/AddEditUploadRequest";
 import { UploadRequestDTO } from "@/store/dtos/request/UploadRequestDTO";
 
 const UploadRequests = () => {
   const user = useAppSelector(selectLoggedInUser);
-  const uploadRequests =
-    user?.userRole !== AllRoles.CONTENT_CREATOR
-      ? useAppSelector(selectAllUploadRequests)
-      : [];
+  const uploadRequests = useAppSelector(selectAllUploadRequests) || [];
 
   const [uploadRequest, setUploadRequest] = useState<UploadRequestDTO>({
     description: "",
@@ -58,7 +55,7 @@ const UploadRequests = () => {
         )}
 
         {user?.userRole !== AllRoles.JOB_SEEKER && (
-          <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {uploadRequests?.map((request, key) => {
               return <UploadRequestCard request={request} />;
             })}

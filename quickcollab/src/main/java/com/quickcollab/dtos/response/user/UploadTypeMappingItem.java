@@ -13,5 +13,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UploadTypeMappingItem {
     public Platform platform;
-    public ContentType contentTypes;
+    public ContentType contentType;
 }

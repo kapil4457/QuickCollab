@@ -14,7 +14,7 @@ const CurrentJobDetails = () => {
   const reportsTo = useAppSelector(selectReportsTo);
   const noticePeriodEndDate = useAppSelector(selectNoticePeriodEndDate);
   return (
-    <Card className="border border-gray-300 w-full  shadow-md rounded-xl p-6">
+    <Card className="border border-gray-300 w-full  shadow-md rounded-xl p-6 h-full">
       <CardHeader className="text-xl font-semibold border-b pb-3">
         Current Job Details
       </CardHeader>

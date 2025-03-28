@@ -45,7 +45,7 @@ public class UploadRequest {
     @ManyToOne
     private User requestedTo;
 
-    @OneToOne
+    @ManyToOne
     private User requestedBy;
 
     private Date requestedOn;

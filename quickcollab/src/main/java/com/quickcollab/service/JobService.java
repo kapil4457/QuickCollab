@@ -386,7 +386,7 @@ public class JobService {
                 }
             });
 
-            if(applicant.getReportsTo()!=null){
+//            if(applicant.getReportsTo()!=null){
 
             userConversations.forEach((conversation)->{
                 AtomicReference<Boolean> check = new AtomicReference<>(true);
@@ -398,7 +398,7 @@ public class JobService {
                 conversation.setIsTeamMemberConversation(check.get().equals(true));
                 conversationRepository.save(conversation);
             });
-            }
+//            }
 
             //  Add current Job to the JobHistory of the applicant
             JobHistory currentJobDetails = applicant.getCurrentJobDetails();

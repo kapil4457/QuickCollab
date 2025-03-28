@@ -1,13 +1,20 @@
 package com.quickcollab.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quickcollab.dtos.request.ProjectDetailsRequestDTO;
 import com.quickcollab.dtos.request.UploadRequestDTO;
+import com.quickcollab.dtos.request.UploadRequestStringifiedDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
+import com.quickcollab.dtos.response.user.UploadTypeMappingItem;
 import com.quickcollab.enums.Platform;
 import com.quickcollab.enums.UploadRequestStatus;
 import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.UploadRequest;
 import com.quickcollab.model.User;
+import com.quickcollab.pojo.ExternalLink;
 import com.quickcollab.repository.UploadRequestRepository;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.service.provider.ProviderFactory;
@@ -27,24 +34,62 @@ public class UploadRequestService {
     private ProviderFactory providerFactory;
     private ProviderImpl providerImpl;
     private AWSService awsService;
+    private final ObjectMapper objectMapper;
 
     @Value("${aws.cloudfront.distribution}")
     private String cloudFrontDistribution;
 
-    public UploadRequestService(UploadRequestRepository uploadRequestRepository, UserRepository userRepository, ProviderFactory providerFactory, ProviderImpl providerImpl, AWSService awsService) {
+    public UploadRequestService(ObjectMapper objectMapper,UploadRequestRepository uploadRequestRepository, UserRepository userRepository, ProviderFactory providerFactory, ProviderImpl providerImpl, AWSService awsService, ObjectMapper jacksonObjectMapper) {
         this.uploadRequestRepository = uploadRequestRepository;
         this.userRepository = userRepository;
         this.providerFactory = providerFactory;
         this.providerImpl = providerImpl;
         this.awsService = awsService;
+        this.objectMapper=objectMapper;
+
     }
 
-    public ResponseDTO createUploadRequest(String authUserId , UploadRequestDTO uploadRequestDTO) throws IOException {
+    private UploadRequestDTO uploadRequestStringifiedToUploadRequestDTOConverter(UploadRequestStringifiedDTO uploadRequestStringifiedDTO) {
+        UploadRequestDTO uploadRequestDTO = new UploadRequestDTO();
+        uploadRequestDTO.setTitle(uploadRequestStringifiedDTO.getTitle());
+        uploadRequestDTO.setDescription(uploadRequestStringifiedDTO.getDescription());
+        uploadRequestDTO.setMedia(uploadRequestStringifiedDTO.getMedia());
+        uploadRequestDTO.setMediaType(uploadRequestStringifiedDTO.getMediaType());
+        uploadRequestDTO.setUploadRequestStatus(uploadRequestStringifiedDTO.getUploadRequestStatus());
+
+        try {
+            List<String> tags = objectMapper.readValue(uploadRequestStringifiedDTO.getTags(),
+                    new TypeReference<List<String>>() {});
+            uploadRequestDTO.setTags(tags);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid tags format");
+        }
+        try {
+            List<Platform> uploadTo = objectMapper.readValue(uploadRequestStringifiedDTO.getUploadTo(),
+                    new TypeReference<List<Platform>>() {});
+            uploadRequestDTO.setUploadTo(uploadTo);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid uploadTo format");
+        }
+        try {
+            List<UploadTypeMappingItem> uploadTypeMapping = objectMapper.readValue(uploadRequestStringifiedDTO.getUploadTypeMapping(),
+                    new TypeReference<List<UploadTypeMappingItem>>() {});
+            uploadRequestDTO.setUploadTypeMapping(uploadTypeMapping);
+        } catch (JsonProcessingException e) {
+            throw new GenericError("Invalid uploadTypeMapping format");
+        }
+
+        return uploadRequestDTO;
+
+    }
+
+    public ResponseDTO createUploadRequest(String authUserId , UploadRequestStringifiedDTO uploadRequestStringifiedDTO) throws IOException {
         User authUser = userRepository.findById(authUserId).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
         User contentCreator = userRepository.findById(authUser.getReportsTo().getUserId()).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
         if(authUserId.equals(contentCreator.getUserId())){
             throw new GenericError("You are not allowed to perform this operation");
         }
+        UploadRequestDTO uploadRequestDTO = uploadRequestStringifiedToUploadRequestDTOConverter(uploadRequestStringifiedDTO);
         UploadRequest uploadRequest = new UploadRequest();
         uploadRequest.setRequestedBy(authUser);
         uploadRequest.setRequestedOn(new Date());
@@ -68,10 +113,10 @@ public class UploadRequestService {
         return new ResponseDTO("Upload request created successfully" , true);
         }
 
-    public ResponseDTO updateUploadRequest(String authUserId , UploadRequestDTO uploadRequestDTO,Long uploadRequestId) throws IOException {
+    public ResponseDTO updateUploadRequest(String authUserId , UploadRequestStringifiedDTO uploadRequestStringifiedDTO,Long uploadRequestId) throws IOException {
         User authUser = userRepository.findById(authUserId).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
         User contentCreator = userRepository.findById(authUser.getReportsTo().getUserId()).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
-
+        UploadRequestDTO uploadRequestDTO = uploadRequestStringifiedToUploadRequestDTOConverter(uploadRequestStringifiedDTO);
         UploadRequest uploadRequest = uploadRequestRepository.findById(uploadRequestId).orElseThrow(()-> new ResourceNotFoundException("Upload Request","id",uploadRequestId.toString()));
 
         if(!uploadRequest.getRequestedBy().getUserId().equals(authUserId)){
@@ -129,4 +174,23 @@ public class UploadRequestService {
     }
 
 
+    // ACCEPT , DECLINE , REVISION
+    public ResponseDTO updateUploadRequestStatus(String authUserId, Long requestId, UploadRequestStatus newStatus) {
+        User user =  userRepository.findById(authUserId).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
+        UploadRequest uploadRequest = uploadRequestRepository.findById(requestId).orElseThrow(()->new ResourceNotFoundException("Upload Request","id",requestId.toString()));
+
+        // ACCEPT and REVISION
+            if(!user.getUserId().equals(uploadRequest.getRequestedTo().getUserId())){
+            throw new GenericError("You are not allowed to perform this operation");
+
+        }
+
+       if(newStatus==UploadRequestStatus.COMPLETED){
+           // PENDING : Upload the media
+       }
+        uploadRequest.setUploadRequestStatus(newStatus);
+        uploadRequestRepository.save(uploadRequest);
+        return new ResponseDTO("Upload request updated successfully" , true);
+
+    }
 }

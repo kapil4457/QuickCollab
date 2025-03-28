@@ -2,6 +2,7 @@ import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
 import axios, { AxiosError } from "axios";
 import { dispatchType, updateUserLoadingState } from "../slices/userSlice";
 import { AddProviderDTO } from "../dtos/request/AddProviderDTO";
+import { selfDetails } from "./UserController";
 
 export const addProviderHandler = async (
   dispatch: typeof dispatchType,
@@ -23,6 +24,7 @@ export const addProviderHandler = async (
       headers,
     });
     const { success, message } = data;
+    selfDetails(dispatch, authorizationToken);
     return {
       success,
       message,

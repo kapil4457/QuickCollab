@@ -161,6 +161,7 @@ public class UserService {
                 List<UploadRequestResponseDTO> uploadRequestResponseDTOS = uploadRequests.stream().map(request -> {
                     UploadRequestResponseDTO uploadRequestResponseDTO = new UploadRequestResponseDTO();
                     uploadRequestResponseDTO.setUploadTo(request.getUploadTo());
+                    uploadRequestResponseDTO.setRequestId(request.getUploadRequestId());
                     uploadRequestResponseDTO.setTags(request.getTags());
                     uploadRequestResponseDTO.setUploadRequestStatus(request.getUploadRequestStatus());
                     uploadRequestResponseDTO.setUploadTypeMapping(request.getUploadTypeMapping());
@@ -168,6 +169,11 @@ public class UserService {
                     uploadRequestResponseDTO.setMediaUrl(request.getFileUrl());
                     uploadRequestResponseDTO.setDescription(request.getDescription());
                     uploadRequestResponseDTO.setTitle(request.getTitle());
+                    ReportingUser requestBy = new ReportingUser();
+                    requestBy.setUserId(request.getRequestedBy().getUserId());
+                    requestBy.setFirstName(request.getRequestedBy().getFirstName());
+                    requestBy.setLastName(request.getRequestedBy().getLastName());
+                    uploadRequestResponseDTO.setRequestBy(requestBy);
                     return uploadRequestResponseDTO;
                 }).toList();
 
@@ -257,6 +263,7 @@ public class UserService {
                     UploadRequestResponseDTO uploadRequestResponseDTO = new UploadRequestResponseDTO();
                     uploadRequestResponseDTO.setUploadTo(request.getUploadTo());
                     uploadRequestResponseDTO.setTags(request.getTags());
+                    uploadRequestResponseDTO.setRequestId(request.getUploadRequestId());
                     uploadRequestResponseDTO.setUploadRequestStatus(request.getUploadRequestStatus());
                     uploadRequestResponseDTO.setUploadTypeMapping(request.getUploadTypeMapping());
                     uploadRequestResponseDTO.setMediaType(request.getMediaType());

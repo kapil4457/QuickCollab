@@ -14,7 +14,7 @@ public class GeneralConfig {
             Map<Platform , List<ContentType>> availableContentType = new HashMap<Platform , List<ContentType>>();
             List<UploadTypeMappingItemList> uploadTypeMappingItemLists = new ArrayList<>();
             UploadTypeMappingItemList uploadTypeMappingItemList = new UploadTypeMappingItemList();
-            uploadTypeMappingItemList.setContentTypes(Arrays.asList(ContentType.VIDEO,ContentType.REEL,ContentType.MESSAGE));
+            uploadTypeMappingItemList.setContentTypes(Arrays.asList(ContentType.VIDEO));
             uploadTypeMappingItemList.setPlatform(Platform.YOUTUBE);
             uploadTypeMappingItemLists.add(uploadTypeMappingItemList);
             return uploadTypeMappingItemLists;

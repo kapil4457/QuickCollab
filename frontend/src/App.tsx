@@ -14,7 +14,7 @@ import AppliedJobs from "./pages/Dashboard/AppliedJobs/AppliedJobs";
 import Conversations from "./pages/Dashboard/Conversations/Conversations";
 import JobsOffered from "./pages/Dashboard/JobsOffered/JobsOffered";
 import MyEmployees from "./pages/Dashboard/MyEmployees/MyEmployees";
-import UploadRequests from "./pages/Dashboard/UploadRequests";
+import UploadRequests from "./pages/Dashboard/UploadRequest/UploadRequests";
 
 function App() {
   return (
