@@ -88,6 +88,13 @@ public class UserService {
         // convert UserRegisterDTO to User
         User user = modelMapper.map(userRegisterDTO, User.class);
         User savedUser = userRepository.save(user);
+        ReportingUser reportingUser = new ReportingUser();
+        reportingUser.setLastName(savedUser.getLastName());
+        reportingUser.setFirstName(savedUser.getFirstName());
+        reportingUser.setUserId(savedUser.getUserId());
+        user.setReportsTo(reportingUser);
+        savedUser = userRepository.save(user);
+
         LoginResponseDTO<?> loginResponseDTO = getUserByEmail(userRegisterDTO.getEmailId());
         loginResponseDTO.setMessage("User registered successfully");
         loginResponseDTO.setSuccess(true);

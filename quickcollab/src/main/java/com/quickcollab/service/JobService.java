@@ -219,7 +219,7 @@ public class JobService {
         }
         if(offerStatus.equals(OfferStatus.ACCEPTED)){
             // check if the user is serving notice period
-            if(!applicant.getIsServingNoticePeriod() && applicant.getReportsTo()!=null){
+            if(!applicant.getIsServingNoticePeriod() && !applicant.getReportsTo().getUserId().equals(applicant.getUserId())){
                 Long noticePeriodLength = applicant.getCurrentJobNoticePeriodDays();
                 applicant.setIsServingNoticePeriod(true);
                 applicant.setNoticePeriodEndDate(new Date(new Date().getTime() + (noticePeriodLength * 24L * 60 * 60 * 100)));
@@ -362,7 +362,7 @@ public class JobService {
             }
 
             if(!applicant.getIsServingNoticePeriod()){
-                if(applicant.getReportsTo()!=null){
+                if(!applicant.getReportsTo().getUserId().equals(applicant.getUserId())){
                     throw new GenericError("You need to resign from the current job to join this one.");
                 }
             }else{
@@ -391,7 +391,7 @@ public class JobService {
             userConversations.forEach((conversation)->{
                 AtomicReference<Boolean> check = new AtomicReference<>(true);
                 conversation.getMembers().forEach((member)->{
-                     if(!member.getReportsTo().getUserId().equals(contentCreatorId)){
+                     if(!member.getUserId().equals(applicant.getUserId()) || !member.getReportsTo().getUserId().equals(contentCreatorId)){
                          check.set(false);
                      }
                 });

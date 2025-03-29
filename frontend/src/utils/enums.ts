@@ -84,6 +84,9 @@ export const ProviderName = Object.freeze({
 export const UploadRequestStatus = Object.freeze({
   PENDING: "PENDING",
   REVISION: "REVISION",
-  COMPLETED: "COMPLETED",
+  APPROVED: "APPROVED",
   DECLINED: "DECLINED",
+  UPLOAD_IN_PROGRESS: "UPLOAD_IN_PROGRESS",
+  UPLOAD_COMPLETED: "UPLOAD_COMPLETED",
+  UPLOAD_FAILED: "UPLOAD_FAILED",
 });

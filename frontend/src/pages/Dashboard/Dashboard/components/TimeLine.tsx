@@ -21,7 +21,7 @@ const TimeLine = ({ jobHistory }: { jobHistory: JobHistory[] }) => {
   const items = useMemo(() => {
     let allJobHistory = [];
     const currentJobDetail = { ...currJobDetails, endDate: new Date() };
-    if (currentJobDetail != null) {
+    if (currJobDetails != null) {
       allJobHistory.push(currentJobDetail);
     }
     allJobHistory.concat(jobHistory);

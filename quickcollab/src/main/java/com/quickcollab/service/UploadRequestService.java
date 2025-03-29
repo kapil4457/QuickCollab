@@ -3,7 +3,6 @@ package com.quickcollab.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quickcollab.dtos.request.ProjectDetailsRequestDTO;
 import com.quickcollab.dtos.request.UploadRequestDTO;
 import com.quickcollab.dtos.request.UploadRequestStringifiedDTO;
 import com.quickcollab.dtos.response.general.ResponseDTO;
@@ -14,12 +13,10 @@ import com.quickcollab.exception.GenericError;
 import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.UploadRequest;
 import com.quickcollab.model.User;
-import com.quickcollab.pojo.ExternalLink;
 import com.quickcollab.repository.UploadRequestRepository;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.service.provider.ProviderFactory;
 import com.quickcollab.service.provider.ProviderImpl;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -140,12 +137,11 @@ public class UploadRequestService {
             String mediaUrl = cloudFrontDistribution + folderName + "/" + mediaId;
             uploadRequest.setFileUrl(mediaUrl);
         }
-        if(uploadRequestDTO.getUploadRequestStatus().equals(UploadRequestStatus.COMPLETED)){
-
-            List<Platform> uploadTo =  uploadRequestDTO.getUploadTo();
-            for(Integer ind = 0; ind < uploadTo.size();ind++){
-               ProviderImpl provider =  providerFactory.getProvider(uploadTo.get(ind));
-               provider.uploadMedia(uploadRequest,contentCreator);
+        if(uploadRequestDTO.getUploadRequestStatus().equals(UploadRequestStatus.APPROVED)){
+            List<UploadTypeMappingItem> uploadTypeMapping = uploadRequest.getUploadTypeMapping();
+            for (UploadTypeMappingItem mapping : uploadTypeMapping) {
+                ProviderImpl provider = providerFactory.getProvider(mapping.platform);
+                provider.uploadMedia(uploadRequest, mapping.getContentType() , contentCreator);
             }
         }
         uploadRequestRepository.save(uploadRequest);
@@ -175,20 +171,27 @@ public class UploadRequestService {
 
 
     // ACCEPT , DECLINE , REVISION
-    public ResponseDTO updateUploadRequestStatus(String authUserId, Long requestId, UploadRequestStatus newStatus) {
+    public ResponseDTO updateUploadRequestStatus(String authUserId, Long requestId, UploadRequestStatus newStatus) throws IOException {
         User user =  userRepository.findById(authUserId).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
+        User contentCreator =  userRepository.findById(user.getReportsTo().getUserId()).orElseThrow(()->new ResourceNotFoundException("User","id",authUserId));
         UploadRequest uploadRequest = uploadRequestRepository.findById(requestId).orElseThrow(()->new ResourceNotFoundException("Upload Request","id",requestId.toString()));
 
         // ACCEPT and REVISION
             if(!user.getUserId().equals(uploadRequest.getRequestedTo().getUserId())){
             throw new GenericError("You are not allowed to perform this operation");
-
         }
 
-       if(newStatus==UploadRequestStatus.COMPLETED){
-           // PENDING : Upload the media
-       }
+       if(newStatus==UploadRequestStatus.APPROVED){
+        uploadRequest.setUploadRequestStatus(UploadRequestStatus.UPLOAD_IN_PROGRESS);
+        uploadRequest.getUploadTypeMapping().forEach(mapping->mapping.setStatus(UploadRequestStatus.UPLOAD_IN_PROGRESS));
+           List<UploadTypeMappingItem> uploadTypeMapping = uploadRequest.getUploadTypeMapping();
+           for (UploadTypeMappingItem mapping : uploadTypeMapping) {
+               ProviderImpl provider = providerFactory.getProvider(mapping.platform);
+               provider.uploadMedia(uploadRequest, mapping.getContentType() , contentCreator);
+           }
+       }else{
         uploadRequest.setUploadRequestStatus(newStatus);
+       }
         uploadRequestRepository.save(uploadRequest);
         return new ResponseDTO("Upload request updated successfully" , true);
 

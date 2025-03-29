@@ -44,7 +44,7 @@ const UploadRequestCard = ({
   const approveUpload = async () => {
     const { message, success } = await updateUploadRequestStatusHandler(
       dispatch,
-      UploadRequestStatus.COMPLETED,
+      UploadRequestStatus.APPROVED,
       request.requestId
     );
     if (success) {
@@ -120,7 +120,7 @@ const UploadRequestCard = ({
                 isIconOnly
                 isDisabled={
                   uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.COMPLETED ||
+                    UploadRequestStatus?.APPROVED ||
                   uploadRequest?.uploadRequestStatus ===
                     UploadRequestStatus?.DECLINED
                 }
@@ -136,10 +136,12 @@ const UploadRequestCard = ({
             size="sm"
             color={
               request.uploadRequestStatus ===
-              UploadRequestStatus.COMPLETED.toString()
+              UploadRequestStatus.UPLOAD_COMPLETED.toString()
                 ? "success"
                 : request.uploadRequestStatus ===
-                    UploadRequestStatus.DECLINED.toString()
+                      UploadRequestStatus.DECLINED.toString() ||
+                    request.uploadRequestStatus ===
+                      UploadRequestStatus.UPLOAD_FAILED.toString()
                   ? "danger"
                   : "warning"
             }
@@ -192,6 +194,7 @@ const UploadRequestCard = ({
                   <TableHeader>
                     <TableColumn>Platform</TableColumn>
                     <TableColumn>Content Type</TableColumn>
+                    <TableColumn>Upload Status</TableColumn>
                   </TableHeader>
                   <TableBody>
                     {request?.uploadTypeMapping?.map((upload) => {
@@ -199,6 +202,25 @@ const UploadRequestCard = ({
                         <TableRow key={upload.platform}>
                           <TableCell>{upload.platform}</TableCell>
                           <TableCell>{upload.contentType}</TableCell>
+                          <TableCell>
+                            <Chip
+                              className="font-semibold"
+                              size="sm"
+                              color={
+                                request.uploadRequestStatus ===
+                                UploadRequestStatus.UPLOAD_COMPLETED.toString()
+                                  ? "success"
+                                  : request.uploadRequestStatus ===
+                                        UploadRequestStatus.DECLINED.toString() ||
+                                      request.uploadRequestStatus ===
+                                        UploadRequestStatus.UPLOAD_FAILED.toString()
+                                    ? "danger"
+                                    : "warning"
+                              }
+                            >
+                              {upload.status}
+                            </Chip>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -218,10 +240,10 @@ const UploadRequestCard = ({
                 variant="bordered"
                 onPress={approveUpload}
                 isDisabled={
-                  uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.COMPLETED ||
-                  uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.DECLINED
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.PENDING &&
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.REVISION
                 }
               >
                 Approve <Check />
@@ -231,11 +253,9 @@ const UploadRequestCard = ({
                 variant="bordered"
                 onPress={requestRevision}
                 isDisabled={
-                  uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.COMPLETED ||
-                  uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.DECLINED ||
-                  uploadRequest?.uploadRequestStatus ===
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.PENDING &&
+                  uploadRequest?.uploadRequestStatus !==
                     UploadRequestStatus?.REVISION
                 }
               >
@@ -246,10 +266,10 @@ const UploadRequestCard = ({
                 variant="bordered"
                 onPress={rejectUpload}
                 isDisabled={
-                  uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.COMPLETED ||
-                  uploadRequest?.uploadRequestStatus ===
-                    UploadRequestStatus?.DECLINED
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.PENDING &&
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.REVISION
                 }
               >
                 Decline <X />

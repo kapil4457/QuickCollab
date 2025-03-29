@@ -4,11 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 @Configuration
 public class AWSConfig {
@@ -22,12 +21,25 @@ public class AWSConfig {
     private String secretAccessKeyId;
 
     @Bean
+    AwsBasicCredentials awsBasicCredentials() {
+    return AwsBasicCredentials.create(accessKeyId, secretAccessKeyId);
+    }
+
+    @Bean
     S3Client s3Client() {
-    AwsCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKeyId);
         return S3Client
                 .builder()
                 .region(Region.of(s3Region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials()))
+                .build();
+    }
+
+
+    @Bean
+    public SqsClient sqsClient() {
+        return SqsClient.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials()))
+                .region(Region.US_EAST_1)
                 .build();
     }
 

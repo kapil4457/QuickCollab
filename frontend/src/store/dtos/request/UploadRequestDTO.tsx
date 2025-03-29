@@ -13,4 +13,5 @@ export interface UploadRequestDTO {
 export interface UploadRequestItem {
   platform: string;
   contentType: string;
+  status: string;
 }

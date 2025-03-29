@@ -161,6 +161,7 @@ export const applyToJobHandler = async (
   jobId: string
 ) => {
   try {
+    dispatch(updateJobLoadingState(true));
     const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
     if (!authorizationToken) {
       return {
@@ -171,7 +172,6 @@ export const applyToJobHandler = async (
     const headers = {
       Authorization: authorizationToken,
     };
-    dispatch(updateJobLoadingState(true));
     const { data } = await axios.post(
       `/api/applyForJob?jobId=${jobId}`,
       {},

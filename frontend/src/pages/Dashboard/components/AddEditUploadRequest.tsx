@@ -293,6 +293,7 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                       for (let value of selectedValues) {
                         newMap.push({
                           platform: value,
+                          status: UploadRequestStatus.PENDING,
                           contentType:
                             uploadRequest?.uploadTypeMapping.find(
                               (ele) => ele.platform === value
@@ -348,6 +349,7 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                               ) || [];
                             newMap.push({
                               platform: platform,
+                              status: UploadRequestStatus.PENDING,
                               contentType: e.currentKey || "",
                             });
                             setUploadRequest({
@@ -424,9 +426,13 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                 <Button
                   isDisabled={
                     uploadRequest?.uploadRequestStatus ===
-                      UploadRequestStatus?.COMPLETED ||
+                      UploadRequestStatus?.UPLOAD_COMPLETED ||
                     uploadRequest?.uploadRequestStatus ===
-                      UploadRequestStatus?.DECLINED
+                      UploadRequestStatus?.UPLOAD_IN_PROGRESS ||
+                    uploadRequest?.uploadRequestStatus ===
+                      UploadRequestStatus?.DECLINED ||
+                    uploadRequest?.uploadRequestStatus ===
+                      UploadRequestStatus?.UPLOAD_FAILED
                   }
                   className="w-full"
                   color="primary"
