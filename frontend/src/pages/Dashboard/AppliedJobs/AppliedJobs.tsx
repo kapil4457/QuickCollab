@@ -46,6 +46,7 @@ import {
 import { FileText, Handshake } from "lucide-react";
 import { JobHistory, OfferDetail } from "@/store/dtos/helper";
 import { JobOfferDetailModal } from "../components/JobOfferDetailModal";
+import { useNavigate } from "react-router-dom";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -107,11 +108,11 @@ export const VerticalDotsIcon = ({
 };
 const AppliedJobs = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [filterValue, setFilterValue] = useState("");
   const teamMemberCurrentJob: JobHistory | null =
     useAppSelector(selectCurrentJob);
-  console.log("teamMemberCurrentJob : ", teamMemberCurrentJob);
   const allListedJobs = useAppSelector(selectAppliedJobs);
   const rowsCount = [5, 10, 15];
   const [rowsPerPage, setRowsPerPage] = useState(rowsCount[0]);
@@ -204,6 +205,13 @@ const AppliedJobs = () => {
     const { message, success } = await joinCompanyHandler(dispatch, jobId);
     if (success) {
       showToast({ title: message, color: "success" });
+      setTimeout(() => {
+        showToast({
+          title: "Please login in again to access the updated dashboard",
+          color: "success",
+        });
+        navigate("/logout");
+      }, 1000);
     } else {
       showToast({ title: message, color: "danger" });
     }

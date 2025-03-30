@@ -182,4 +182,10 @@ export const selectUploadRequestMappings = (state: RootState) => {
   }
   return [];
 };
+export const selectAvaliablePlatform = (state: RootState) => {
+  if (state.user.user && "availablePlatforms" in state.user.user) {
+    return state.user.user.availablePlatforms;
+  }
+  return [];
+};
 export default userSlice.reducer;

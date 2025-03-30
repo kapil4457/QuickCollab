@@ -13,10 +13,19 @@ public class GeneralConfig {
     public List<UploadTypeMappingItemList> availableContentTypes(){
             Map<Platform , List<ContentType>> availableContentType = new HashMap<Platform , List<ContentType>>();
             List<UploadTypeMappingItemList> uploadTypeMappingItemLists = new ArrayList<>();
-            UploadTypeMappingItemList uploadTypeMappingItemList = new UploadTypeMappingItemList();
-            uploadTypeMappingItemList.setContentTypes(Arrays.asList(ContentType.VIDEO));
-            uploadTypeMappingItemList.setPlatform(Platform.YOUTUBE);
-            uploadTypeMappingItemLists.add(uploadTypeMappingItemList);
+            UploadTypeMappingItemList youtubeUploadTypeMappingItemList = new UploadTypeMappingItemList();
+            youtubeUploadTypeMappingItemList.setContentTypes(Arrays.asList(ContentType.VIDEO));
+            youtubeUploadTypeMappingItemList.setPlatform(Platform.YOUTUBE);
+
+
+            UploadTypeMappingItemList facebookUploadTypeMappingItemList = new UploadTypeMappingItemList();
+            facebookUploadTypeMappingItemList.setContentTypes(Arrays.asList(ContentType.VIDEO));
+            facebookUploadTypeMappingItemList.setPlatform(Platform.FACEBOOK);
+
+
+
+            uploadTypeMappingItemLists.add(youtubeUploadTypeMappingItemList);
+            uploadTypeMappingItemLists.add(facebookUploadTypeMappingItemList);
             return uploadTypeMappingItemLists;
 
     }

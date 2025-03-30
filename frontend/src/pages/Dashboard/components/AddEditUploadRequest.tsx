@@ -26,7 +26,10 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ValidationError } from "@react-types/shared";
 import { MediaType, PlatformType, UploadRequestStatus } from "@/utils/enums";
 import { Label } from "@/components/ui/label";
-import { selectUploadRequestMappings } from "@/store/slices/userSlice";
+import {
+  selectAvaliablePlatform,
+  selectUploadRequestMappings,
+} from "@/store/slices/userSlice";
 import { Image } from "@heroui/image";
 import { Video } from "reactjs-media";
 import { PlusIcon } from "../PostedJobs/PostedJobs";
@@ -65,6 +68,7 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
     uploadTo: [],
     uploadTypeMapping: null,
   });
+  const availablePlatforms = useAppSelector(selectAvaliablePlatform);
   const [uploadRequestId, setUploadRequestId] = useState<number>(0);
   const [tag, setTag] = useState<string>("");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -317,7 +321,7 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
                     return errors.uploadTo;
                   }}
                 >
-                  {Object.keys(PlatformType).map((platform) => (
+                  {availablePlatforms.map((platform) => (
                     <SelectItem key={platform}>{platform}</SelectItem>
                   ))}
                 </Select>

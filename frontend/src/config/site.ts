@@ -139,6 +139,12 @@ export const siteConfig = {
     {
       name: "Youtube",
       icon: "youtube.svg",
+      id: "yt",
+    },
+    {
+      name: "Facebook",
+      icon: "facebook.svg",
+      id: "fb",
     },
   ],
   services: {

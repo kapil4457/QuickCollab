@@ -17,6 +17,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { addProviderHandler } from "@/store/controllers/ProviderController";
 import { AddProviderDTO } from "@/store/dtos/request/AddProviderDTO";
 import showToast from "@/utils/showToast";
+import FacebookLogin from "@greatsumini/react-facebook-login";
+
 const SocialMediaIcon = ({ platform }: { platform: string }) => {
   const icons: {
     [key: string]: string;
@@ -70,12 +72,27 @@ const SelfDetails = () => {
       }
     },
     flow: "auth-code",
-    // redirect_uri: "http://localhost:8080/login/oauth2/code/google",
     include_granted_scopes: true,
     ux_mode: "popup",
     scope:
       "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
   });
+
+  const facebookLogin = async ({ accessCode }: { accessCode: string }) => {
+    let addProviderDTO: AddProviderDTO = {
+      accessCode: accessCode,
+      name: ProviderName.FACEBOOK,
+    };
+    const { message, success } = await addProviderHandler(
+      dispatch,
+      addProviderDTO
+    );
+    if (success) {
+      showToast({ title: message, color: "success" });
+    } else {
+      showToast({ title: message, color: "danger" });
+    }
+  };
 
   return (
     <>
@@ -152,22 +169,50 @@ const SelfDetails = () => {
           {user?.userRole === AllRoles.CONTENT_CREATOR && (
             <div className="mt-3 flex flex-col gap-2">
               <span className="text-gray-600 font-medium">Providers</span>
-              {siteConfig.providers.map((provider) => {
-                return (
-                  <Button
-                    isIconOnly
-                    onPress={() => youtubeLogin()}
-                    isDisabled={
-                      configuredProviders?.filter(
-                        (provider) =>
-                          provider.providerName === ProviderName.YOUTUBE
-                      ).length > 0
-                    }
-                  >
-                    <img src={provider?.icon} alt={provider?.name} />
-                  </Button>
-                );
-              })}
+              <div className="flex gap-2 flex-wrap">
+                {siteConfig.providers.map((provider) => {
+                  return provider.id === "yt" ? (
+                    <Button
+                      isIconOnly
+                      onPress={() => youtubeLogin()}
+                      isDisabled={
+                        configuredProviders?.filter(
+                          (provider) =>
+                            provider.providerName === ProviderName.YOUTUBE
+                        ).length > 0
+                      }
+                    >
+                      <img src={provider?.icon} alt={provider?.name} />
+                    </Button>
+                  ) : (
+                    <FacebookLogin
+                      appId={import.meta.env.VITE_FACEBOOK_APP_ID}
+                      scope="pages_manage_posts,pages_show_list,business_management"
+                      onSuccess={(response) => {
+                        facebookLogin({ accessCode: response.accessToken });
+                        console.log("Login Success!", response);
+                      }}
+                      onFail={(error) => {
+                        console.log("Login Failed!", error);
+                      }}
+                      render={({ onClick }) => (
+                        <Button
+                          isIconOnly
+                          onPress={onClick}
+                          isDisabled={
+                            configuredProviders?.filter(
+                              (provider) =>
+                                provider.providerName === ProviderName.FACEBOOK
+                            ).length > 0
+                          }
+                        >
+                          <img src={provider?.icon} alt={provider?.name} />
+                        </Button>
+                      )}
+                    />
+                  );
+                })}
+              </div>
             </div>
           )}
         </CardBody>

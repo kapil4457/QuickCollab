@@ -46,21 +46,23 @@ const UploadRequests = () => {
           operationType="CREATE"
           uploadRequest={uploadRequest}
         />
-        {user?.userRole === AllRoles.TEAM_MEMBER && (
-          <div className="w-full flex justify-end items-center">
-            <Button onPress={openAddEditUploadRequestModal}>
-              Create <PlusIcon />
-            </Button>
-          </div>
-        )}
+        <div className="flex flex-col gap-5">
+          {user?.userRole === AllRoles.TEAM_MEMBER && (
+            <div className="w-full flex justify-end items-center">
+              <Button onPress={openAddEditUploadRequestModal}>
+                Create <PlusIcon />
+              </Button>
+            </div>
+          )}
 
-        {user?.userRole !== AllRoles.JOB_SEEKER && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {uploadRequests?.map((request, key) => {
-              return <UploadRequestCard request={request} />;
-            })}
-          </div>
-        )}
+          {user?.userRole !== AllRoles.JOB_SEEKER && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {uploadRequests?.map((request, key) => {
+                return <UploadRequestCard request={request} />;
+              })}
+            </div>
+          )}
+        </div>
       </>
     </DashboardLayout>
   );

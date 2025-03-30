@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@greatsumini/react-facebook-login": "^3.4.0",
     "@heroui/avatar": "^2.2.11",
     "@heroui/badge": "^2.2.10",
     "@heroui/button": "2.2.13",

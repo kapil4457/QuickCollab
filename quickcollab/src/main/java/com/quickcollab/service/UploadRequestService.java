@@ -26,21 +26,19 @@ import java.util.List;
 
 @Service
 public class UploadRequestService {
-    private UploadRequestRepository uploadRequestRepository;
-    private UserRepository userRepository;
-    private ProviderFactory providerFactory;
-    private ProviderImpl providerImpl;
-    private AWSService awsService;
+    private final UploadRequestRepository uploadRequestRepository;
+    private final UserRepository userRepository;
+    private final ProviderFactory providerFactory;
+    private final AWSService awsService;
     private final ObjectMapper objectMapper;
 
     @Value("${aws.cloudfront.distribution}")
     private String cloudFrontDistribution;
 
-    public UploadRequestService(ObjectMapper objectMapper,UploadRequestRepository uploadRequestRepository, UserRepository userRepository, ProviderFactory providerFactory, ProviderImpl providerImpl, AWSService awsService, ObjectMapper jacksonObjectMapper) {
+    public UploadRequestService(ObjectMapper objectMapper,UploadRequestRepository uploadRequestRepository, UserRepository userRepository, ProviderFactory providerFactory,AWSService awsService, ObjectMapper jacksonObjectMapper) {
         this.uploadRequestRepository = uploadRequestRepository;
         this.userRepository = userRepository;
         this.providerFactory = providerFactory;
-        this.providerImpl = providerImpl;
         this.awsService = awsService;
         this.objectMapper=objectMapper;
 

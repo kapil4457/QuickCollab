@@ -85,40 +85,6 @@ public class YoutubeProvider extends ProviderImpl {
         userRepository.save(user);
     }
 
-
-//    public static Credential authorize(final NetHttpTransport httpTransport) throws IOException {
-//        String clientSecretJson = "{\n" +
-//                "  \"installed\": {\n" +
-//                "    \"client_id\": \""+clientId+"\",\n" +
-//                "    \"project_id\": \""+projectId+"\",\n" +
-//                "    \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\n" +
-//                "    \"token_uri\": \"https://oauth2.googleapis.com/token\",\n" +
-//                "    \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\n" +
-//                "    \"client_secret\": \""+clientSecret+"\",\n" +
-//                "    \"redirect_uris\": [\n" +
-//                "      \"urn:ietf:wg:oauth:2.0:oob\",\n" +
-//                "      \"http://localhost\"\n" +
-//                "    ]\n" +
-//                "  }\n" +
-//                "}";
-//
-//        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-//                new InputStreamReader(YoutubeProvider.class.getResourceAsStream(clientSecretJson)));
-//
-//        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-//                httpTransport, JSON_FACTORY, clientSecrets, SCOPES)
-//                .build();
-//
-//        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-//    }
-
-//    public static YouTube getService() throws IOException {
-//        final NetHttpTransport httpTransport = new NetHttpTransport();
-//        Credential credential = authorize(httpTransport);
-//        return new YouTube.Builder(httpTransport, JSON_FACTORY, credential)
-//                .setApplicationName(APPLICATION_NAME)
-//                .build();
-//    }
     @Override
     public Provider updateAccessToken(String authUserId) throws IOException {
         User user = userRepository.findById(authUserId).orElseThrow(()-> new ResourceNotFoundException("User","id",authUserId));
