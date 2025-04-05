@@ -101,30 +101,7 @@ export function SideBarUser({ user }: { user: loggedInUser }) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <Link href="/logout" className="w-full">
-                <DropdownMenuItem className="w-full cursor-pointer">
-                  <Sparkles />
-                  Upgrade to Pro
-                </DropdownMenuItem>
-              </Link>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <Link href="/logout" className="w-full">
-                <DropdownMenuItem className="w-full cursor-pointer">
-                  <BadgeCheck />
-                  My Acount
-                </DropdownMenuItem>
-              </Link>
-              <Link href="/logout" className="w-full">
-                <DropdownMenuItem className="w-full cursor-pointer">
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-              </Link>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+
             <Link href="/logout" className="w-full">
               <DropdownMenuItem className="w-full cursor-pointer">
                 <LogOut />

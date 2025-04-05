@@ -1,5 +1,6 @@
 package com.quickcollab.dtos.response.job.jobSeeker;
 
+import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.pojo.PersonalProject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,4 +22,5 @@ public class JobSeekerJobApplication {
     private String jobLocationType;
     private String jobLocation;
     private Long noticePeriodDays;
+    private ReportingUser reportingUser;
 }

@@ -8,7 +8,7 @@ import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Edit } from "lucide-react";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import EditSelfDetailsModal from "./EditSelfDetailsModal";
 import { Link } from "@heroui/link";
 import { AllRoles, ProviderName } from "@/utils/enums";
@@ -17,7 +17,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { addProviderHandler } from "@/store/controllers/ProviderController";
 import { AddProviderDTO } from "@/store/dtos/request/AddProviderDTO";
 import showToast from "@/utils/showToast";
-import FacebookLogin from "@greatsumini/react-facebook-login";
+import { useSearchParams } from "react-router-dom";
+// import FacebookLogin from "@greatsumini/react-facebook-login";
 
 const SocialMediaIcon = ({ platform }: { platform: string }) => {
   const icons: {
@@ -40,6 +41,7 @@ const DetailItem = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 const SelfDetails = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const user = useAppSelector(selectLoggedInUser);
   const dispatch = useAppDispatch();
   const editSelfDetailsModalRef = useRef();
@@ -78,22 +80,55 @@ const SelfDetails = () => {
       "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
   });
 
-  const facebookLogin = async ({ accessCode }: { accessCode: string }) => {
-    let addProviderDTO: AddProviderDTO = {
-      accessCode: accessCode,
-      name: ProviderName.FACEBOOK,
-    };
-    const { message, success } = await addProviderHandler(
-      dispatch,
-      addProviderDTO
-    );
-    if (success) {
-      showToast({ title: message, color: "success" });
-    } else {
-      showToast({ title: message, color: "danger" });
+  const twitterLoginSetup = async () => {
+    localStorage.setItem("twitterLogin", "true");
+    const clientId = import.meta.env.VITE_X_CLIENT_ID;
+    const applicationUrl = import.meta.env.VITE_FRONTEND_URL;
+    const state = import.meta.env.VITE_X_STATE;
+    const code_challenge = import.meta.env.VITE_X_CODE_CHALLENGE;
+    const code_challenge_method = import.meta.env.VITE_X_CODE_CHALLENGE_METHOD;
+    const scope = import.meta.env.VITE_X_SCOPE;
+    const loginUrl = `https://x.com/i/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${applicationUrl}/dashboard&scope=${scope}&state=${state}&code_challenge=${code_challenge}&code_challenge_method=${code_challenge_method}`;
+    window.location.href = loginUrl;
+  };
+
+  const twitterLogin = async () => {
+    if (localStorage.getItem("twitterLogin") === "true") {
+      localStorage.removeItem("twitterLogin");
+      const accessToken = searchParams.get("code");
+      const state = searchParams.get("state");
+      console.log("accessToken : ", accessToken);
+      console.log("state : ", state);
+      if (!accessToken) {
+        showToast({
+          title: "Failed to authenticate with Twitter",
+          color: "danger",
+        });
+        return;
+      }
+      searchParams.delete("code");
+      searchParams.delete("state");
+      setSearchParams(searchParams);
+
+      let addProviderDTO: AddProviderDTO = {
+        accessCode: accessToken,
+        name: ProviderName.TWITTER,
+      };
+      const { message, success } = await addProviderHandler(
+        dispatch,
+        addProviderDTO
+      );
+      if (success) {
+        showToast({ title: message, color: "success" });
+      } else {
+        showToast({ title: message, color: "danger" });
+      }
     }
   };
 
+  useEffect(() => {
+    twitterLogin();
+  }, []);
   return (
     <>
       <EditSelfDetailsModal ref={editSelfDetailsModalRef} />
@@ -170,46 +205,34 @@ const SelfDetails = () => {
             <div className="mt-3 flex flex-col gap-2">
               <span className="text-gray-600 font-medium">Providers</span>
               <div className="flex gap-2 flex-wrap">
-                {siteConfig.providers.map((provider) => {
-                  return provider.id === "yt" ? (
+                {siteConfig.providers.map((configProvider) => {
+                  return (
                     <Button
                       isIconOnly
-                      onPress={() => youtubeLogin()}
+                      onPress={() => {
+                        switch (configProvider.id) {
+                          case "yt":
+                            youtubeLogin();
+                            break;
+                          case "x":
+                            twitterLoginSetup();
+                            break;
+                          default:
+                            return;
+                        }
+                      }}
                       isDisabled={
                         configuredProviders?.filter(
                           (provider) =>
-                            provider.providerName === ProviderName.YOUTUBE
+                            provider.providerName === configProvider.platform
                         ).length > 0
                       }
                     >
-                      <img src={provider?.icon} alt={provider?.name} />
+                      <img
+                        src={configProvider?.icon}
+                        alt={configProvider?.name}
+                      />
                     </Button>
-                  ) : (
-                    <FacebookLogin
-                      appId={import.meta.env.VITE_FACEBOOK_APP_ID}
-                      scope="pages_manage_posts,pages_show_list,business_management"
-                      onSuccess={(response) => {
-                        facebookLogin({ accessCode: response.accessToken });
-                        console.log("Login Success!", response);
-                      }}
-                      onFail={(error) => {
-                        console.log("Login Failed!", error);
-                      }}
-                      render={({ onClick }) => (
-                        <Button
-                          isIconOnly
-                          onPress={onClick}
-                          isDisabled={
-                            configuredProviders?.filter(
-                              (provider) =>
-                                provider.providerName === ProviderName.FACEBOOK
-                            ).length > 0
-                          }
-                        >
-                          <img src={provider?.icon} alt={provider?.name} />
-                        </Button>
-                      )}
-                    />
                   );
                 })}
               </div>

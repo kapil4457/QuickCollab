@@ -11,7 +11,6 @@ import { ProjectDetailsRequestDTO } from "@/store/dtos/request/projectDetailsReq
 const MyProjects = () => {
   const addEditProjectModalRef = useRef();
   const personalProjects = useAppSelector(selectPersonalProjects);
-
   const openAddEditProjectModal = () => {
     if (
       addEditProjectModalRef.current &&
@@ -20,6 +19,7 @@ const MyProjects = () => {
       (addEditProjectModalRef.current as { openModal: () => void }).openModal();
     }
   };
+
   return (
     <>
       <AddEditProjectModal

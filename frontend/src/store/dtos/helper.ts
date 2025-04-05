@@ -87,13 +87,21 @@ export interface User {}
 export interface JobHistory {
   jobId: number;
   title: string;
-  description: string;
   startDate: Date;
   endDate: Date;
-  userRole: string;
   location: string;
   salary: number;
   locationType: string;
+  reportingUser: ReportingUser;
+}
+export interface UserProfileJobHistoryDTO {
+  jobId: number;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  location: string;
+  locationType: string;
+  reportingUser: ReportingUser;
 }
 
 export interface ReportingUser {
@@ -111,6 +119,7 @@ export interface JobSeekerJobApplication {
   jobLocationType: string;
   jobLocation: string;
   noticePeriodDays: number;
+  reportingUser: ReportingUser;
 }
 
 export interface OfferDetail {

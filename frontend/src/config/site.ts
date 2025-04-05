@@ -45,23 +45,23 @@ export const siteConfig = {
       isAuthenticationRequired: true,
     },
     {
-      label: "Profile",
-      href: "/profile",
-      type: 0,
-      isAuthenticationRequired: true,
-    },
-    {
       label: "Logout",
       href: "/logout",
       type: 0,
       isAuthenticationRequired: true,
     },
+    {
+      label: "Login",
+      href: "/login",
+      type: 0,
+      isAuthenticationRequired: false,
+    },
   ],
   dropDownMenuItems: [
     {
-      label: "My Profile",
-      href: "/profile",
+      label: "Dashboard",
       logo: UserIcon,
+      href: "/dashboard",
       type: 0,
     },
     {
@@ -138,13 +138,15 @@ export const siteConfig = {
   providers: [
     {
       name: "Youtube",
+      platform: "YOUTUBE",
       icon: "youtube.svg",
       id: "yt",
     },
     {
-      name: "Facebook",
-      icon: "facebook.svg",
-      id: "fb",
+      name: "X",
+      platform: "TWITTER",
+      icon: "twitter.svg",
+      id: "x",
     },
   ],
   services: {

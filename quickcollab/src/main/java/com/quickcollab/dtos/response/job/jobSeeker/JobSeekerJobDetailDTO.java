@@ -1,5 +1,6 @@
 package com.quickcollab.dtos.response.job.jobSeeker;
 
+import com.quickcollab.dtos.response.user.ReportingUser;
 import com.quickcollab.enums.JobLocationType;
 import com.quickcollab.enums.JobStatus;
 import lombok.AllArgsConstructor;

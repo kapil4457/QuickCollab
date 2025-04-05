@@ -47,6 +47,7 @@ import { FileText, Handshake } from "lucide-react";
 import { JobHistory, OfferDetail } from "@/store/dtos/helper";
 import { JobOfferDetailModal } from "../components/JobOfferDetailModal";
 import { useNavigate } from "react-router-dom";
+import { Link } from "@heroui/link";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -279,6 +280,7 @@ const AppliedJobs = () => {
               <TableColumn key="openingsCount">Openings Left</TableColumn>
               <TableColumn key="jobLocationType">Location Type</TableColumn>
               <TableColumn key="jobLocation">Location</TableColumn>
+              <TableColumn key="postedBy">Posted By</TableColumn>
               <TableColumn key="noticePeriodDays">
                 Notice Period (in days)
               </TableColumn>
@@ -365,6 +367,16 @@ const AppliedJobs = () => {
                           </Button>
                         ) : columnKey === "postedOn" ? (
                           dateFormatter(getKeyValue(item, columnKey))
+                        ) : columnKey === "postedBy" ? (
+                          <>
+                            <Link
+                              href={`/profile/${item?.reportingUser?.userId}`}
+                              className="font-bold text-blue-400"
+                            >
+                              {item?.reportingUser?.firstName}{" "}
+                              {item?.reportingUser?.lastName}
+                            </Link>
+                          </>
                         ) : (
                           getKeyValue(item, columnKey)
                         )}

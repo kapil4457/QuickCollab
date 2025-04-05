@@ -8,7 +8,9 @@ import com.quickcollab.dtos.request.ProjectDetailsRequestStringifiedDTO;
 import com.quickcollab.dtos.request.UpdateUserProfileRequestDTO;
 import com.quickcollab.dtos.request.UserRegisterDTO;
 import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorJobPost;
+import com.quickcollab.dtos.response.job.contentCreator.ContentCreatorProfileJobPost;
 import com.quickcollab.dtos.response.job.jobSeeker.JobSeekerJobApplication;
+import com.quickcollab.dtos.response.job.jobSeeker.UserProfileJobHistoryDTO;
 import com.quickcollab.dtos.response.user.*;
 import com.quickcollab.dtos.response.general.ResponseDTO;
 import com.quickcollab.enums.MediaType;
@@ -22,6 +24,7 @@ import com.quickcollab.exception.ResourceNotFoundException;
 import com.quickcollab.model.*;
 import com.quickcollab.pojo.*;
 import com.quickcollab.repository.ConversationRepository;
+import com.quickcollab.repository.JobRepository;
 import com.quickcollab.repository.UserRepository;
 import com.quickcollab.repository.WorkRepository;
 import com.quickcollab.utils.GeneralConfig;
@@ -57,8 +60,9 @@ public class UserService {
     private final S3Client s3Client;
     private final WorkRepository workRepository;
     private final GeneralConfig generalConfig;
+    private final JobRepository jobRepository;
 
-    public UserService( GeneralConfig generalConfig ,WorkRepository workRepository,ConversationRepository conversationRepository, ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService, S3Client s3Client) {
+    public UserService(GeneralConfig generalConfig , WorkRepository workRepository, ConversationRepository conversationRepository, ModelMapper modelMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil, AWSService awsService, ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher, JwtBlacklistService jwtBlacklistService, S3Client s3Client, JobRepository jobRepository) {
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
         this.jwtTokenUtil = jwtTokenUtil;
@@ -70,6 +74,7 @@ public class UserService {
         this.s3Client = s3Client;
         this.workRepository =  workRepository;
         this.generalConfig = generalConfig;
+        this.jobRepository = jobRepository;
     }
 
     @Value("${aws.cloudfront.distribution}")
@@ -150,7 +155,6 @@ public class UserService {
                 JobHistory currentJobDetails = user.getCurrentJobDetails();
 
                 if(currentJobDetails!=null){
-                    currentJobDetails.setUserRole(user.getUserRole());
                     currentJobDetails.setSalary(user.getCurrentSalary());
                     user.getJobHistory().add(currentJobDetails);
                 }
@@ -235,6 +239,12 @@ public class UserService {
                     appliedJob.setOpeningsCount(job.getOpeningsCount());
                     appliedJob.setNoticePeriodDays(job.getNoticePeriodDays());
 
+                    ReportingUser reportingUser = new ReportingUser();
+                    reportingUser.setUserId(job.getPostedBy().getUserId());
+                    reportingUser.setLastName(job.getPostedBy().getLastName());
+                    reportingUser.setFirstName(job.getPostedBy().getFirstName());
+                    appliedJob.setReportingUser(reportingUser);
+
                     return appliedJob;
                 }).toList();
 
@@ -291,6 +301,11 @@ public class UserService {
                     appliedJob.setJobLocationType(job.getJobLocationType().toString());
                     appliedJob.setOpeningsCount(job.getOpeningsCount());
                     appliedJob.setNoticePeriodDays(job.getNoticePeriodDays());
+                    ReportingUser reportingUser = new ReportingUser();
+                    reportingUser.setUserId(job.getPostedBy().getUserId());
+                    reportingUser.setLastName(job.getPostedBy().getLastName());
+                    reportingUser.setFirstName(job.getPostedBy().getFirstName());
+                    appliedJob.setReportingUser(reportingUser);
 
                     return appliedJob;
                 }).toList();
@@ -511,5 +526,94 @@ public class UserService {
         workRepository.delete(work);
         userRepository.save(user);
         return new ResponseDTO("Project deleted successfully" , true);
+    }
+
+    public LoginResponseDTO<?> getUserProfileDetails(String userId) {
+    User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","id",userId));
+    if(user.getUserRole().equals(UserRole.CONTENT_CREATOR)){
+    LoginResponseDTO<ContentCreatorProfileDTO> loginResponseDTO = new LoginResponseDTO<>();
+        ContentCreatorProfileDTO contentCreatorProfileDTO = new ContentCreatorProfileDTO();
+        contentCreatorProfileDTO.setProfilePicture(user.getProfilePicture());
+        contentCreatorProfileDTO.setEmployeeCount((long) user.getEmployees().size());
+        contentCreatorProfileDTO.setUserRole(user.getUserRole());
+        List<ContentCreatorProfileJobPost> jobsPosted = user.getJobsPosted().stream().map(job -> {
+            ContentCreatorProfileJobPost contentCreatorProfileJobPost = new ContentCreatorProfileJobPost();
+            contentCreatorProfileJobPost.setJobDescription(job.getJobDescription());
+            contentCreatorProfileJobPost.setJobId(job.getJobId());
+            contentCreatorProfileJobPost.setJobName(job.getJobName());
+            contentCreatorProfileJobPost.setJobStatus(job.getJobStatus().toString());
+            contentCreatorProfileJobPost.setPostedOn(job.getPostedOn());
+            contentCreatorProfileJobPost.setJobLocationType(job.getJobLocationType());
+            contentCreatorProfileJobPost.setJobLocation(job.getJobLocation());
+            contentCreatorProfileJobPost.setOpeningsCount(job.getOpeningsCount());
+            contentCreatorProfileJobPost.setNoticePeriodDays(job.getNoticePeriodDays());
+            return contentCreatorProfileJobPost;
+        }).toList();
+        contentCreatorProfileDTO.setJobsPosted(jobsPosted);
+        contentCreatorProfileDTO.setSelfDescription(user.getSelfDescription());
+        contentCreatorProfileDTO.setSocialMediaHandles(user.getSocialMediaHandles());
+        contentCreatorProfileDTO.setFirstName(user.getFirstName());
+        contentCreatorProfileDTO.setLastName(user.getLastName());
+        contentCreatorProfileDTO.setUserId(user.getUserId());
+        loginResponseDTO.setUser(contentCreatorProfileDTO);
+        loginResponseDTO.setMessage("User details fetched successfully");
+        loginResponseDTO.setSuccess(true);
+        return loginResponseDTO;
+    }
+        LoginResponseDTO<UserProfileDetailsDTO> loginResponseDTO = new LoginResponseDTO<>();
+        UserProfileDetailsDTO userProfileDetails = new UserProfileDetailsDTO();
+        userProfileDetails.setUserId(user.getUserId());
+        userProfileDetails.setFirstName(user.getFirstName());
+        userProfileDetails.setLastName(user.getLastName());
+        userProfileDetails.setProfilePicture(user.getProfilePicture());
+        userProfileDetails.setSelfDescription(user.getSelfDescription());
+        userProfileDetails.setSocialMediaHandles(user.getSocialMediaHandles());
+        userProfileDetails.setUserRole(user.getUserRole());
+        List<PersonalProject> personalProjects = user.getMyProjects().stream().map(project -> {
+            PersonalProject personalProject = new PersonalProject();
+            personalProject.setProjectId(project.getWorkId());
+            personalProject.setTitle(project.getTitle());
+            personalProject.setDescription(project.getDescription());
+            personalProject.setExternalLinks(project.getExternalLinks());
+            personalProject.setMediaFiles(project.getMediaFiles());
+            return personalProject;
+        }).toList();
+        userProfileDetails.setPersonalProjects(personalProjects);
+        userProfileDetails.setSocialMediaHandles(user.getSocialMediaHandles());
+        List<UserProfileJobHistoryDTO> jobHistory = user.getJobHistory().stream().map(job->{
+            UserProfileJobHistoryDTO userProfileJobHistoryDTO = new UserProfileJobHistoryDTO();
+            userProfileJobHistoryDTO.setLocation(job.getLocation());
+            userProfileJobHistoryDTO.setLocationType(job.getLocationType());
+            userProfileJobHistoryDTO.setJobId(job.getJobId());
+            userProfileJobHistoryDTO.setTitle(job.getTitle());
+            userProfileJobHistoryDTO.setEndDate(job.getEndDate());
+            userProfileJobHistoryDTO.setStartDate(job.getStartDate());
+            userProfileJobHistoryDTO.setReportingUser(job.getReportingUser());
+            return userProfileJobHistoryDTO;
+        }).toList();
+        userProfileDetails.setJobHistory(jobHistory);
+        userProfileDetails.setNoticePeriodEndDate(user.getNoticePeriodEndDate());
+
+        if(user.getCurrentJobDetails()!=null){
+        UserProfileJobHistoryDTO currentJobDetails = new UserProfileJobHistoryDTO();
+        currentJobDetails.setLocation(user.getCurrentJobDetails().getLocation());
+        currentJobDetails.setLocationType(user.getCurrentJobDetails().getLocationType());
+        currentJobDetails.setJobId(user.getCurrentJobDetails().getJobId());
+        currentJobDetails.setTitle(user.getCurrentJobDetails().getTitle());
+        currentJobDetails.setEndDate(user.getCurrentJobDetails().getEndDate());
+        currentJobDetails.setStartDate(user.getCurrentJobDetails().getStartDate());
+        currentJobDetails.setReportingUser(user.getCurrentJobDetails().getReportingUser());
+        userProfileDetails.setCurrentJobDetails(currentJobDetails);
+        }
+
+        userProfileDetails.setCurrentJobNoticePeriodDays(user.getCurrentJobNoticePeriodDays());
+        userProfileDetails.setReportsTo(user.getReportsTo());
+        userProfileDetails.setIsServingNoticePeriod(user.getIsServingNoticePeriod());
+        userProfileDetails.setCurrentJobJoinedOn(user.getCurrentJobJoinedOn());
+
+        loginResponseDTO.setUser(userProfileDetails);
+        loginResponseDTO.setMessage("User details fetched successfully");
+        loginResponseDTO.setSuccess(true);
+        return loginResponseDTO;
     }
 }

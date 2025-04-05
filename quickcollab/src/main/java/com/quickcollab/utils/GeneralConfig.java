@@ -23,9 +23,16 @@ public class GeneralConfig {
             facebookUploadTypeMappingItemList.setPlatform(Platform.FACEBOOK);
 
 
+            UploadTypeMappingItemList twitterUploadTypeMappingItemList = new UploadTypeMappingItemList();
+            twitterUploadTypeMappingItemList.setContentTypes(Arrays.asList(ContentType.VIDEO));
+            twitterUploadTypeMappingItemList.setPlatform(Platform.TWITTER);
+
+
+
 
             uploadTypeMappingItemLists.add(youtubeUploadTypeMappingItemList);
             uploadTypeMappingItemLists.add(facebookUploadTypeMappingItemList);
+            uploadTypeMappingItemLists.add(twitterUploadTypeMappingItemList);
             return uploadTypeMappingItemLists;
 
     }

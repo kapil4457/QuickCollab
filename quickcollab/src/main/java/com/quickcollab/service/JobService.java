@@ -386,7 +386,6 @@ public class JobService {
                 }
             });
 
-//            if(applicant.getReportsTo()!=null){
 
             userConversations.forEach((conversation)->{
                 AtomicReference<Boolean> check = new AtomicReference<>(true);
@@ -398,24 +397,28 @@ public class JobService {
                 conversation.setIsTeamMemberConversation(check.get().equals(true));
                 conversationRepository.save(conversation);
             });
-//            }
 
             //  Add current Job to the JobHistory of the applicant
             JobHistory currentJobDetails = applicant.getCurrentJobDetails();
 
             if(currentJobDetails!=null){
-               currentJobDetails.setUserRole(applicant.getUserRole());
-               currentJobDetails.setSalary(applicant.getCurrentSalary());
+                currentJobDetails.setSalary(applicant.getCurrentSalary());
+                currentJobDetails.setEndDate(new Date());
                 applicant.getJobHistory().add(currentJobDetails);
             }
+            ReportingUser reportingUser = new ReportingUser();
+            reportingUser.setUserId(contentCreator.getUserId());
+            reportingUser.setFirstName(contentCreator.getFirstName());
+            reportingUser.setLastName(contentCreator.getLastName());
+
             JobHistory newJobDetails = new JobHistory();
             newJobDetails.setTitle(offerDetail.getJobTitle());
             newJobDetails.setJobId(jobId);
             newJobDetails.setSalary(offerDetail.getSalary());
             newJobDetails.setLocation(job.getJobLocation());
-            newJobDetails.setDescription(job.getJobDescription());
             newJobDetails.setLocationType(job.getJobLocationType());
             newJobDetails.setStartDate(new Date());
+            newJobDetails.setReportingUser(reportingUser);
             applicant.setCurrentJobDetails(newJobDetails);
 
 
@@ -427,10 +430,7 @@ public class JobService {
             contentCreator.getEmployees().add(applicant);
 
             // change the reporting user
-            ReportingUser reportingUser = new ReportingUser();
-            reportingUser.setUserId(contentCreator.getUserId());
-            reportingUser.setFirstName(contentCreator.getFirstName());
-            reportingUser.setLastName(contentCreator.getLastName());
+
             applicant.setReportsTo(reportingUser);
             // Update openingsCount
 

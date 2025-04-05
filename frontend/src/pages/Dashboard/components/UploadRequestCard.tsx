@@ -239,12 +239,12 @@ const UploadRequestCard = ({
                 color="success"
                 variant="bordered"
                 onPress={approveUpload}
-                isDisabled={
-                  uploadRequest?.uploadRequestStatus !==
-                    UploadRequestStatus?.PENDING &&
-                  uploadRequest?.uploadRequestStatus !==
-                    UploadRequestStatus?.REVISION
-                }
+                // isDisabled={
+                //   uploadRequest?.uploadRequestStatus !==
+                //     UploadRequestStatus?.PENDING &&
+                //   uploadRequest?.uploadRequestStatus !==
+                //     UploadRequestStatus?.REVISION
+                // }
               >
                 Approve <Check />
               </Button>

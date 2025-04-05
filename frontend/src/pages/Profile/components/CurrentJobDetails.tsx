@@ -1,19 +1,20 @@
-import { useAppSelector } from "@/store/hooks";
-import {
-  selectCurrentJobDetails,
-  selectLoggedInUser,
-  selectNoticePeriodEndDate,
-  selectReportsTo,
-} from "@/store/slices/userSlice";
+import { UserProfileJobHistoryDTO } from "@/store/dtos/helper";
 import { formatDate } from "@/utils/generalUtils";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Link } from "@heroui/link";
 
-const CurrentJobDetails = () => {
-  const currentJobDetails = useAppSelector(selectCurrentJobDetails);
-  const user = useAppSelector(selectLoggedInUser);
-  const reportsTo = useAppSelector(selectReportsTo);
-  const noticePeriodEndDate = useAppSelector(selectNoticePeriodEndDate);
+const CurrentJobDetails = ({
+  currentJobDetails,
+  isServingNoticePeriod,
+  noticePeriodInDays = 0,
+  noticePeriodEndDate,
+}: {
+  currentJobDetails: UserProfileJobHistoryDTO;
+  isServingNoticePeriod: boolean;
+  noticePeriodInDays: number;
+  noticePeriodEndDate: Date;
+}) => {
+  if (!currentJobDetails || isServingNoticePeriod === null) return;
   return (
     <Card className="border border-gray-300 w-full  shadow-md rounded-xl p-6 h-full">
       <CardHeader className="text-xl font-semibold border-b pb-3">
@@ -23,7 +24,10 @@ const CurrentJobDetails = () => {
         {[
           {
             label: "Reports to",
-            value: reportsTo?.firstName + " " + reportsTo?.lastName,
+            value:
+              currentJobDetails?.reportingUser?.firstName +
+              " " +
+              currentJobDetails?.reportingUser?.lastName,
           },
           {
             label: "Job Designation",
@@ -37,23 +41,24 @@ const CurrentJobDetails = () => {
             label: "Job Type",
             value: currentJobDetails?.locationType,
           },
-          {
-            label: "Current Salary (USD)",
-            value: `$${currentJobDetails?.salary}`,
-          },
+
           {
             label: "Joining Date",
             value: formatDate(currentJobDetails?.startDate?.toString() || ""),
           },
           {
             label: "Notice Period (in days)",
-            value: user?.currentJobNoticePeriodDays,
+            value: noticePeriodInDays,
           },
           {
             label: "Notice Period End Date",
             value: noticePeriodEndDate
               ? formatDate(noticePeriodEndDate.toString())
               : "N/A",
+          },
+          {
+            label: "Is Serving Notice Period",
+            value: isServingNoticePeriod ? "YES" : "NO",
           },
         ].map((item, index) => (
           <div key={index} className="flex justify-between items-center">
@@ -63,7 +68,7 @@ const CurrentJobDetails = () => {
                 href={"/profile/" + currentJobDetails?.reportingUser?.userId}
                 className="text-sm font-semibold text-blue-400"
               >
-                {item.value}
+                @{item?.value}
               </Link>
             ) : (
               <span className="font-bold text-gray-600">

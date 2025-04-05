@@ -19,25 +19,6 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <>
-        {/* Common
-      1. Self Details [Done]
-      */}
-        {/* Content Creator
-    1. Total Expense in salary [Done]
-    2. Number of Employees  [Done]
-    3. Number of Employees in pie chart by isOnNoticePeriod [Done]
-    4. Number of Job Openings sorted by the job status
-    5. Number of media uploaded
-    */}
-        {/* 
-    Team Member
-    1. Current Job details [Done]
-    2. Job History [Done]
-    3. Personal Projects [Done]
-    4. Active Offers Pending [Done]
-    5. Resign from Current Job [Done]
-    6. 
-    */}
         <div className="flex flex-col gap-2 h-full">
           <div className="flex gap-2 flex-col xl:flex-row h-full flex-1">
             <div className="flex w-full h-full flex-col gap-2 flex-1">

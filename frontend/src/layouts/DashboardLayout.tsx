@@ -12,6 +12,7 @@ import { Client, IFrame } from "@stomp/stompjs";
 import { Conversation } from "@/store/dtos/helper";
 import { updateLocalConversationByConversationId } from "@/store/slices/conversationSlice";
 import { AUTHORIZATION_TOKEN } from "@/constants/AppConstants";
+import Footer from "@/components/footer/Footer";
 
 export default function DashboardLayout({
   children,
@@ -88,7 +89,10 @@ export default function DashboardLayout({
         <SideBar />
         <SidebarInset>
           <SidebarTrigger className="absolute top-0 left-0" />
-          <div className={`p-10 ${extendedClassName}`}>{children}</div>
+          <div className={`p-10 min-h-[100vh] ${extendedClassName}`}>
+            {children}
+          </div>
+          <Footer />
         </SidebarInset>
       </SidebarProvider>
     </RootLayout>

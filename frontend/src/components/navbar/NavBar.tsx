@@ -99,14 +99,6 @@ export const Navbar = () => {
                 <DropdownMenu aria-label="My Conversations">
                   {siteConfig.dropDownMenuItems.map((item, key) => {
                     if (user == null) return null;
-                    if (item.type == 1) {
-                      if (user.userRole === AllRoles.CONTENT_CREATOR)
-                        return null;
-                    } else {
-                      if (user.userRole !== AllRoles.CONTENT_CREATOR)
-                        return null;
-                    }
-
                     return (
                       <DropdownItem key={key} as={Link} href={item.href}>
                         <div className="flex gap-3 items-center">
@@ -159,11 +151,9 @@ export const Navbar = () => {
           {siteConfig.navMenuItems.map((item, index) => {
             if (item.isAuthenticationRequired) {
               if (user == null) return null;
-              if (item.type == 1) {
-                if (user.userRole === AllRoles.CONTENT_CREATOR) return null;
-              } else {
-                if (user.userRole !== AllRoles.CONTENT_CREATOR) return null;
-              }
+            }
+            if (item.type == 1) {
+              if (user?.userRole === AllRoles.CONTENT_CREATOR) return null;
             }
             return (
               <NavbarMenuItem key={`${item}-${index}`}>

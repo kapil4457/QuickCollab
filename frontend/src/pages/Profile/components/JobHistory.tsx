@@ -1,4 +1,4 @@
-import { JobHistory } from "@/store/dtos/helper";
+import { JobHistory, UserProfileJobHistoryDTO } from "@/store/dtos/helper";
 import { useAppSelector } from "@/store/hooks";
 import { selectCurrentJobDetails } from "@/store/slices/userSlice";
 import { getYearAndMonth } from "@/utils/generalUtils";
@@ -17,8 +17,13 @@ import {
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Link } from "@heroui/link";
 
-const TimeLine = ({ jobHistory }: { jobHistory: JobHistory[] }) => {
-  const currJobDetails = useAppSelector(selectCurrentJobDetails);
+const JobHistoryTimeline = ({
+  jobHistory,
+  currJobDetails,
+}: {
+  jobHistory: UserProfileJobHistoryDTO[];
+  currJobDetails: UserProfileJobHistoryDTO;
+}) => {
   const items = useMemo(() => {
     let allJobHistory = [];
     if (currJobDetails != null) {
@@ -90,4 +95,4 @@ const TimeLine = ({ jobHistory }: { jobHistory: JobHistory[] }) => {
   );
 };
 
-export default TimeLine;
+export default JobHistoryTimeline;

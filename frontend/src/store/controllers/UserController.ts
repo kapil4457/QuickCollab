@@ -409,3 +409,59 @@ export const deleteProjectHandler = async (
     dispatch(updateUserLoadingState(false));
   }
 };
+
+export const getUserProfileDetailsById = async (
+  userId: string,
+  dispatch: typeof dispatchType
+) => {
+  try {
+    const authorizationToken = localStorage.getItem(AUTHORIZATION_TOKEN);
+    if (!authorizationToken) {
+      return {
+        success: false,
+        message: "Please login in to access this functionality",
+        user: null,
+      };
+    }
+    dispatch(updateUserLoadingState(true));
+    const headers = {
+      Authorization: authorizationToken,
+    };
+
+    const { data } = await axios.get(`/api/getUserProfile?userId=${userId}`, {
+      headers: headers,
+    });
+    const { success, message, user } = data;
+    selfDetails(dispatch, authorizationToken);
+
+    return {
+      message,
+      success,
+      user,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return {
+        message: err.response?.data?.message || "Something went wrong",
+        success: false,
+        user: null,
+      };
+    }
+
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+        success: false,
+        user: null,
+      };
+    }
+
+    return {
+      message: "Unknown error occurred",
+      success: false,
+      user: null,
+    };
+  } finally {
+    dispatch(updateUserLoadingState(false));
+  }
+};

@@ -30,6 +30,7 @@ import {
 import showToast from "@/utils/showToast";
 import { selectAllJobs } from "@/store/slices/jobSlice";
 import { JobStatus } from "@/utils/enums";
+import { Link } from "@heroui/link";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -216,6 +217,7 @@ const JobMarket = () => {
               <TableColumn key="openingsCount">Openings</TableColumn>
               <TableColumn key="jobLocationType">Location Type</TableColumn>
               <TableColumn key="jobLocation">Location</TableColumn>
+              <TableColumn key="postedBy">Posted By</TableColumn>
               <TableColumn key="postedOn">Posted On</TableColumn>
               <TableColumn key="actions">Actions</TableColumn>
             </TableHeader>
@@ -268,6 +270,16 @@ const JobMarket = () => {
                           </Chip>
                         ) : columnKey === "postedOn" ? (
                           dateFormatter(getKeyValue(item, columnKey))
+                        ) : columnKey === "postedBy" ? (
+                          <>
+                            <Link
+                              href={`/profile/${item?.postedBy?.userId}`}
+                              className="font-bold text-blue-400"
+                            >
+                              {item?.postedBy?.firstName}{" "}
+                              {item?.postedBy?.lastName}
+                            </Link>
+                          </>
                         ) : (
                           getKeyValue(item, columnKey)
                         )}

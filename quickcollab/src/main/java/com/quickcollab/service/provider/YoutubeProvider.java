@@ -40,11 +40,7 @@ public class YoutubeProvider extends ProviderImpl {
     private String clientId;
 
 
-    private static final String REDIRECT_URI = "http://localhost:8080/login/oauth2/code/google"; // Must match Google Console
     private static final String TOKEN_URI = "https://oauth2.googleapis.com/token";
-    private static final List<String> SCOPES = Arrays.asList(
-            "https://www.googleapis.com/auth/youtube.force-ssl"
-    );
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
 

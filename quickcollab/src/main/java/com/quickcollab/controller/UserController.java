@@ -219,6 +219,15 @@ public class UserController {
 
     }
 
+    @GetMapping("/api/getUserProfile")
+    public ResponseEntity<LoginResponseDTO<?>> getUserProfileDetails(@RequestParam String userId) {
+        try{
+            LoginResponseDTO<?> responseDTO = userService.getUserProfileDetails(userId);
+            return  ResponseEntity.status(responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(responseDTO);
+        }catch (Exception genericError){
+            return ResponseEntity.status(400).body(new LoginResponseDTO<>(null,genericError.getMessage(),false));
+        }
+    }
 
 
 }

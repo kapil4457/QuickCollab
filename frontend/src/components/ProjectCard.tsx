@@ -9,10 +9,10 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Image } from "@heroui/image";
 import { Link } from "@heroui/link";
-import { Delete, ExternalLink, Pencil, Trash } from "lucide-react";
+import { ExternalLink, Pencil, Trash } from "lucide-react";
 import { useRef } from "react";
-import { Video } from "reactjs-media";
 import ReactPlayer from "react-player";
+import PersonalProjectDetails from "@/pages/Dashboard/Dashboard/components/PersonalProjectDetails";
 
 const ProjectCard = ({
   project,
@@ -22,6 +22,7 @@ const ProjectCard = ({
   isAdmin: boolean;
 }) => {
   const addEditProjectModalRef = useRef();
+  const projectDetailsRef = useRef();
   const dispatch = useAppDispatch();
 
   const openAddEditProjectModal = () => {
@@ -50,8 +51,15 @@ const ProjectCard = ({
       });
     }
   };
+
+  const openProjectDetails = async () => {
+    if (projectDetailsRef.current && "openModal" in projectDetailsRef.current) {
+      (projectDetailsRef.current as { openModal: () => void }).openModal();
+    }
+  };
   return (
     <>
+      <PersonalProjectDetails ref={projectDetailsRef} project={project} />
       <AddEditProjectModal
         operationType="update"
         data={project}
@@ -95,8 +103,7 @@ const ProjectCard = ({
                 isIconOnly
                 variant="light"
                 size="sm"
-                as={Link}
-                href={`/project/${project?.projectId}`}
+                onPress={openProjectDetails}
               >
                 <ExternalLink size={15} />
               </Button>
