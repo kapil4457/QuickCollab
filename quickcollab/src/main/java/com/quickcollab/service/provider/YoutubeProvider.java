@@ -130,9 +130,13 @@ public class YoutubeProvider extends ProviderImpl {
             youtubeProvider =   updateAccessToken(contentCreator.getUserId());
 
         }
-
+        String description = uploadRequest.getDescription();
+        for (String tag : uploadRequest.getTags()) {
+            description +=  " #";
+            description += tag;
+        }
         IngestionRequestDTO ingestionRequestDTO = new IngestionRequestDTO();
-        ingestionRequestDTO.setDescription(uploadRequest.getDescription());
+        ingestionRequestDTO.setDescription(description);
         ingestionRequestDTO.setPlatform(Platform.YOUTUBE);
         ingestionRequestDTO.setTags(uploadRequest.getTags());
         ingestionRequestDTO.setMediaType(uploadRequest.getMediaType());
