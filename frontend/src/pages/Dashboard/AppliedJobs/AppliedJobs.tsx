@@ -40,7 +40,6 @@ import { JobStatus } from "@/utils/enums";
 import {
   selectAppliedJobs,
   selectCurrentJob,
-  selectLoggedInUser,
   selectOffersRecieved,
 } from "@/store/slices/userSlice";
 import { FileText, Handshake } from "lucide-react";

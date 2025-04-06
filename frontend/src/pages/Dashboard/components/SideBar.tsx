@@ -1,4 +1,3 @@
-import { MoonFilledIcon, SunFilledIcon } from "@/components/icons";
 import Logo from "@/components/logo/Logo";
 import {
   Sidebar,

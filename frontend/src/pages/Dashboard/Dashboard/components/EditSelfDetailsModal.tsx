@@ -24,7 +24,7 @@ import { ValidationError } from "@react-types/shared";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
 import { SocialMediaHandle } from "@/store/dtos/helper";
 import CustomAvatar from "@/components/CustomAvatar";
-import { EditIcon, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Chip } from "@heroui/chip";
 import { Link } from "@heroui/link";
 import { PlusIcon } from "../../PostedJobs/PostedJobs";

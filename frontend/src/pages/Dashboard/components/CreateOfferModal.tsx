@@ -72,6 +72,7 @@ const CreateOfferModal = forwardRef((props: propsType, ref) => {
       userRole: offerDetail.userRole,
       validTill: offerDetail.validTill,
     };
+    setErrors({});
     const { message, success } = await createJobOfferHandler(dispatch, body);
 
     onClose();
@@ -94,6 +95,7 @@ const CreateOfferModal = forwardRef((props: propsType, ref) => {
       userRole: offerDetail.userRole,
       validTill: offerDetail.validTill,
     };
+    setErrors({});
     const { message, success } = await updateJobOfferHandler(dispatch, body);
 
     onClose();

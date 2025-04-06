@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import {
   Modal,
   ModalContent,
@@ -11,10 +11,7 @@ import { OfferDetail } from "@/store/dtos/helper";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { formatDate } from "@/utils/generalUtils";
-import {
-  updateOfferStatusHandler,
-  joinCompanyHandler,
-} from "@/store/controllers/JobController";
+import { updateOfferStatusHandler } from "@/store/controllers/JobController";
 import { useAppDispatch } from "@/store/hooks";
 import showToast from "@/utils/showToast";
 import { OfferStatus } from "@/utils/enums";

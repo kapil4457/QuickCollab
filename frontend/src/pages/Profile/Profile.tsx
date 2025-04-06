@@ -50,15 +50,24 @@ const Profile = () => {
             userRole={userDetails?.userRole?.toString() || ""}
           />
         )}
-        {userDetails?.userRole === AllRoles.TEAM_MEMBER && (
-          <CurrentJobDetails
-            isServingNoticePeriod={userDetails?.isServingNoticePeriod}
-            currentJobDetails={userDetails?.currentJobDetails}
-            noticePeriodInDays={userDetails?.currentJobNoticePeriodDays}
-            noticePeriodEndDate={userDetails?.noticePeriodEndDate}
-          />
-        )}
-        {userDetails?.userRole &&
+        {userDetails &&
+          "isServingNoticePeriod" in userDetails &&
+          "currentJobDetails" in userDetails &&
+          "currentJobNoticePeriodDays" in userDetails &&
+          "noticePeriodEndDate" in userDetails &&
+          userDetails?.userRole === AllRoles.TEAM_MEMBER && (
+            <CurrentJobDetails
+              isServingNoticePeriod={userDetails?.isServingNoticePeriod}
+              currentJobDetails={userDetails?.currentJobDetails}
+              noticePeriodInDays={userDetails?.currentJobNoticePeriodDays}
+              noticePeriodEndDate={userDetails?.noticePeriodEndDate}
+            />
+          )}
+        {userDetails &&
+          "currentJobDetails" in userDetails &&
+          "jobHistory" in userDetails &&
+          "personalProjects" in userDetails &&
+          userDetails?.userRole &&
           userDetails?.userRole !== AllRoles.CONTENT_CREATOR && (
             <>
               <JobHistoryTimeline

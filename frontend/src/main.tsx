@@ -13,16 +13,14 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 export default App;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_OAUTH2_CLIENT_ID}>
-      <Provider store={store}>
-        <LoaderOverlay />
-        <BrowserRouter>
-          <HeroUIProvider>
-            <App />
-          </HeroUIProvider>
-        </BrowserRouter>
-      </Provider>
-    </GoogleOAuthProvider>
-  </React.StrictMode>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_OAUTH2_CLIENT_ID}>
+    <Provider store={store}>
+      <LoaderOverlay />
+      <BrowserRouter>
+        <HeroUIProvider>
+          <App />
+        </HeroUIProvider>
+      </BrowserRouter>
+    </Provider>
+  </GoogleOAuthProvider>
 );

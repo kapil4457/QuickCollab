@@ -4,7 +4,7 @@ import { selectLoggedInUser } from "@/store/slices/userSlice";
 import { AllRoles, MediaType, UploadRequestStatus } from "@/utils/enums";
 import { Button } from "@heroui/button";
 import { Check, Pencil, X } from "lucide-react";
-import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
+import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Video } from "reactjs-media";
 import { Tooltip } from "@heroui/tooltip";

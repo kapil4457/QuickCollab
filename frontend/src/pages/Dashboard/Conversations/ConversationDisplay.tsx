@@ -1,13 +1,12 @@
 import { insertMessage } from "@/store/controllers/ConversationController";
-import { Conversation } from "@/store/dtos/helper";
 import { MessageRequestDTO } from "@/store/dtos/request/MessageRequestDTO";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { MediaType, MessageType } from "@/utils/enums";
+import { MessageType } from "@/utils/enums";
 import showToast from "@/utils/showToast";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
-import { Calendar, Phone, Plus, SendHorizontal, Video } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Plus, SendHorizontal } from "lucide-react";
+import { useRef, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import { selectAllConversations } from "@/store/slices/conversationSlice";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
@@ -19,7 +18,6 @@ const ConversationDisplay = ({
   conversationId: number;
 }) => {
   const [message, setMessage] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
   const [media, setMedia] = useState<File | null>(null);
   const dispatch = useAppDispatch();
 
@@ -59,8 +57,6 @@ const ConversationDisplay = ({
     setMessage("");
   };
   const selectMediaFile = async () => {};
-  const mediaInputRef = useRef();
-
   return (
     <div className="h-[85%] lg:h-full bg-muted/50 w-full md:w-[60%] rounded-xl  flex flex-col ">
       <div className=" bg-slate-600 bg-opacity-75 backdrop-blur-sm p-2 md:p-4 rounded-xl rounded-b-none rounded-bl-none flex justify-between">

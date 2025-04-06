@@ -24,7 +24,7 @@ import { Button } from "@heroui/button";
 import { Save, X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ValidationError } from "@react-types/shared";
-import { MediaType, PlatformType, UploadRequestStatus } from "@/utils/enums";
+import { MediaType, UploadRequestStatus } from "@/utils/enums";
 import { Label } from "@/components/ui/label";
 import {
   selectAvaliablePlatform,
@@ -69,7 +69,6 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
     uploadTypeMapping: null,
   });
   const availablePlatforms = useAppSelector(selectAvaliablePlatform);
-  const [uploadRequestId, setUploadRequestId] = useState<number>(0);
   const [tag, setTag] = useState<string>("");
   const [errors, setErrors] = useState<FormErrors>({});
   const dispatch = useAppDispatch();
@@ -170,7 +169,6 @@ const AddEditUploadRequest = forwardRef((props: propsType, ref) => {
   useEffect(() => {
     if (props?.operationType === "UPDATE") {
       setUploadRequest(props.uploadRequest!);
-      setUploadRequestId(props.uploadRequestId!);
     }
   }, [props]);
   return (

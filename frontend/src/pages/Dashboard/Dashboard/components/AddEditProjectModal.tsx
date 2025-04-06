@@ -11,7 +11,6 @@ import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
-  useRef,
   useState,
 } from "react";
 import { ValidationError } from "@react-types/shared";

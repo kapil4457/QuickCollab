@@ -25,6 +25,7 @@ import org.springframework.security.web.authentication.password.HaveIBeenPwnedRe
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import java.util.Collections;
 
@@ -48,8 +49,8 @@ public class ProjectSecurityConfig {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
-//                        config.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
-                        config.setAllowedOriginPatterns(Collections.singletonList("*"));
+                        config.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+//                        config.setAllowedOriginPatterns(Collections.singletonList("*"));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowCredentials(true);
                         config.setAllowedHeaders(Collections.singletonList("*"));
@@ -66,11 +67,6 @@ public class ProjectSecurityConfig {
                         .requestMatchers("/api/applyForJob","/api/applyForJob","/api/getAllJobs","/api/updateOfferStatus","/api/updateResignationStatus","/api/joinCompany","/api/deleteProject","/api/addProject" , "/api/updateProject").hasAnyRole("JOB_SEEKER","TEAM_MEMBER")
                         .requestMatchers("/api/createUploadRequest","/api/updateUploadRequest").hasRole("TEAM_MEMBER")
                         .requestMatchers( "/api/error", "/api/register","/api/apiLogin","/api/apiLogout","/api/chat/**").permitAll());
-
-
-//        http.formLogin(fl -> fl
-//                .loginPage("/apiLogin")
-//                .successHandler(customAuthenticationSuccessHandler));
 
         http.formLogin(AbstractHttpConfigurer::disable);
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
@@ -91,4 +87,10 @@ public class ProjectSecurityConfig {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
+    
+    @Bean
+    public StandardServletMultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
+    }
+
 }

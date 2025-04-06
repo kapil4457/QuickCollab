@@ -39,82 +39,41 @@ const MessageBubble = ({
     >
       <CustomAvatar firstName={firstName} lastName={lastName} />
       <div className="rounded-md max-w-[60%]">
-        {message?.isUploadRequest ? (
-          <div>
-            <div className="flex">
-              {message?.messageType === MessageType.MESSAGE.toString() ? (
-                <span className="min-w-[30%] bg-red-600">
-                  {message?.message}
-                </span>
-              ) : message?.messageType === MessageType.IMAGE.toString() ? (
-                <div className="flex gap-2 flex-col">
-                  <Image
-                    isZoomed
-                    alt="image"
-                    src={message?.fileUrl}
-                    width={500}
-                    height={800}
-                  />
-                  <span>{message?.description}</span>
-                </div>
-              ) : (
-                <div className="flex gap-2 flex-col">
-                  <Video
-                    src={message?.fileUrl}
-                    controls={true}
-                    height={500}
-                    width={800}
-                  />
-                  <span>{message?.description}</span>
-                </div>
-              )}
-              <ButtonGroup>
-                <Button className="flex gap-2 items-center justify-center">
-                  Approve <Check className="bg-green-600" />
-                </Button>
-                <Button className="flex gap-2 items-center justify-center">
-                  Decline <X />
-                </Button>
-              </ButtonGroup>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <span className="text-xs">{sentOn}</span>
+        <div>
+          <span className="text-xs">{sentOn}</span>
 
-            {message?.messageType === MessageType.MESSAGE.toString() ? (
-              <div
-                className={clsx(
-                  isSelfMessage ? "bg-gray-500" : "bg-sky-500",
-                  "p-2 rounded-md whitespace-normal break-words max-w-[30rem]"
-                )}
-              >
-                {message?.message}
-              </div>
-            ) : message?.messageType === MessageType.IMAGE.toString() ? (
-              <div className="flex gap-2 flex-col">
-                <Image
-                  isZoomed
-                  alt="image"
-                  src={message?.fileUrl}
-                  width={500}
-                  height={800}
-                />
-                <span>{message?.description}</span>
-              </div>
-            ) : (
-              <div className="flex gap-2 flex-col">
-                <Video
-                  src={message?.fileUrl}
-                  controls={true}
-                  height={500}
-                  width={800}
-                />
-                <span>{message?.description}</span>
-              </div>
-            )}
-          </div>
-        )}
+          {message?.messageType === MessageType.MESSAGE.toString() ? (
+            <div
+              className={clsx(
+                isSelfMessage ? "bg-gray-500" : "bg-sky-500",
+                "p-2 rounded-md whitespace-normal break-words max-w-[30rem]"
+              )}
+            >
+              {message?.message}
+            </div>
+          ) : message?.messageType === MessageType.IMAGE.toString() ? (
+            <div className="flex gap-2 flex-col">
+              <Image
+                isZoomed
+                alt="image"
+                src={message?.fileUrl}
+                width={500}
+                height={800}
+              />
+              <span>{message?.description}</span>
+            </div>
+          ) : (
+            <div className="flex gap-2 flex-col">
+              <Video
+                src={message?.fileUrl}
+                controls={true}
+                height={500}
+                width={800}
+              />
+              <span>{message?.description}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import {
   Sidebar,
@@ -13,7 +13,7 @@ import { Input } from "@heroui/input";
 import { Conversation } from "@/store/dtos/helper";
 import { useAppSelector } from "@/store/hooks";
 import { selectLoggedInUser } from "@/store/slices/userSlice";
-import { Avatar, AvatarGroup } from "@heroui/avatar";
+import { AvatarGroup } from "@heroui/avatar";
 import CustomAvatar from "@/components/CustomAvatar";
 
 export function ConversationSideBar({
