@@ -8,8 +8,6 @@ import os from "os";
 import FormData from "form-data";
 import OAuth from "oauth-1.0a";
 import crypto from "crypto";
-// const OAuth = require("oauth-1.0a");
-// const crypto = require("crypto");
 
 async function updateDatabase(uploadRequestId, status, platform) {
   const client = new Client({
@@ -50,12 +48,11 @@ async function updateDatabase(uploadRequestId, status, platform) {
   if (result.rows.length > 0) {
     const uploadTypeMapping = result.rows[0].upload_type_mapping;
     const statuses = uploadTypeMapping.map((item) => item.status);
-
     let finalStatus = 4;
 
-    if (statuses.every((s) => s === "UPLOAD_COMPLETED")) {
+    if (statuses.every((s) => s === "5")) {
       finalStatus = 5;
-    } else if (statuses.includes("UPLOAD_FAILED")) {
+    } else if (statuses.includes("6")) {
       finalStatus = 6;
     }
 
@@ -256,10 +253,10 @@ async function twitterUploadHandler(
 
     await twitterPostTweet(
       finalizedMediaId,
-      accessToken,
       title,
       description,
-      tags
+      tags,
+      accessToken
     );
     // Update database
     await updateDatabase(uploadRequestId, 5, platform);
@@ -400,6 +397,23 @@ async function twitterFinalizeUpload(mediaId, accessToken) {
     return response.data.data.id;
   } catch (error) {
     console.error("Error finalizing upload:", error);
+    throw error;
+  }
+}
+
+async function checkMediaUploadStatus(mediaId, accessToken) {
+  try {
+    const response = await axios.get(
+      `https://upload.twitter.com/1.1/media/upload.json?command=STATUS&media_id=${mediaId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data.processing_info.state;
+  } catch (error) {
+    console.error("Error checking media upload status:", error);
     throw error;
   }
 }

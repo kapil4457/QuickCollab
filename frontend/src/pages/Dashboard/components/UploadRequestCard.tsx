@@ -207,12 +207,12 @@ const UploadRequestCard = ({
                               className="font-semibold"
                               size="sm"
                               color={
-                                request.uploadRequestStatus ===
+                                upload.status ===
                                 UploadRequestStatus.UPLOAD_COMPLETED.toString()
                                   ? "success"
-                                  : request.uploadRequestStatus ===
+                                  : upload.status ===
                                         UploadRequestStatus.DECLINED.toString() ||
-                                      request.uploadRequestStatus ===
+                                      upload.status ===
                                         UploadRequestStatus.UPLOAD_FAILED.toString()
                                     ? "danger"
                                     : "warning"
@@ -239,12 +239,12 @@ const UploadRequestCard = ({
                 color="success"
                 variant="bordered"
                 onPress={approveUpload}
-                // isDisabled={
-                //   uploadRequest?.uploadRequestStatus !==
-                //     UploadRequestStatus?.PENDING &&
-                //   uploadRequest?.uploadRequestStatus !==
-                //     UploadRequestStatus?.REVISION
-                // }
+                isDisabled={
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.PENDING &&
+                  uploadRequest?.uploadRequestStatus !==
+                    UploadRequestStatus?.REVISION
+                }
               >
                 Approve <Check />
               </Button>
@@ -254,9 +254,7 @@ const UploadRequestCard = ({
                 onPress={requestRevision}
                 isDisabled={
                   uploadRequest?.uploadRequestStatus !==
-                    UploadRequestStatus?.PENDING &&
-                  uploadRequest?.uploadRequestStatus !==
-                    UploadRequestStatus?.REVISION
+                  UploadRequestStatus?.PENDING
                 }
               >
                 Revision
